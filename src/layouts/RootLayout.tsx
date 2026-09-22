@@ -21,13 +21,15 @@ export const RootLayout: React.FC = () => {
       <header className="sticky top-0 z-40 w-full border-b bg-white/90 backdrop-blur-md">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight text-primary">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-                <GraduationCap className="h-6 w-6" />
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-quack-dandelion/50 p-1 border border-quack-amber/40 shadow-sm transition-transform group-hover:scale-105">
+                <img src="/brand/quack-logo.svg" alt="Quack Logo" className="h-9 w-9 object-contain" />
               </div>
               <div className="flex flex-col">
-                <span className="leading-none text-slate-900">Quack</span>
-                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                <span className="font-brand text-2xl font-bold tracking-tight text-quack-gunmetal leading-none">
+                  Quack
+                </span>
+                <span className="text-[10px] text-slate-500 font-medium tracking-wider">
                   STEM Feynman MVP
                 </span>
               </div>

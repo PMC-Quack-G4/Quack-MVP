@@ -25,36 +25,55 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="container py-8 space-y-12">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 px-8 py-12 text-white shadow-xl">
-        <div className="relative z-10 max-w-3xl space-y-4">
-          <Badge className="bg-white/20 text-white hover:bg-white/30 border-0 backdrop-blur-md">
-            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-            Método Feynman Invertido & RAG Curricular
-          </Badge>
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl">
-            Aprende STEM explicando a una IA y validando con papel y OCR.
-          </h1>
-          <p className="text-base text-blue-100 sm:text-lg">
-            Configuración inicial robusta de React 18 con Vite, TypeScript estricto, Tailwind CSS, componentes shadcn/ui, KaTeX y Lucide Icons.
-          </p>
+      {/* Hero Section con Identidad Quack */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-400 via-amber-400 to-orange-400 px-8 py-12 text-slate-900 shadow-xl border border-amber-300/60">
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="max-w-2xl space-y-4">
+            <Badge className="bg-white/80 text-quack-gunmetal hover:bg-white border-0 backdrop-blur-md font-semibold text-xs shadow-sm">
+              <Sparkles className="mr-1.5 h-3.5 w-3.5 text-amber-600" />
+              La primera IA a la que tú le enseñas
+            </Badge>
+            <h1 className="font-brand text-3xl font-bold tracking-tight sm:text-5xl text-quack-gunmetal leading-tight">
+              Aprende STEM explicando a tu pato y validando a mano con OCR.
+            </h1>
+            <p className="text-base text-slate-800 font-medium sm:text-lg">
+              Erradica la <span className="font-semibold underline decoration-orange-600 decoration-2">ilusión de competencia</span>. Practica con el Método Feynman Oral (Push-to-Talk) y audita tus exámenes a libro cerrado paso a paso.
+            </p>
 
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-blue-50 font-semibold shadow-md">
-              <Link to="/feynman">
-                Ver Simulación Feynman & OCR
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button variant="outline" size="lg" className="border-white/30 bg-white/10 text-white hover:bg-white/20">
-              <Code2 className="mr-2 h-4 w-4" />
-              TypeScript Estricto
-            </Button>
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <Button asChild size="lg" className="bg-quack-gunmetal text-white hover:bg-slate-800 font-semibold shadow-md rounded-xl">
+                <Link to="/feynman">
+                  Practicar Feynman Oral
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="border-quack-gunmetal/30 bg-white/60 text-quack-gunmetal hover:bg-white rounded-xl">
+                <Link to="/parcial-ciegas">
+                  <Code2 className="mr-2 h-4 w-4" />
+                  Simulacro a Ciegas (OCR)
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Duck Mascot Presentation */}
+          <div className="flex flex-col items-center justify-center p-6 rounded-3xl bg-white/80 backdrop-blur-md border border-amber-200 shadow-lg shrink-0">
+            <img 
+              src="/brand/quack-logo.svg" 
+              alt="Quack Rubber Duck Mascot" 
+              className="h-36 w-36 object-contain drop-shadow-md animate-bounce [animation-duration:3s]" 
+            />
+            <span className="font-brand text-lg font-bold text-quack-gunmetal mt-2">
+              Quack
+            </span>
+            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-widest">
+              Tu Alumna Curiosa
+            </span>
           </div>
         </div>
 
         {/* Decorative background shape */}
-        <div className="pointer-events-none absolute -bottom-10 -right-10 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-12 -left-12 h-64 w-64 rounded-full bg-white/20 blur-2xl" />
       </section>
 
       {/* Interactive KaTeX Playground */}

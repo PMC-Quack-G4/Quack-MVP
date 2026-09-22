@@ -83,11 +83,23 @@ src/
 └── types/            # Interfaces de TypeScript organizadas por dominio
 ```
 
+### D. Identidad de Marca y Estilo (BrandBook Oficial)
+- **Mascota/Logo**: Patito de goma amarillo en `public/brand/quack-logo.svg` y `public/brand/favicon.svg`. Mantener un espacio libre (*clear space*) de 50px y tamaño mínimo de 128px de ancho.
+- **Tipografía de Marca**: `Comfortaa` (`font-brand`) para el logo, títulos principales y llamadas a la acción; `Inter` (`font-sans`) para el cuerpo y texto técnico.
+- **Paleta Oficial Quack**:
+  - `Amber Yellow` (`#FFC800`): Primario de marca y acentos vibrantes.
+  - `Dandelion Yellow` (`#FFE978`): Secundario, fondos suaves y highlights.
+  - `Caramel Brown` (`#D96B43`): Pico del pato y contrastes cálidos.
+  - `Sandy Orange` (`#F89D4F`): Ala del pato y estados interactivos hover.
+  - `Gunmetal Gray` (`#3B4151`): Tipografía neutra principal y bordes de contraste.
+- Consultar [`docs/BRAND_GUIDELINES.md`](file:///c:/Users/dinoc/OneDrive/Escritorio/Uniandes/7%20-%20Septimo%20Semestre/DISE%C3%91O%20DE%20PRODUCTOS%20E%20INNOVACI%C3%93N%20EN%20TI%20%28ISIS-2007%29/Proyectos/Quack-MVP/docs/BRAND_GUIDELINES.md) para todos los detalles visuales.
+
 ---
 
 ## 5. Documentación Complementaria
 
 Para detalles funcionales, de diseño y de prompts, consulta los archivos en `docs/`:
+- [`docs/BRAND_GUIDELINES.md`](file:///c:/Users/dinoc/OneDrive/Escritorio/Uniandes/7%20-%20Septimo%20Semestre/DISE%C3%91O%20DE%20PRODUCTOS%20E%20INNOVACI%C3%93N%20EN%20TI%20%28ISIS-2007%29/Proyectos/Quack-MVP/docs/BRAND_GUIDELINES.md): Manual de marca oficial, paleta HEX/RGB/HSL, tipografía y logotipo.
 - [`docs/ARCHITECTURE.md`](file:///c:/Users/dinoc/OneDrive/Escritorio/Uniandes/7%20-%20Septimo%20Semestre/DISE%C3%91O%20DE%20PRODUCTOS%20E%20INNOVACI%C3%93N%20EN%20TI%20%28ISIS-2007%29/Proyectos/Quack-MVP/docs/ARCHITECTURE.md): Arquitectura detallada, flujo de datos y máquinas de estados.
 - [`docs/PRODUCT_SPEC.md`](file:///c:/Users/dinoc/OneDrive/Escritorio/Uniandes/7%20-%20Septimo%20Semestre/DISE%C3%91O%20DE%20PRODUCTOS%20E%20INNOVACI%C3%93N%20EN%20TI%20%28ISIS-2007%29/Proyectos/Quack-MVP/docs/PRODUCT_SPEC.md): Especificación funcional, historias de usuario HU-01 y HU-02 con criterios de aceptación.
 - [`docs/PROMPT_ENGINEERING.md`](file:///c:/Users/dinoc/OneDrive/Escritorio/Uniandes/7%20-%20Septimo%20Semestre/DISE%C3%91O%20DE%20PRODUCTOS%20E%20INNOVACI%C3%93N%20EN%20TI%20%28ISIS-2007%29/Proyectos/Quack-MVP/docs/PROMPT_ENGINEERING.md): Prompts de sistema para Quack ("alumna despistada") y visión OCR.

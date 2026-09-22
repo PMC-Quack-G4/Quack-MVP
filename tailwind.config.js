@@ -16,7 +16,19 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        brand: ["Comfortaa", "cursive", "sans-serif"],
+      },
       colors: {
+        // Quack Official Brand Palette
+        quack: {
+          amber: "#FFC800",      // Primary brand yellow
+          dandelion: "#FFE978",  // Soft body yellow
+          caramel: "#D96B43",    // Beak brown/orange
+          sandy: "#F89D4F",      // Wing orange
+          gunmetal: "#3B4151",   // Primary dark slate/contrast
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
