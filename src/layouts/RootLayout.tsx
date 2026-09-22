@@ -23,7 +23,7 @@ export const RootLayout: React.FC = () => {
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-3 group">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-quack-dandelion/50 p-1 border border-quack-amber/40 shadow-sm transition-transform group-hover:scale-105">
-                <img src="/brand/quack-logo.svg" alt="Quack Logo" className="h-9 w-9 object-contain" />
+                <img src="/brand/quack-logo.png" alt="Quack Logo" className="h-9 w-9 object-contain" />
               </div>
               <div className="flex flex-col">
                 <span className="font-brand text-2xl font-bold tracking-tight text-quack-gunmetal leading-none">

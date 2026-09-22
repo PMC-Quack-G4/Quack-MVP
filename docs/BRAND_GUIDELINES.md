@@ -71,19 +71,16 @@
 
 Para que el pato y los recursos de marca estén organizados y accesibles en React y Vite, se definen dos ubicaciones estándar:
 
-### 📁 Opción Recomendada: `public/brand/`
+### 📁 Ubicación Oficial: `public/brand/`
 ```text
 public/
 └── brand/
-    ├── quack-logo.svg        <-- Logo oficial del pato en vector SVG
-    ├── quack-logo.png        <-- Versión ráster de alta resolución (mínimo 512x512)
-    ├── favicon.svg           <-- Icono del navegador (patito)
-    └── quack-banner.png      <-- Banners o recursos de redes
+    └── quack-logo.png        <-- Logo e isotipo original del patito (BrandBook oficial)
 ```
 > **Ventajas de `public/brand/`**:
-> - Se sirve de manera estática y directa en la raíz del servidor (`/brand/quack-logo.svg`).
-> - Se puede usar directamente en el `index.html` (como `<link rel="icon" href="/brand/favicon.svg" />`).
-> - No satura el empaquetador de Vite y permite a cualquier componente renderizarlo como `<img src="/brand/quack-logo.svg" alt="Quack Logo" />`.
+> - Se sirve de manera estática y directa en la raíz del servidor (`/brand/quack-logo.png`).
+> - Se usa directamente en el `index.html` como favicon: `<link rel="icon" type="image/png" href="/brand/quack-logo.png" />`.
+> - Se renderiza de forma limpia en cualquier componente React mediante `<img src="/brand/quack-logo.png" alt="Quack Logo" />`.
 
 ### 📁 Opción para Componentes Modulares: `src/assets/brand/`
 Si deseas importarlo directamente como componente React o procesarlo con Vite:

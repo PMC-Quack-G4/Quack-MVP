@@ -59,7 +59,7 @@ export const HomePage: React.FC = () => {
           {/* Duck Mascot Presentation */}
           <div className="flex flex-col items-center justify-center p-6 rounded-3xl bg-white/80 backdrop-blur-md border border-amber-200 shadow-lg shrink-0">
             <img 
-              src="/brand/quack-logo.svg" 
+              src="/brand/quack-logo.png" 
               alt="Quack Rubber Duck Mascot" 
               className="h-36 w-36 object-contain drop-shadow-md animate-bounce [animation-duration:3s]" 
             />
