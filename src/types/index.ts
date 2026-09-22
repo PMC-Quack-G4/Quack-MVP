@@ -1,6 +1,9 @@
 /**
- * Definiciones de tipos estrictas para la plataforma Quack STEM MVP.
+ * Exportación centralizada de tipos para Quack MVP.
  */
+
+export * from "./feynman";
+export * from "./exam";
 
 export type StemSubject =
   | "fisica-mecanica"

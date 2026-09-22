@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <defs>
+    <pattern id="grid-physics" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    </pattern>
+    <filter id="handwriting-shadow-p" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="1" stdDeviation="0.5" flood-color="#0f172a" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <rect width="600" height="800" fill="#fafafa"/>
+  <rect width="600" height="800" fill="url(#grid-physics)" opacity="0.6"/>
+  <line x1="80" y1="0" x2="80" y2="800" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="4 2"/>
+
+  <text x="100" y="50" font-family="'Comic Sans MS', 'Caveat', cursive, sans-serif" font-size="16" fill="#0f172a" font-weight="bold">
+    Física Mecánica — Conservación de Momento
+  </text>
+  <text x="100" y="75" font-family="'Comic Sans MS', 'Caveat', cursive, sans-serif" font-size="14" fill="#64748b">
+    Problema: Impulso sobre partícula m = 2kg
+  </text>
+  <line x1="100" y1="90" x2="520" y2="90" stroke="#cbd5e1" stroke-width="1"/>
+
+  <g font-family="'Comic Sans MS', 'Caveat', cursive, sans-serif" fill="#1e293b" font-size="20" filter="url(#handwriting-shadow-p)">
+    <text x="100" y="140">1) F(t) = 6t² - 2t  [N],  t ∈ [0, 3]</text>
+    <text x="100" y="210">2) J = ∫ [0 a 3] F(t) dt = Δp</text>
+    <text x="100" y="280">3) J = [ 2t³ - t² ] de 0 a 3</text>
+    <text x="100" y="350">4) J = 2(27) - (9) = 54 - 9 = 45 N·s</text>
+    <text x="100" y="420">5) Δp = m·v_f - m·v_i  (v_i = 0)</text>
+    <text x="100" y="490">6) v_f = 45 / 2 = 22.5 m/s</text>
+
+    <rect x="95" y="460" width="280" height="50" fill="none" stroke="#0f172a" stroke-width="2" rx="4"/>
+  </g>
+
+  <rect x="360" y="700" width="200" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="375" y="735" font-family="sans-serif" font-size="12" fill="#475569" font-weight="bold">
+    QUACK SAMPLE OCR #02
+  </text>
+</svg>

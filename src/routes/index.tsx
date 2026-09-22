@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { RootLayout } from "@/layouts/RootLayout";
 import { HomePage } from "@/pages/HomePage";
 import { FeynmanDemoPage } from "@/pages/FeynmanDemoPage";
+import { ExamPage } from "@/pages/ExamPage";
 
 export const router = createBrowserRouter([
   {
@@ -15,6 +16,10 @@ export const router = createBrowserRouter([
       {
         path: "feynman",
         element: <FeynmanDemoPage />,
+      },
+      {
+        path: "parcial-ciegas",
+        element: <ExamPage />,
       },
       {
         path: "*",

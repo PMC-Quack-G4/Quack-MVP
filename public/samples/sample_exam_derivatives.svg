@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <defs>
+    <!-- Grid paper pattern -->
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    </pattern>
+    <filter id="handwriting-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="1" stdDeviation="0.5" flood-color="#1e3a8a" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Paper background with margin line -->
+  <rect width="600" height="800" fill="#fdfbf7"/>
+  <rect width="600" height="800" fill="url(#grid)" opacity="0.6"/>
+  <line x1="80" y1="0" x2="80" y2="800" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="4 2"/>
+
+  <!-- Header handwritten info -->
+  <text x="100" y="50" font-family="'Comic Sans MS', 'Caveat', cursive, sans-serif" font-size="16" fill="#1e293b" font-weight="bold">
+    Cálculo Diferencial — Parcial 1 (Camilo Vargas)
+  </text>
+  <text x="100" y="75" font-family="'Comic Sans MS', 'Caveat', cursive, sans-serif" font-size="14" fill="#64748b">
+    Problema: Regla de la Cadena y Derivadas Implícitas
+  </text>
+  <line x1="100" y1="90" x2="520" y2="90" stroke="#cbd5e1" stroke-width="1"/>
+
+  <!-- Handwritten steps with blue pen styling -->
+  <g font-family="'Comic Sans MS', 'Caveat', cursive, sans-serif" fill="#1d4ed8" font-size="20" filter="url(#handwriting-shadow)">
+    <!-- Step 1 -->
+    <text x="100" y="140">1) f(x) = ln(x² + 3x + 1)⁵</text>
+    
+    <!-- Step 2 -->
+    <text x="100" y="200">2) f(x) = 5 · ln(x² + 3x + 1)   [Propiedad de logaritmos]</text>
+    
+    <!-- Step 3 -->
+    <text x="100" y="270">3) f'(x) = 5 · d/dx [ ln(x² + 3x + 1) ]</text>
+    
+    <!-- Step 4 -->
+    <text x="100" y="340">4) f'(x) = 5 · ( (2x + 3) / (x² + 3x + 1) )</text>
+    
+    <!-- Step 5 (with a slight error note for audit test) -->
+    <text x="100" y="420">5) f'(x) = (10x + 15) / (x² + 3x + 1)</text>
+
+    <!-- Final box -->
+    <rect x="95" y="380" width="340" height="60" fill="none" stroke="#1d4ed8" stroke-width="2" rx="4"/>
+  </g>
+
+  <!-- Watermark stamp -->
+  <rect x="360" y="700" width="200" height="60" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="375" y="735" font-family="sans-serif" font-size="12" fill="#64748b" font-weight="bold">
+    QUACK SAMPLE OCR #01
+  </text>
+</svg>
