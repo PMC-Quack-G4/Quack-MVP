@@ -20,6 +20,7 @@ export interface MockAuditResult {
   finalScore: number;
   maxScore: number;
   summary: string;
+  diagnosisTitle?: string;
   steps: AuditStep[];
 }
 
@@ -33,3 +34,5 @@ export interface ExamProblem {
   defaultSampleImage: string;
   mockAudit: MockAuditResult;
 }
+
+export type ExamPhase = "SETUP" | "SOLVING" | "UPLOAD" | "AUDIT";

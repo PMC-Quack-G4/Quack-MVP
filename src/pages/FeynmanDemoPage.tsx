@@ -1,192 +1,312 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import {
-  Mic,
-  BrainCircuit,
-  FileCheck2,
-  CheckCircle,
-  XCircle,
-  ArrowLeft,
-  Award,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeft, Mic, Sparkles, BookOpen, RotateCcw, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MathRenderer } from "@/components/common/MathRenderer";
-import { mockActiveSession } from "@/mocks/quackData";
-import { FeynmanSession } from "@/types";
+import { mockFeynmanTopics } from "@/mocks/quackData";
+import { FeynmanTopic, ChatMessage, FeynmanSessionSummary } from "@/types/feynman";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { useTimer } from "@/hooks/useTimer";
+import { feynmanService, isGeminiActive } from "@/services/serviceFactory";
+import { ConceptSelector } from "@/components/feynman/ConceptSelector";
+import { PushToTalkButton } from "@/components/feynman/PushToTalkButton";
+import { TranscriptFeed } from "@/components/feynman/TranscriptFeed";
+import { ConceptChecklistCard } from "@/components/feynman/ConceptChecklistCard";
+import { SpeechFallbackInput } from "@/components/feynman/SpeechFallbackInput";
+import { SessionSummaryModal } from "@/components/feynman/SessionSummaryModal";
 
 export const FeynmanDemoPage: React.FC = () => {
-  const [session] = React.useState<FeynmanSession>(mockActiveSession);
+  const [selectedTopic, setSelectedTopic] = React.useState<FeynmanTopic>(mockFeynmanTopics[0]);
+  const [isSessionActive, setIsSessionActive] = React.useState<boolean>(false);
+  const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [coveredSubtopicIds, setCoveredSubtopicIds] = React.useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = React.useState<boolean>(false);
+  const [summary, setSummary] = React.useState<FeynmanSessionSummary | null>(null);
+  const [forceTextInput, setForceTextInput] = React.useState<boolean>(false);
+
+  // Hook de reconocimiento de voz (STT)
+  const speechRecognition = useSpeechRecognition("es-ES");
+  // Hook de síntesis de voz (TTS)
+  const speechSynthesis = useSpeechSynthesis();
+  // Hook de temporizador para medir duración de la sesión
+  const sessionTimer = useTimer({ mode: "stopwatch" });
+
+  // Iniciar sesión interactiva
+  const handleStartSession = () => {
+    setIsSessionActive(true);
+    setMessages([]);
+    setCoveredSubtopicIds([]);
+    setSummary(null);
+    sessionTimer.reset();
+    sessionTimer.start();
+  };
+
+  // Enviar mensaje del estudiante a Quack (vía voz o fallback de texto)
+  const handleProcessStudentExplanation = async (explanationText: string) => {
+    if (!explanationText.trim() || isProcessing) return;
+
+    speechRecognition.resetTranscript();
+
+    const studentMessage: ChatMessage = {
+      id: `student-${Date.now()}`,
+      sender: "student",
+      text: explanationText.trim(),
+      timestamp: new Date(),
+    };
+
+    const newHistory = [...messages, studentMessage];
+    setMessages(newHistory);
+    setIsProcessing(true);
+
+    try {
+      const result = await feynmanService.sendMessage(
+        selectedTopic,
+        newHistory,
+        explanationText.trim(),
+        coveredSubtopicIds
+      );
+
+      // Actualizar subconceptos cubiertos
+      if (result.unlockedSubtopicIds.length > 0) {
+        setCoveredSubtopicIds((prev) => Array.from(new Set([...prev, ...result.unlockedSubtopicIds])));
+      }
+
+      const quackMsgId = `quack-${Date.now()}`;
+      const quackMessage: ChatMessage = {
+        id: quackMsgId,
+        sender: "quack",
+        text: result.reply,
+        timestamp: new Date(),
+        audioId: quackMsgId,
+      };
+
+      setMessages((prev) => [...prev, quackMessage]);
+
+      // Reproducción automática de voz mediante Web Speech Synthesis
+      speechSynthesis.speak(result.reply, quackMsgId);
+    } catch (err) {
+      console.warn("Error al procesar mensaje con Quack:", err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Push-to-Talk: Al presionar
+  const handleStartPtt = () => {
+    speechSynthesis.stop();
+    speechRecognition.startListening();
+  };
+
+  // Push-to-Talk: Al soltar
+  const handleEndPtt = () => {
+    speechRecognition.stopListening();
+    // Esperar un instante para consolidar el último segmento de voz
+    setTimeout(() => {
+      const fullText = (
+        speechRecognition.transcript || speechRecognition.interimTranscript
+      ).trim();
+      if (fullText) {
+        handleProcessStudentExplanation(fullText);
+      }
+    }, 250);
+  };
+
+  // Finalizar sesión y generar balance
+  const handleFinishSession = () => {
+    sessionTimer.pause();
+    speechSynthesis.stop();
+
+    const covered = selectedTopic.subtopics.filter((s) => coveredSubtopicIds.includes(s.id));
+    const missing = selectedTopic.subtopics.filter((s) => !coveredSubtopicIds.includes(s.id));
+    const percentage =
+      selectedTopic.subtopics.length > 0
+        ? Math.round((covered.length / selectedTopic.subtopics.length) * 100)
+        : 100;
+
+    let advice = "";
+    if (percentage === 100) {
+      advice =
+        "¡Excelente trabajo pedagógico! Lograste explicar cada subconcepto sin recurrir a atajos ni tecnicismos vacíos. Has erradicado la ilusión de competencia en este tema.";
+    } else if (percentage >= 50) {
+      advice = `Buen avance verbalizando el razonamiento. Te recomendamos reforzar los aspectos pendientes (${missing
+        .map((m) => m.name)
+        .join(", ")}) formulando analogías directas sin fórmulas complejas.`;
+    } else {
+      advice =
+        "Detectamos vacíos iniciales al conectar la intuición física o matemática. Intenta explicarle a Quack pensando en qué le pasaría a una persona común si experimentara este fenómeno.";
+    }
+
+    const sessionSummary: FeynmanSessionSummary = {
+      topicId: selectedTopic.id,
+      topicTitle: selectedTopic.title,
+      durationSeconds: sessionTimer.seconds,
+      totalExplanations: messages.filter((m) => m.sender === "student").length,
+      masteredSubtopics: covered,
+      missingSubtopics: missing,
+      masteryPercentage: percentage,
+      pedagogicalAdvice: advice,
+    };
+
+    setSummary(sessionSummary);
+  };
 
   return (
-    <div className="container py-8 space-y-8">
-      {/* Navigation & Header */}
+    <div className="container py-8 space-y-8 max-w-6xl">
+      {/* Header & Navegación */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b pb-6">
-        <div className="space-y-1">
+        <div>
           <Button asChild variant="ghost" size="sm" className="mb-2 -ml-3 text-muted-foreground">
             <Link to="/">
               <ArrowLeft className="mr-1.5 h-4 w-4" />
-              Regresar al Inicio
+              Volver al Inicio
             </Link>
           </Button>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-              Simulacro Método Feynman
+            <h1 className="text-2xl font-bold tracking-tight text-quack-gunmetal sm:text-3xl flex items-center gap-2.5">
+              <Mic className="h-7 w-7 text-quack-caramel" />
+              Módulo 1: Feynman Oral (IA Invertida)
             </h1>
-            <Badge variant="outline" className="border-blue-300 text-blue-700 bg-blue-50">
-              Fase: {session.phase.replace("_", " ")}
+            <Badge variant="outline" className="border-quack-amber bg-amber-50 text-quack-gunmetal font-semibold text-xs">
+              {isGeminiActive() ? "Gemini 2.5 Flash" : "Motor Mock Socrático"}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {session.topic} — {session.subject.replace("-", " ")}
+          <p className="text-sm text-slate-600 mt-1">
+            Enseña a tu alumna despistada ("Quack") mediante tu propia voz para erradicar la ilusión de saber.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-emerald-800">
-            <Award className="h-5 w-5 text-emerald-600" />
-            <div className="text-right">
-              <div className="text-xs text-emerald-600 font-medium">Dominio Estimado</div>
-              <div className="text-lg font-bold leading-none">{session.masteryScore}%</div>
-            </div>
+        {isSessionActive && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsSessionActive(false);
+                speechSynthesis.stop();
+              }}
+              className="gap-1.5 rounded-xl text-xs"
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              Cambiar Tema
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleStartSession}
+              className="gap-1.5 rounded-xl text-xs"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Reiniciar
+            </Button>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Target Formula Section */}
-      <Card className="border-blue-100 bg-blue-50/30">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base text-blue-900 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-blue-600" />
-            Concepto y Fórmula Objetivo
-          </CardTitle>
-          <CardDescription>
-            {session.formula.name}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-xl bg-white p-4 border border-blue-100 shadow-sm text-center">
-            <MathRenderer math={session.formula.latex} block className="text-xl sm:text-2xl text-blue-950" />
+      {/* Vista de Selección de Tema (Paso 1) */}
+      {!isSessionActive ? (
+        <ConceptSelector
+          topics={mockFeynmanTopics}
+          selectedTopicId={selectedTopic.id}
+          onSelectTopic={(topic) => setSelectedTopic(topic)}
+          onStartSession={handleStartSession}
+        />
+      ) : (
+        /* Vista Activa de Diálogo Feynman (Paso 2) */
+        <div className="space-y-6">
+          {/* Barra de Contexto del Tema */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-amber-100/60 to-quack-dandelion/40 border border-amber-200">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-quack-caramel block">
+                Tema en Explicación
+              </span>
+              <h2 className="font-brand text-lg font-bold text-quack-gunmetal">
+                {selectedTopic.title}
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              {/* Selector de modo voz vs teclado */}
+              {speechRecognition.isSupported && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setForceTextInput(!forceTextInput)}
+                  className="text-xs text-slate-600 hover:text-quack-gunmetal"
+                >
+                  {forceTextInput ? "Usar Micrófono (PTT)" : "Usar Teclado"}
+                </Button>
+              )}
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {session.formula.variables.map((v) => (
-              <div key={v.symbol} className="rounded-lg bg-white p-2.5 border text-xs space-y-1">
-                <div className="font-semibold text-slate-800 flex items-center gap-1">
-                  <MathRenderer math={v.symbol} />
-                  <span className="text-slate-500 font-normal">({v.name})</span>
-                </div>
-                <div className="text-slate-500 font-mono text-[11px]">{v.unit}</div>
+          <div className="grid gap-6 lg:grid-cols-12 items-start">
+            {/* Columna Izquierda: Historial de Chat y Botón PTT */}
+            <div className="lg:col-span-8 space-y-4">
+              <TranscriptFeed
+                messages={messages}
+                isListening={speechRecognition.isListening}
+                interimTranscript={speechRecognition.interimTranscript}
+                isSpeaking={speechSynthesis.isSpeaking}
+                currentSpeakingId={speechSynthesis.currentSpeakingId}
+                onPlayAudio={(text, id) => speechSynthesis.speak(text, id)}
+                onStopAudio={() => speechSynthesis.stop()}
+                initialTopicName={selectedTopic.title}
+              />
+
+              {/* Controles de Entrada (PTT o Fallback Escrito) */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                {!speechRecognition.isSupported || forceTextInput ? (
+                  <SpeechFallbackInput
+                    onSendMessage={handleProcessStudentExplanation}
+                    isProcessing={isProcessing}
+                    reason={!speechRecognition.isSupported ? "not-supported" : "user-choice"}
+                  />
+                ) : (
+                  <div className="space-y-3">
+                    <PushToTalkButton
+                      isListening={speechRecognition.isListening}
+                      isProcessing={isProcessing}
+                      onStartTalk={handleStartPtt}
+                      onEndTalk={handleEndPtt}
+                    />
+
+                    {speechRecognition.error && (
+                      <div className="text-center text-xs text-rose-600 font-medium">
+                        {speechRecognition.error}. Si prefieres, activa el modo teclado.
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Voice Explanation & AI Reflection */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2 text-slate-900">
-              <Mic className="h-4 w-4 text-primary" />
-              1. Explicación Oral del Estudiante
-            </CardTitle>
-            <CardDescription>
-              Transcripción por voz analizada por el agente inteligente
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <blockquote className="rounded-lg border-l-4 border-primary bg-slate-50 p-4 text-sm italic text-slate-700">
-              "{session.studentExplanationTranscript}"
-            </blockquote>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2 text-slate-900">
-              <BrainCircuit className="h-4 w-4 text-purple-600" />
-              2. Respuesta del Agente Invertido
-            </CardTitle>
-            <CardDescription>
-              Retroalimentación basada en el RAG curricular
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-lg border-l-4 border-purple-500 bg-purple-50/50 p-4 text-sm text-purple-950">
-              {session.aiReflectionFeedback}
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* OCR Validation Step-by-Step */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <FileCheck2 className="h-5 w-5 text-primary" />
-              3. Validación Autónoma por Pasos (OCR a Papel)
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Evaluación paso a paso de los cálculos manuscritos con reconocimiento de fórmulas KaTeX.
-            </p>
+            {/* Columna Derecha: Checklist de Subconceptos y Auditoría */}
+            <div className="lg:col-span-4 sticky top-20">
+              <ConceptChecklistCard
+                subtopics={selectedTopic.subtopics}
+                coveredIds={coveredSubtopicIds}
+                sessionDuration={sessionTimer.formattedTime}
+                onFinishSession={handleFinishSession}
+              />
+            </div>
           </div>
-          <Badge variant="outline">
-            {session.ocrSteps.length} Pasos Evaluados
-          </Badge>
         </div>
+      )}
 
-        <div className="space-y-4">
-          {session.ocrSteps.map((step) => (
-            <Card key={step.stepNumber} className={step.isCorrect ? "border-slate-200" : "border-amber-200 bg-amber-50/10"}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    Paso {step.stepNumber}: {step.stepTitle}
-                  </span>
-                  {step.isCorrect ? (
-                    <Badge variant="success" className="flex items-center gap-1">
-                      <CheckCircle className="h-3 w-3" />
-                      Correcto ({Math.round(step.confidenceScore * 100)}%)
-                    </Badge>
-                  ) : (
-                    <Badge variant="destructive" className="flex items-center gap-1">
-                      <XCircle className="h-3 w-3" />
-                      Discrepancia ({Math.round(step.confidenceScore * 100)}%)
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-lg bg-slate-50 p-3 border">
-                    <span className="text-[11px] font-medium text-slate-500 block mb-1">
-                      LaTeX detectado por OCR:
-                    </span>
-                    <MathRenderer math={step.detectedLatex} block className="text-base text-slate-900" />
-                  </div>
-
-                  <div className="rounded-lg bg-slate-50 p-3 border">
-                    <span className="text-[11px] font-medium text-slate-500 block mb-1">
-                      LaTeX esperado (RAG):
-                    </span>
-                    <MathRenderer math={step.expectedLatex} block className="text-base text-slate-900" />
-                  </div>
-                </div>
-
-                <div className="text-xs text-slate-600 bg-slate-50 rounded-md p-2.5 border">
-                  <strong className="text-slate-800">Evaluación del paso: </strong>
-                  {step.feedback}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      {/* Modal de Balance Final */}
+      {summary && (
+        <SessionSummaryModal
+          summary={summary}
+          onRestart={handleStartSession}
+          onChooseOtherTopic={() => {
+            setSummary(null);
+            setIsSessionActive(false);
+          }}
+          onReviewChat={() => setSummary(null)}
+        />
+      )}
     </div>
   );
 };
