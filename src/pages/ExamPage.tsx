@@ -1,18 +1,17 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { FileCheck2, ArrowLeft, Cpu, Database, Settings } from "lucide-react";
+import { FileCheck2, ArrowLeft, Cpu, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockExamProblems } from "@/mocks/quackData";
 import { ExamProblem, MockAuditResult, ExamPhase } from "@/types/exam";
 import { useTimer } from "@/hooks/useTimer";
-import { ocrAuditService, isGeminiActive, subscribeToApiKeyChange } from "@/services/serviceFactory";
+import { ocrAuditService, isGeminiActive, getActiveModel } from "@/services/serviceFactory";
 import { ExamProblemSelector } from "@/components/exam/ExamProblemSelector";
 import { ExamFocusMode } from "@/components/exam/ExamFocusMode";
 import { EvidenceDropzone } from "@/components/exam/EvidenceDropzone";
 import { AuditProgressAnimation } from "@/components/exam/AuditProgressAnimation";
 import { AuditSplitView } from "@/components/exam/AuditSplitView";
-import { ApiKeyModal } from "@/components/common/ApiKeyModal";
 
 export const ExamPage: React.FC = () => {
   const [phase, setPhase] = React.useState<ExamPhase>("SETUP");
@@ -21,16 +20,9 @@ export const ExamPage: React.FC = () => {
   const [rotation, setRotation] = React.useState<number>(0);
   const [isAuditing, setIsAuditing] = React.useState<boolean>(false);
   const [auditResult, setAuditResult] = React.useState<MockAuditResult | null>(null);
-  const [hasGeminiKey, setHasGeminiKey] = React.useState<boolean>(isGeminiActive());
-  const [isKeyModalOpen, setIsKeyModalOpen] = React.useState<boolean>(false);
 
-  // Suscripción reactiva a cambios de API key
-  React.useEffect(() => {
-    const unsub = subscribeToApiKeyChange(() => {
-      setHasGeminiKey(isGeminiActive());
-    });
-    return unsub;
-  }, []);
+  const isOnline = isGeminiActive();
+  const activeModel = getActiveModel();
 
   // Temporizador de examen a libro cerrado
   const examTimer = useTimer({
@@ -92,28 +84,26 @@ export const ExamPage: React.FC = () => {
               Módulo 2: Parcial a Ciegas OCR
             </h1>
 
-            <button
-              type="button"
-              onClick={() => setIsKeyModalOpen(true)}
-              className="focus:outline-none"
-            >
-              {hasGeminiKey ? (
-                <Badge className="border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold text-xs py-1 px-2.5 hover:bg-emerald-100 gap-1.5 transition-colors cursor-pointer shadow-2xs">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <Cpu className="h-3.5 w-3.5 text-emerald-600" />
-                  Gemini 2.0 Flash Vision
-                  <Settings className="h-3 w-3 text-slate-400 ml-0.5" />
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-900 font-medium text-xs py-1 px-2.5 hover:bg-amber-100 gap-1.5 transition-colors cursor-pointer shadow-2xs">
-                  <Database className="h-3.5 w-3.5 text-quack-caramel" />
-                  Auditor Simbólico Mock
-                  <span className="text-[10px] text-quack-caramel font-bold underline">
-                    Conectar IA
-                  </span>
-                </Badge>
-              )}
-            </button>
+            {isOnline ? (
+              <Badge
+                variant="outline"
+                className="border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
+                title={`Motor de Visión: ${activeModel}`}
+              >
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <Cpu className="h-3.5 w-3.5 text-emerald-600" />
+                Online ({activeModel})
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="border-slate-300 bg-slate-50 text-slate-700 font-medium text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
+                title="Modo Mock local activo"
+              >
+                <Database className="h-3.5 w-3.5 text-slate-500" />
+                Modo Mock
+              </Badge>
+            )}
           </div>
           <p className="text-sm text-slate-600 mt-1">
             Simulacro a libro cerrado en papel y lápiz con auditoría de créditos parciales y detección de arrastre de error.
@@ -222,9 +212,6 @@ export const ExamPage: React.FC = () => {
           onReuploadEvidence={() => setPhase("UPLOAD")}
         />
       )}
-
-      {/* Modal para configurar la API Key de Gemini */}
-      <ApiKeyModal isOpen={isKeyModalOpen} onClose={() => setIsKeyModalOpen(false)} />
     </div>
   );
 };

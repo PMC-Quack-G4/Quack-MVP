@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Mic, Sparkles, BookOpen, RotateCcw, Cpu, Database, Settings } from "lucide-react";
+import { ArrowLeft, Mic, BookOpen, RotateCcw, Cpu, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockFeynmanTopics } from "@/mocks/quackData";
@@ -8,14 +8,13 @@ import { FeynmanTopic, ChatMessage, FeynmanSessionSummary } from "@/types/feynma
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { useTimer } from "@/hooks/useTimer";
-import { feynmanService, isGeminiActive, subscribeToApiKeyChange } from "@/services/serviceFactory";
+import { feynmanService, isGeminiActive, getActiveModel } from "@/services/serviceFactory";
 import { ConceptSelector } from "@/components/feynman/ConceptSelector";
 import { PushToTalkButton } from "@/components/feynman/PushToTalkButton";
 import { TranscriptFeed } from "@/components/feynman/TranscriptFeed";
 import { ConceptChecklistCard } from "@/components/feynman/ConceptChecklistCard";
 import { SpeechFallbackInput } from "@/components/feynman/SpeechFallbackInput";
 import { SessionSummaryModal } from "@/components/feynman/SessionSummaryModal";
-import { ApiKeyModal } from "@/components/common/ApiKeyModal";
 
 export const FeynmanDemoPage: React.FC = () => {
   const [selectedTopic, setSelectedTopic] = React.useState<FeynmanTopic>(mockFeynmanTopics[0]);
@@ -25,16 +24,9 @@ export const FeynmanDemoPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = React.useState<boolean>(false);
   const [summary, setSummary] = React.useState<FeynmanSessionSummary | null>(null);
   const [forceTextInput, setForceTextInput] = React.useState<boolean>(false);
-  const [hasGeminiKey, setHasGeminiKey] = React.useState<boolean>(isGeminiActive());
-  const [isKeyModalOpen, setIsKeyModalOpen] = React.useState<boolean>(false);
 
-  // Suscripción reactiva a cambios de API key
-  React.useEffect(() => {
-    const unsub = subscribeToApiKeyChange(() => {
-      setHasGeminiKey(isGeminiActive());
-    });
-    return unsub;
-  }, []);
+  const isOnline = isGeminiActive();
+  const activeModel = getActiveModel();
 
   // Hook de reconocimiento de voz (STT)
   const speechRecognition = useSpeechRecognition("es-ES");
@@ -179,28 +171,26 @@ export const FeynmanDemoPage: React.FC = () => {
               Módulo 1: Feynman Oral (IA Invertida)
             </h1>
 
-            <button
-              type="button"
-              onClick={() => setIsKeyModalOpen(true)}
-              className="focus:outline-none"
-            >
-              {hasGeminiKey ? (
-                <Badge className="border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold text-xs py-1 px-2.5 hover:bg-emerald-100 gap-1.5 transition-colors cursor-pointer shadow-2xs">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <Cpu className="h-3.5 w-3.5 text-emerald-600" />
-                  Gemini 2.0 Flash (IA Real)
-                  <Settings className="h-3 w-3 text-slate-400 ml-0.5" />
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-900 font-medium text-xs py-1 px-2.5 hover:bg-amber-100 gap-1.5 transition-colors cursor-pointer shadow-2xs">
-                  <Database className="h-3.5 w-3.5 text-quack-caramel" />
-                  Simulador Mock (Local)
-                  <span className="text-[10px] text-quack-caramel font-bold underline">
-                    Conectar IA
-                  </span>
-                </Badge>
-              )}
-            </button>
+            {isOnline ? (
+              <Badge
+                variant="outline"
+                className="border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
+                title={`Motor de IA: ${activeModel}`}
+              >
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <Cpu className="h-3.5 w-3.5 text-emerald-600" />
+                Online ({activeModel})
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="border-slate-300 bg-slate-50 text-slate-700 font-medium text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
+                title="Modo Mock local activo"
+              >
+                <Database className="h-3.5 w-3.5 text-slate-500" />
+                Modo Mock
+              </Badge>
+            )}
           </div>
           <p className="text-sm text-slate-600 mt-1">
             Enseña a tu alumna curiosa ("Quack") mediante tu propia voz para erradicar la ilusión de saber.
@@ -233,25 +223,6 @@ export const FeynmanDemoPage: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Banner Informativo si se encuentra en modo Mock */}
-      {!hasGeminiKey && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-amber-50/70 border border-amber-300 text-xs text-amber-950">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-quack-caramel shrink-0" />
-            <span>
-              <strong>Aviso de Modo:</strong> Estás utilizando el simulador local contextual. Para que Quack razone en vivo con el modelo multimodal <strong>Gemini 2.0 Flash</strong> y adapte sus preguntas a cualquier explicación, conecta tu clave gratuita.
-            </span>
-          </div>
-          <Button
-            size="sm"
-            onClick={() => setIsKeyModalOpen(true)}
-            className="bg-quack-amber hover:bg-amber-400 text-quack-gunmetal font-bold text-xs h-8 px-3 rounded-xl shrink-0"
-          >
-            Conectar Gemini AI
-          </Button>
-        </div>
-      )}
 
       {/* Vista de Selección de Tema (Paso 1) */}
       {!isSessionActive ? (
@@ -357,9 +328,6 @@ export const FeynmanDemoPage: React.FC = () => {
           onReviewChat={() => setSummary(null)}
         />
       )}
-
-      {/* Modal de Configuración de API Key */}
-      <ApiKeyModal isOpen={isKeyModalOpen} onClose={() => setIsKeyModalOpen(false)} />
     </div>
   );
 };

@@ -1,24 +1,20 @@
 import { GoogleGenAI } from "@google/genai";
 import { FeynmanTopic, ChatMessage } from "@/types/feynman";
 import { IFeynmanService, FeynmanEvaluationResult } from "./types";
-import { getActiveApiKey } from "./serviceFactory";
-
-// Modelos soportados en Google AI Studio (Free tier)
-const PRIMARY_MODEL = "gemini-2.0-flash";
-const FALLBACK_MODEL = "gemini-1.5-flash";
+import { getActiveModel } from "./serviceFactory";
 
 /**
  * Servicio Feynman conectado a Google Gemini API mediante el SDK oficial @google/genai.
- * Implementa el rol de 'alumna curiosa y despistada' con memoria de diálogo completa multi-turno.
+ * El modelo y la API Key son configurados por el desarrollador en variables de entorno (.env).
  */
 export class GeminiFeynmanService implements IFeynmanService {
   private getClient(): GoogleGenAI | null {
-    const key = getActiveApiKey();
+    const key = (import.meta.env.VITE_GEMINI_API_KEY as string)?.trim();
     if (!key) return null;
     try {
       return new GoogleGenAI({ apiKey: key });
     } catch (err) {
-      console.warn("Error al instanciar GoogleGenAI SDK:", err);
+      console.warn("Error al inicializar GoogleGenAI SDK:", err);
       return null;
     }
   }
@@ -31,7 +27,7 @@ export class GeminiFeynmanService implements IFeynmanService {
   ): Promise<FeynmanEvaluationResult> {
     const client = this.getClient();
     if (!client) {
-      throw new Error("No hay API Key de Gemini configurada.");
+      throw new Error("No hay API Key de Gemini configurada en VITE_GEMINI_API_KEY.");
     }
 
     const subtopicsList = topic.subtopics
@@ -92,12 +88,12 @@ Debes responder exclusivamente en JSON válido:
       ],
     });
 
+    const activeModel = getActiveModel();
     let responseText = "";
 
-    // Intentar con modelo primario (gemini-2.0-flash) y fallback a (gemini-1.5-flash)
     try {
       const response = await client.models.generateContent({
-        model: PRIMARY_MODEL,
+        model: activeModel,
         contents: formattedContents,
         config: {
           systemInstruction,
@@ -107,9 +103,10 @@ Debes responder exclusivamente en JSON válido:
       });
       responseText = response.text || "";
     } catch (primaryErr) {
-      console.warn(`Fallo con ${PRIMARY_MODEL}. Intentando con ${FALLBACK_MODEL}:`, primaryErr);
+      console.warn(`Fallo con el modelo ${activeModel}. Intentando con fallback:`, primaryErr);
+      const fallback = activeModel === "gemini-2.0-flash" ? "gemini-1.5-flash" : "gemini-2.0-flash";
       const fallbackResponse = await client.models.generateContent({
-        model: FALLBACK_MODEL,
+        model: fallback,
         contents: formattedContents,
         config: {
           systemInstruction,

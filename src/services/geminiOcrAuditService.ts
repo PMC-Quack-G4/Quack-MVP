@@ -2,10 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { ExamProblem, MockAuditResult } from "@/types/exam";
 import { IOcrAuditService } from "./types";
 import { mockOcrAuditService } from "./mockOcrAuditService";
-import { getActiveApiKey } from "./serviceFactory";
-
-const PRIMARY_MODEL = "gemini-2.0-flash";
-const FALLBACK_MODEL = "gemini-1.5-flash";
+import { getActiveModel } from "./serviceFactory";
 
 /**
  * Servicio de Auditoría OCR conectado a Google Gemini Flash Vision.
@@ -14,7 +11,7 @@ const FALLBACK_MODEL = "gemini-1.5-flash";
  */
 export class GeminiOcrAuditService implements IOcrAuditService {
   private getClient(): GoogleGenAI | null {
-    const key = getActiveApiKey();
+    const key = (import.meta.env.VITE_GEMINI_API_KEY as string)?.trim();
     if (!key) return null;
     try {
       return new GoogleGenAI({ apiKey: key });
@@ -93,11 +90,12 @@ FORMATO DE SALIDA JSON OBLIGATORIO:
         },
       ];
 
+      const activeModel = getActiveModel();
       let responseText = "";
 
       try {
         const response = await client.models.generateContent({
-          model: PRIMARY_MODEL,
+          model: activeModel,
           contents,
           config: {
             systemInstruction,
@@ -107,9 +105,10 @@ FORMATO DE SALIDA JSON OBLIGATORIO:
         });
         responseText = response.text || "";
       } catch (errPrimary) {
-        console.warn(`Fallo con ${PRIMARY_MODEL} en OCR. Probando con ${FALLBACK_MODEL}:`, errPrimary);
+        console.warn(`Fallo con ${activeModel} en OCR. Probando con fallback:`, errPrimary);
+        const fallback = activeModel === "gemini-2.0-flash" ? "gemini-1.5-flash" : "gemini-2.0-flash";
         const fallbackResponse = await client.models.generateContent({
-          model: FALLBACK_MODEL,
+          model: fallback,
           contents,
           config: {
             systemInstruction,

@@ -7,23 +7,13 @@ import {
   FileCheck2,
   Cpu,
   Database,
-  Settings,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { isGeminiActive, subscribeToApiKeyChange } from "@/services/serviceFactory";
-import { ApiKeyModal } from "@/components/common/ApiKeyModal";
+import { isGeminiActive, getActiveModel } from "@/services/serviceFactory";
 
 export const RootLayout: React.FC = () => {
-  const [hasGeminiApiKey, setHasGeminiApiKey] = React.useState<boolean>(isGeminiActive());
-  const [isKeyModalOpen, setIsKeyModalOpen] = React.useState<boolean>(false);
-
-  React.useEffect(() => {
-    // Suscripción reactiva a cambios de API key
-    const unsubscribe = subscribeToApiKeyChange(() => {
-      setHasGeminiApiKey(isGeminiActive());
-    });
-    return unsubscribe;
-  }, []);
+  const isOnline = isGeminiActive();
+  const activeModel = getActiveModel();
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50/50 text-slate-900">
@@ -92,36 +82,27 @@ export const RootLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Indicador interactivo y configurable de estado de IA */}
-            <button
-              type="button"
-              onClick={() => setIsKeyModalOpen(true)}
-              className="flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-quack-amber rounded-full"
-              title="Configurar motor de IA (Google Gemini)"
-            >
-              {hasGeminiApiKey ? (
-                <Badge
-                  variant="outline"
-                  className="flex items-center gap-1.5 border-emerald-400 bg-emerald-50 text-emerald-800 text-xs py-1 px-2.5 cursor-pointer hover:bg-emerald-100 transition-colors shadow-2xs"
-                >
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <Cpu className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Gemini 2.0 Flash (IA Real)</span>
-                  <Settings className="h-3 w-3 text-slate-400 ml-0.5" />
-                </Badge>
-              ) : (
-                <Badge
-                  variant="outline"
-                  className="flex items-center gap-1.5 border-amber-300 bg-amber-50 text-amber-900 text-xs py-1 px-2.5 cursor-pointer hover:bg-amber-100 transition-colors shadow-2xs"
-                >
-                  <Database className="h-3.5 w-3.5 text-quack-caramel" />
-                  <span>Modo: Mock Local</span>
-                  <span className="text-[10px] text-quack-caramel font-bold underline ml-1">
-                    Conectar IA
-                  </span>
-                </Badge>
-              )}
-            </button>
+            {/* Indicador de estado de IA */}
+            {isOnline ? (
+              <Badge
+                variant="outline"
+                className="flex items-center gap-1.5 border-emerald-400 bg-emerald-50 text-emerald-800 text-xs py-1 px-2.5 shadow-2xs font-medium"
+                title={`Motor en línea: ${activeModel}`}
+              >
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <Cpu className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Online ({activeModel})</span>
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="flex items-center gap-1.5 border-slate-300 bg-slate-50 text-slate-700 text-xs py-1 px-2.5 shadow-2xs font-medium"
+                title="Modo Mock local activo (sin VITE_GEMINI_API_KEY en .env)"
+              >
+                <Database className="h-3.5 w-3.5 text-slate-500" />
+                <span>Modo Mock</span>
+              </Badge>
+            )}
           </div>
         </div>
       </header>
@@ -143,9 +124,6 @@ export const RootLayout: React.FC = () => {
           </p>
         </div>
       </footer>
-
-      {/* Modal para configurar la API Key de Gemini */}
-      <ApiKeyModal isOpen={isKeyModalOpen} onClose={() => setIsKeyModalOpen(false)} />
     </div>
   );
 };
