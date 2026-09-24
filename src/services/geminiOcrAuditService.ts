@@ -2,6 +2,10 @@ import { GoogleGenAI } from "@google/genai";
 import { ExamProblem, MockAuditResult } from "@/types/exam";
 import { IOcrAuditService } from "./types";
 import { mockOcrAuditService } from "./mockOcrAuditService";
+import { getActiveApiKey } from "./serviceFactory";
+
+const PRIMARY_MODEL = "gemini-2.0-flash";
+const FALLBACK_MODEL = "gemini-1.5-flash";
 
 /**
  * Servicio de Auditoría OCR conectado a Google Gemini Flash Vision.
@@ -9,17 +13,14 @@ import { mockOcrAuditService } from "./mockOcrAuditService";
  * Conmuta automáticamente al MockOcrAuditService ante cualquier error o falta de credenciales.
  */
 export class GeminiOcrAuditService implements IOcrAuditService {
-  private client: GoogleGenAI | null = null;
-  private apiKey: string;
-
-  constructor() {
-    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
-    if (this.apiKey) {
-      try {
-        this.client = new GoogleGenAI({ apiKey: this.apiKey });
-      } catch (err) {
-        console.warn("Fallo al inicializar GoogleGenAI SDK para OCR:", err);
-      }
+  private getClient(): GoogleGenAI | null {
+    const key = getActiveApiKey();
+    if (!key) return null;
+    try {
+      return new GoogleGenAI({ apiKey: key });
+    } catch (err) {
+      console.warn("Fallo al inicializar GoogleGenAI SDK para OCR:", err);
+      return null;
     }
   }
 
@@ -27,7 +28,8 @@ export class GeminiOcrAuditService implements IOcrAuditService {
     problem: ExamProblem,
     imageBase64OrUrl: string
   ): Promise<MockAuditResult> {
-    if (!this.client || !this.apiKey || !imageBase64OrUrl.startsWith("data:image")) {
+    const client = this.getClient();
+    if (!client || !imageBase64OrUrl.startsWith("data:image")) {
       return mockOcrAuditService.auditSolution(problem, imageBase64OrUrl);
     }
 
@@ -74,33 +76,56 @@ FORMATO DE SALIDA JSON OBLIGATORIO:
 }
 `;
 
-      const response = await this.client.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                inlineData: {
-                  mimeType,
-                  data: base64Data,
-                },
+      const contents = [
+        {
+          role: "user",
+          parts: [
+            {
+              inlineData: {
+                mimeType,
+                data: base64Data,
               },
-              {
-                text: `Audita esta resolución manuscrita del problema: ${problem.title}`,
-              },
-            ],
-          },
-        ],
-        config: {
-          systemInstruction,
-          responseMimeType: "application/json",
-          temperature: 0.2,
+            },
+            {
+              text: `Audita esta resolución manuscrita del problema: ${problem.title}`,
+            },
+          ],
         },
-      });
+      ];
 
-      const responseText = response.text || "";
-      const parsed: MockAuditResult = JSON.parse(responseText);
+      let responseText = "";
+
+      try {
+        const response = await client.models.generateContent({
+          model: PRIMARY_MODEL,
+          contents,
+          config: {
+            systemInstruction,
+            responseMimeType: "application/json",
+            temperature: 0.2,
+          },
+        });
+        responseText = response.text || "";
+      } catch (errPrimary) {
+        console.warn(`Fallo con ${PRIMARY_MODEL} en OCR. Probando con ${FALLBACK_MODEL}:`, errPrimary);
+        const fallbackResponse = await client.models.generateContent({
+          model: FALLBACK_MODEL,
+          contents,
+          config: {
+            systemInstruction,
+            responseMimeType: "application/json",
+            temperature: 0.2,
+          },
+        });
+        responseText = fallbackResponse.text || "";
+      }
+
+      const cleanedJson = responseText
+        .replace(/```json\s*/gi, "")
+        .replace(/```\s*/g, "")
+        .trim();
+
+      const parsed: MockAuditResult = JSON.parse(cleanedJson);
 
       return {
         finalScore: typeof parsed.finalScore === "number" ? parsed.finalScore : 4.0,
