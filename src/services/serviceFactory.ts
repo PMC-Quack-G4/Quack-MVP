@@ -16,15 +16,15 @@ export function isGeminiActive(): boolean {
 }
 
 /**
- * Obtiene el modelo configurado por el desarrollador en variables de entorno o usa gemini-2.0-flash por defecto.
+ * Obtiene el modelo configurado por el desarrollador en variables de entorno o usa gemini-flash-latest por defecto.
  */
 export function getActiveModel(): string {
-  return (import.meta.env.VITE_GEMINI_MODEL as string)?.trim() || "gemini-2.0-flash";
+  return (import.meta.env.VITE_GEMINI_MODEL as string)?.trim() || "gemini-flash-latest";
 }
 
 /**
  * Adaptador para Feynman Oral:
- * Utiliza Gemini si VITE_GEMINI_API_KEY está configurada en .env, con fallback automático a Mock en caso de error.
+ * Utiliza Gemini si VITE_GEMINI_API_KEY está configurada en .env, con reintentos y fallback a Mock pedagógico.
  */
 class FeynmanServiceAdapter implements IFeynmanService {
   async sendMessage(
@@ -36,9 +36,14 @@ class FeynmanServiceAdapter implements IFeynmanService {
     if (hasApiKey) {
       try {
         return await geminiFeynmanService.sendMessage(topic, history, studentInput, currentCoveredIds);
-      } catch (err) {
-        console.warn("Fallo en GeminiFeynmanService. Conmutando a MockFeynmanService:", err);
-        return await mockFeynmanService.sendMessage(topic, history, studentInput, currentCoveredIds);
+      } catch (err: unknown) {
+        console.warn("Fallo en GeminiFeynmanService tras reintentos. Conmutando a MockFeynmanService:", err);
+        const mockResult = await mockFeynmanService.sendMessage(topic, history, studentInput, currentCoveredIds);
+        return {
+          ...mockResult,
+          engineUsed: "mock",
+          warning: "La API de Gemini experimentó un pico de demanda temporal (503/429). Quack respondió con el evaluador pedagógico local.",
+        };
       }
     }
     return await mockFeynmanService.sendMessage(topic, history, studentInput, currentCoveredIds);

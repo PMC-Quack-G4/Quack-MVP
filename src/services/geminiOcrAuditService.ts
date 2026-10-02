@@ -90,33 +90,34 @@ FORMATO DE SALIDA JSON OBLIGATORIO:
         },
       ];
 
-      const activeModel = getActiveModel();
-      let responseText = "";
+      const primaryModel = getActiveModel();
+      const candidateModels = Array.from(
+        new Set([
+          primaryModel,
+          "gemini-flash-latest",
+          "gemini-3.8-flash",
+          "gemini-3.7-flash",
+          "gemini-3.6-flash",
+          "gemini-3.5-flash",
+        ])
+      ).filter(Boolean);
 
-      try {
-        const response = await client.models.generateContent({
-          model: activeModel,
-          contents,
-          config: {
-            systemInstruction,
-            responseMimeType: "application/json",
-            temperature: 0.2,
-          },
-        });
-        responseText = response.text || "";
-      } catch (errPrimary) {
-        console.warn(`Fallo con ${activeModel} en OCR. Probando con fallback:`, errPrimary);
-        const fallback = activeModel === "gemini-2.0-flash" ? "gemini-1.5-flash" : "gemini-2.0-flash";
-        const fallbackResponse = await client.models.generateContent({
-          model: fallback,
-          contents,
-          config: {
-            systemInstruction,
-            responseMimeType: "application/json",
-            temperature: 0.2,
-          },
-        });
-        responseText = fallbackResponse.text || "";
+      let responseText = "";
+      for (const model of candidateModels) {
+        try {
+          const response = await client.models.generateContent({
+            model,
+            contents,
+            config: {
+              systemInstruction,
+              temperature: 0.2,
+            },
+          });
+          responseText = response.text || "";
+          if (responseText) break;
+        } catch (errModel) {
+          console.warn(`[GeminiOcrAuditService] Falló modelo ${model} en OCR:`, errModel);
+        }
       }
 
       const cleanedJson = responseText

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Mic, BookOpen, RotateCcw, Cpu, Database, Keyboard } from "lucide-react";
+import { ArrowLeft, Mic, BookOpen, RotateCcw, Cpu, Database, Keyboard, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockFeynmanTopics } from "@/mocks/quackData";
@@ -24,8 +24,9 @@ export const FeynmanDemoPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = React.useState<boolean>(false);
   const [summary, setSummary] = React.useState<FeynmanSessionSummary | null>(null);
   const [forceTextInput, setForceTextInput] = React.useState<boolean>(false);
+  const [activeEngine, setActiveEngine] = React.useState<"gemini" | "mock">(isGeminiActive() ? "gemini" : "mock");
+  const [serviceWarning, setServiceWarning] = React.useState<string | null>(null);
 
-  const isOnline = isGeminiActive();
   const activeModel = getActiveModel();
 
   // Hook de reconocimiento de voz (STT)
@@ -42,6 +43,8 @@ export const FeynmanDemoPage: React.FC = () => {
     setCoveredSubtopicIds([]);
     setSummary(null);
     setForceTextInput(false);
+    setServiceWarning(null);
+    setActiveEngine(isGeminiActive() ? "gemini" : "mock");
     sessionTimer.reset();
     sessionTimer.start();
   };
@@ -70,6 +73,12 @@ export const FeynmanDemoPage: React.FC = () => {
         explanationText.trim(),
         coveredSubtopicIds
       );
+
+      // Actualizar motor activo y advertencias si las hay
+      if (result.engineUsed) {
+        setActiveEngine(result.engineUsed);
+      }
+      setServiceWarning(result.warning || null);
 
       // Actualizar subconceptos cubiertos
       if (result.unlockedSubtopicIds.length > 0) {
@@ -172,7 +181,7 @@ export const FeynmanDemoPage: React.FC = () => {
               Módulo 1: Feynman Oral (IA Invertida)
             </h1>
 
-            {isOnline ? (
+            {activeEngine === "gemini" ? (
               <Badge
                 variant="outline"
                 className="border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
@@ -186,10 +195,10 @@ export const FeynmanDemoPage: React.FC = () => {
               <Badge
                 variant="outline"
                 className="border-slate-300 bg-slate-50 text-slate-700 font-medium text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
-                title="Modo Mock local activo"
+                title="Modo pedagógico local activo"
               >
                 <Database className="h-3.5 w-3.5 text-slate-500" />
-                Modo Mock
+                Modo Local
               </Badge>
             )}
           </div>
@@ -292,6 +301,23 @@ export const FeynmanDemoPage: React.FC = () => {
           <div className="grid gap-6 lg:grid-cols-12 items-start">
             {/* Columna Izquierda: Historial de Chat y Botón PTT */}
             <div className="lg:col-span-8 space-y-4">
+              {serviceWarning && (
+                <div className="flex items-center justify-between gap-3 p-3 text-xs bg-amber-50 border border-amber-300 rounded-xl text-amber-900 shadow-2xs animate-fadeIn">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-quack-caramel shrink-0" />
+                    <span>{serviceWarning}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setServiceWarning(null)}
+                    className="text-amber-700 hover:text-amber-900 font-bold px-1.5 py-0.5 rounded text-xs"
+                    aria-label="Cerrar advertencia"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
               <TranscriptFeed
                 messages={messages}
                 isListening={speechRecognition.isListening}

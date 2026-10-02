@@ -6,6 +6,8 @@ export interface FeynmanEvaluationResult {
   unlockedSubtopicIds: string[];
   detectedGaps?: string[];
   masteryProgressPercentage?: number;
+  engineUsed?: "gemini" | "mock";
+  warning?: string;
 }
 
 export interface IFeynmanService {
