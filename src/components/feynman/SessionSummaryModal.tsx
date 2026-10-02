@@ -88,7 +88,7 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
             <div className="space-y-1.5">
               <div className="text-xs font-bold text-emerald-900 flex items-center gap-1.5 uppercase tracking-wide">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                Conceptos Explicados con Éxito ({summary.masteredSubtopics.length}):
+                Conceptos Dominados al 100% ({summary.masteredSubtopics.length}):
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {summary.masteredSubtopics.map((item) => (
@@ -104,12 +104,33 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
             </div>
           )}
 
-          {/* Lagunas detectadas */}
+          {/* Subconceptos con Dominio Parcial (50%) */}
+          {summary.partialSubtopics && summary.partialSubtopics.length > 0 && (
+            <div className="space-y-1.5">
+              <div className="text-xs font-bold text-amber-950 flex items-center gap-1.5 uppercase tracking-wide">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                Dominio Parcial / Intuición Inicial 50% ({summary.partialSubtopics.length}):
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {summary.partialSubtopics.map((item) => (
+                  <Badge
+                    key={item.id}
+                    variant="outline"
+                    className="bg-amber-50 text-amber-900 border-amber-300 text-xs py-1 font-medium"
+                  >
+                    ◐ {item.name} (50%)
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Lagunas detectadas (0%) */}
           {summary.missingSubtopics.length > 0 && (
             <div className="space-y-1.5">
-              <div className="text-xs font-bold text-amber-900 flex items-center gap-1.5 uppercase tracking-wide">
-                <AlertTriangle className="h-4 w-4 text-amber-600" />
-                Lagunas Conceptuales Detectadas ({summary.missingSubtopics.length}):
+              <div className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wide">
+                <AlertTriangle className="h-4 w-4 text-slate-500" />
+                Conceptos No Dominados / Pendientes ({summary.missingSubtopics.length}):
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {summary.missingSubtopics.map((item) => (

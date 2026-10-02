@@ -1,13 +1,15 @@
 import * as React from "react";
-import { CheckCircle2, Circle, Clock, CheckCheck, Award } from "lucide-react";
+import { CheckCircle2, Circle, Clock, CheckCheck, Award, AlertCircle, XCircle, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SubtopicKey } from "@/types/feynman";
+import { SubtopicKey, SubtopicScoreData } from "@/types/feynman";
 
 export interface ConceptChecklistCardProps {
   subtopics: SubtopicKey[];
   coveredIds: string[];
+  subtopicScores?: Record<string, SubtopicScoreData>;
+  activeSubtopicId?: string;
   sessionDuration: string;
   onFinishSession: () => void;
 }
@@ -15,13 +17,27 @@ export interface ConceptChecklistCardProps {
 export const ConceptChecklistCard: React.FC<ConceptChecklistCardProps> = ({
   subtopics,
   coveredIds,
+  subtopicScores,
+  activeSubtopicId,
   sessionDuration,
   onFinishSession,
 }) => {
-  const coveredCount = subtopics.filter((s) => coveredIds.includes(s.id)).length;
   const totalCount = subtopics.length;
-  const progressPercent = totalCount > 0 ? Math.round((coveredCount / totalCount) * 100) : 0;
-  const allMastered = coveredCount === totalCount && totalCount > 0;
+
+  // Cálculo ponderado exacto del porcentaje de dominio (100, 50, 0)
+  const totalScoreSum = subtopics.reduce((acc, s) => {
+    const scoreData = subtopicScores?.[s.id];
+    if (scoreData) {
+      return acc + scoreData.score;
+    }
+    return acc + (coveredIds.includes(s.id) ? 100 : 0);
+  }, 0);
+
+  const progressPercent = totalCount > 0 ? Math.round(totalScoreSum / totalCount) : 0;
+  const masteredCount = subtopics.filter(
+    (s) => subtopicScores?.[s.id]?.status === "mastered" || coveredIds.includes(s.id)
+  ).length;
+  const allMastered = masteredCount === totalCount && totalCount > 0;
 
   return (
     <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden bg-white">
@@ -39,7 +55,7 @@ export const ConceptChecklistCard: React.FC<ConceptChecklistCardProps> = ({
           Subconceptos Clave a Explicar
         </CardTitle>
         <CardDescription className="text-xs text-slate-500">
-          Quack marca los conceptos dominados cuando los verbalizas con claridad.
+          Máximo 3 intentos por subtema. Quack avanza automáticamente para evitar estancamientos.
         </CardDescription>
 
         {/* Barra de progreso de dominio */}
@@ -47,7 +63,7 @@ export const ConceptChecklistCard: React.FC<ConceptChecklistCardProps> = ({
           <div className="flex justify-between text-xs font-semibold">
             <span className="text-slate-600">Dominio Alcanzado:</span>
             <span className={allMastered ? "text-emerald-600 font-bold" : "text-quack-caramel"}>
-              {progressPercent}% ({coveredCount}/{totalCount})
+              {progressPercent}% ({masteredCount}/{totalCount} dominados)
             </span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
@@ -55,7 +71,7 @@ export const ConceptChecklistCard: React.FC<ConceptChecklistCardProps> = ({
               className={`h-full transition-all duration-500 rounded-full ${
                 allMastered
                   ? "bg-emerald-500"
-                  : progressPercent > 50
+                  : progressPercent >= 50
                   ? "bg-gradient-to-r from-quack-amber to-emerald-500"
                   : "bg-gradient-to-r from-quack-sandy to-quack-amber"
               }`}
@@ -67,35 +83,94 @@ export const ConceptChecklistCard: React.FC<ConceptChecklistCardProps> = ({
 
       <CardContent className="p-4 space-y-3">
         {subtopics.map((subtopic) => {
-          const isCovered = coveredIds.includes(subtopic.id);
+          const scoreData = subtopicScores?.[subtopic.id];
+          const isMastered = scoreData?.status === "mastered" || coveredIds.includes(subtopic.id);
+          const isPartial = scoreData?.status === "partial";
+          const isFailed = scoreData?.status === "failed";
+          const isEvaluating =
+            !isMastered &&
+            !isPartial &&
+            !isFailed &&
+            (subtopic.id === activeSubtopicId || scoreData?.status === "evaluating");
+          const attempts = scoreData?.attempts || 0;
 
           return (
             <div
               key={subtopic.id}
               className={`p-3 rounded-xl border transition-all duration-200 ${
-                isCovered
-                  ? "border-emerald-200 bg-emerald-50/40 text-emerald-950"
+                isMastered
+                  ? "border-emerald-200 bg-emerald-50/40 text-emerald-950 shadow-2xs"
+                  : isPartial
+                  ? "border-amber-300 bg-amber-50/50 text-amber-950 shadow-2xs"
+                  : isFailed
+                  ? "border-slate-300 bg-slate-100/60 text-slate-700"
+                  : isEvaluating
+                  ? "border-amber-400 bg-amber-50/60 text-quack-gunmetal ring-2 ring-quack-amber/30"
                   : "border-slate-200 bg-slate-50/40 text-slate-700"
               }`}
             >
               <div className="flex items-start gap-2.5">
-                {isCovered ? (
+                {isMastered ? (
                   <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                ) : isPartial ? (
+                  <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                ) : isFailed ? (
+                  <XCircle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
+                ) : isEvaluating ? (
+                  <Sparkles className="h-4 w-4 text-quack-caramel shrink-0 mt-0.5 animate-pulse" />
                 ) : (
-                  <Circle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                  <Circle className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
                 )}
 
                 <div className="space-y-1 flex-1">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className={`text-xs font-bold ${isCovered ? "text-emerald-900" : "text-slate-800"}`}>
+                  <div className="flex items-center justify-between gap-1 flex-wrap">
+                    <span
+                      className={`text-xs font-bold ${
+                        isMastered
+                          ? "text-emerald-900"
+                          : isPartial
+                          ? "text-amber-950"
+                          : isEvaluating
+                          ? "text-quack-gunmetal"
+                          : "text-slate-800"
+                      }`}
+                    >
                       {subtopic.name}
                     </span>
-                    {isCovered ? (
-                      <Badge variant="outline" className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px] py-0 px-1.5 h-4">
-                        Cubierto
+
+                    {isMastered ? (
+                      <Badge
+                        variant="outline"
+                        className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px] py-0 px-1.5 h-4"
+                      >
+                        Dominado (100%)
+                      </Badge>
+                    ) : isPartial ? (
+                      <Badge
+                        variant="outline"
+                        className="bg-amber-100 text-amber-900 border-amber-300 text-[10px] py-0 px-1.5 h-4 font-semibold"
+                      >
+                        Parcial (50%)
+                      </Badge>
+                    ) : isFailed ? (
+                      <Badge
+                        variant="outline"
+                        className="bg-slate-200 text-slate-700 border-slate-300 text-[10px] py-0 px-1.5 h-4"
+                      >
+                        0% Dominio
+                      </Badge>
+                    ) : isEvaluating ? (
+                      <Badge
+                        variant="outline"
+                        className="bg-quack-amber text-quack-gunmetal border-amber-400 text-[10px] py-0 px-1.5 h-4 font-bold animate-pulse"
+                      >
+                        Evaluando ({Math.min(attempts + 1, 3)}/3)
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 text-[10px] py-0 px-1.5 h-4">
+                      <Badge
+                        variant="outline"
+                        className="bg-slate-100 text-slate-600 border-slate-300 text-[10px] py-0 px-1.5 h-4"
+                      >
                         Pendiente
                       </Badge>
                     )}

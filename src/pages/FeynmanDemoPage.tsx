@@ -4,7 +4,7 @@ import { ArrowLeft, Mic, BookOpen, RotateCcw, Cpu, Database, Keyboard, AlertCirc
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockFeynmanTopics } from "@/mocks/quackData";
-import { FeynmanTopic, ChatMessage, FeynmanSessionSummary } from "@/types/feynman";
+import { FeynmanTopic, ChatMessage, FeynmanSessionSummary, SubtopicScoreData } from "@/types/feynman";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { useTimer } from "@/hooks/useTimer";
@@ -26,6 +26,8 @@ export const FeynmanDemoPage: React.FC = () => {
   const [forceTextInput, setForceTextInput] = React.useState<boolean>(false);
   const [activeEngine, setActiveEngine] = React.useState<"gemini" | "mock">(isGeminiActive() ? "gemini" : "mock");
   const [serviceWarning, setServiceWarning] = React.useState<string | null>(null);
+  const [subtopicScores, setSubtopicScores] = React.useState<Record<string, SubtopicScoreData>>({});
+  const [activeSubtopicId, setActiveSubtopicId] = React.useState<string>(mockFeynmanTopics[0].subtopics[0].id);
 
   const activeModel = getActiveModel();
 
@@ -47,6 +49,18 @@ export const FeynmanDemoPage: React.FC = () => {
     setActiveEngine(isGeminiActive() ? "gemini" : "mock");
     sessionTimer.reset();
     sessionTimer.start();
+
+    const initialScores: Record<string, SubtopicScoreData> = {};
+    selectedTopic.subtopics.forEach((s, idx) => {
+      initialScores[s.id] = {
+        subtopicId: s.id,
+        status: idx === 0 ? "evaluating" : "pending",
+        score: 0,
+        attempts: 0,
+      };
+    });
+    setSubtopicScores(initialScores);
+    setActiveSubtopicId(selectedTopic.subtopics[0]?.id || "");
   };
 
   // Enviar mensaje del estudiante a Quack (vía voz o fallback de texto)
@@ -67,11 +81,25 @@ export const FeynmanDemoPage: React.FC = () => {
     setIsProcessing(true);
 
     try {
+      // Incrementar intentos en el subconcepto evaluado actualmente
+      const currentAttempts = (subtopicScores[activeSubtopicId]?.attempts || 0) + 1;
+      const updatedScores: Record<string, SubtopicScoreData> = {
+        ...subtopicScores,
+        [activeSubtopicId]: {
+          subtopicId: activeSubtopicId,
+          status: subtopicScores[activeSubtopicId]?.status || "evaluating",
+          score: subtopicScores[activeSubtopicId]?.score || 0,
+          attempts: currentAttempts,
+        },
+      };
+
       const result = await feynmanService.sendMessage(
         selectedTopic,
         newHistory,
         explanationText.trim(),
-        coveredSubtopicIds
+        coveredSubtopicIds,
+        updatedScores,
+        activeSubtopicId
       );
 
       // Actualizar motor activo y advertencias si las hay
@@ -80,10 +108,99 @@ export const FeynmanDemoPage: React.FC = () => {
       }
       setServiceWarning(result.warning || null);
 
-      // Actualizar subconceptos cubiertos
+      // Integrar resultados de desbloqueo, parciales y fallidos
+      const nextScores: Record<string, SubtopicScoreData> = { ...updatedScores };
+
+      // 1. Dominados al 100% (admite desbloqueo simultáneo múltiple)
       if (result.unlockedSubtopicIds.length > 0) {
-        setCoveredSubtopicIds((prev) => Array.from(new Set([...prev, ...result.unlockedSubtopicIds])));
+        result.unlockedSubtopicIds.forEach((id) => {
+          nextScores[id] = {
+            subtopicId: id,
+            status: "mastered",
+            score: 100,
+            attempts: id === activeSubtopicId ? currentAttempts : (nextScores[id]?.attempts || 1),
+          };
+        });
       }
+
+      // 2. Dominio Parcial al 50%
+      if (result.partialSubtopicIds && result.partialSubtopicIds.length > 0) {
+        result.partialSubtopicIds.forEach((id) => {
+          if (!result.unlockedSubtopicIds.includes(id)) {
+            nextScores[id] = {
+              subtopicId: id,
+              status: "partial",
+              score: 50,
+              attempts: id === activeSubtopicId ? currentAttempts : (nextScores[id]?.attempts || 1),
+            };
+          }
+        });
+      }
+
+      // 3. Fallidos al 0% (tras 3 intentos)
+      if (result.failedSubtopicIds && result.failedSubtopicIds.length > 0) {
+        result.failedSubtopicIds.forEach((id) => {
+          if (
+            !result.unlockedSubtopicIds.includes(id) &&
+            (!result.partialSubtopicIds || !result.partialSubtopicIds.includes(id))
+          ) {
+            nextScores[id] = {
+              subtopicId: id,
+              status: "failed",
+              score: 0,
+              attempts: id === activeSubtopicId ? Math.max(currentAttempts, 3) : 3,
+            };
+          }
+        });
+      }
+
+      // 4. Si el subtema activo actual llegó a 3 intentos y no fue marcado explícitamente
+      if (
+        currentAttempts >= 3 &&
+        nextScores[activeSubtopicId]?.status === "evaluating" &&
+        !result.unlockedSubtopicIds.includes(activeSubtopicId) &&
+        (!result.partialSubtopicIds || !result.partialSubtopicIds.includes(activeSubtopicId)) &&
+        (!result.failedSubtopicIds || !result.failedSubtopicIds.includes(activeSubtopicId))
+      ) {
+        nextScores[activeSubtopicId] = {
+          subtopicId: activeSubtopicId,
+          status: "failed",
+          score: 0,
+          attempts: 3,
+        };
+      }
+
+      // Actualizar lista de cubiertos (mastered)
+      const newCoveredIds = Array.from(
+        new Set([
+          ...coveredSubtopicIds,
+          ...result.unlockedSubtopicIds,
+        ])
+      );
+      setCoveredSubtopicIds(newCoveredIds);
+
+      // Determinar próximo subtema activo
+      let nextActiveId = result.nextActiveSubtopicId;
+      const currentStatus = nextScores[activeSubtopicId]?.status;
+      const isActiveDone =
+        currentStatus === "mastered" || currentStatus === "partial" || currentStatus === "failed";
+
+      if (!nextActiveId && isActiveDone) {
+        const nextPending = selectedTopic.subtopics.find((s) => {
+          const st = nextScores[s.id]?.status;
+          return st !== "mastered" && st !== "partial" && st !== "failed";
+        });
+        nextActiveId = nextPending?.id;
+      }
+
+      if (nextActiveId) {
+        setActiveSubtopicId(nextActiveId);
+        if (nextScores[nextActiveId]?.status === "pending") {
+          nextScores[nextActiveId].status = "evaluating";
+        }
+      }
+
+      setSubtopicScores(nextScores);
 
       const quackMsgId = `quack-${Date.now()}`;
       const quackMessage: ChatMessage = {
@@ -98,6 +215,18 @@ export const FeynmanDemoPage: React.FC = () => {
 
       // Reproducción automática de voz mediante Web Speech Synthesis
       speechSynthesis.speak(result.reply, quackMsgId);
+
+      // Verificar si todos los subtemas han sido concluidos (100% de items evaluados)
+      const allEvaluated = selectedTopic.subtopics.every((s) => {
+        const st = nextScores[s.id]?.status;
+        return st === "mastered" || st === "partial" || st === "failed";
+      });
+
+      if (result.isSessionFinished || allEvaluated) {
+        setTimeout(() => {
+          handleFinishSession(nextScores);
+        }, 1500);
+      }
     } catch (err) {
       console.warn("Error al procesar mensaje con Quack:", err);
     } finally {
@@ -126,16 +255,31 @@ export const FeynmanDemoPage: React.FC = () => {
   };
 
   // Finalizar sesión y generar balance
-  const handleFinishSession = () => {
+  const handleFinishSession = (customScores?: Record<string, SubtopicScoreData>) => {
     sessionTimer.pause();
     speechSynthesis.stop();
 
-    const covered = selectedTopic.subtopics.filter((s) => coveredSubtopicIds.includes(s.id));
-    const missing = selectedTopic.subtopics.filter((s) => !coveredSubtopicIds.includes(s.id));
-    const percentage =
-      selectedTopic.subtopics.length > 0
-        ? Math.round((covered.length / selectedTopic.subtopics.length) * 100)
-        : 100;
+    const scoresToUse = customScores || subtopicScores;
+
+    const mastered = selectedTopic.subtopics.filter(
+      (s) => scoresToUse[s.id]?.status === "mastered" || coveredSubtopicIds.includes(s.id)
+    );
+    const partial = selectedTopic.subtopics.filter(
+      (s) => scoresToUse[s.id]?.status === "partial"
+    );
+    const missing = selectedTopic.subtopics.filter(
+      (s) => !mastered.some((m) => m.id === s.id) && !partial.some((p) => p.id === s.id)
+    );
+
+    const totalCount = selectedTopic.subtopics.length;
+    const totalScoreSum = selectedTopic.subtopics.reduce((acc, s) => {
+      const itemScore = scoresToUse[s.id]?.score;
+      if (typeof itemScore === "number") return acc + itemScore;
+      if (coveredSubtopicIds.includes(s.id)) return acc + 100;
+      return acc;
+    }, 0);
+
+    const percentage = totalCount > 0 ? Math.round(totalScoreSum / totalCount) : 100;
 
     let advice = "";
     if (percentage === 100) {
@@ -155,7 +299,8 @@ export const FeynmanDemoPage: React.FC = () => {
       topicTitle: selectedTopic.title,
       durationSeconds: sessionTimer.seconds,
       totalExplanations: messages.filter((m) => m.sender === "student").length,
-      masteredSubtopics: covered,
+      masteredSubtopics: mastered,
+      partialSubtopics: partial,
       missingSubtopics: missing,
       masteryPercentage: percentage,
       pedagogicalAdvice: advice,
@@ -240,7 +385,10 @@ export const FeynmanDemoPage: React.FC = () => {
         <ConceptSelector
           topics={mockFeynmanTopics}
           selectedTopicId={selectedTopic.id}
-          onSelectTopic={(topic) => setSelectedTopic(topic)}
+          onSelectTopic={(topic) => {
+            setSelectedTopic(topic);
+            setActiveSubtopicId(topic.subtopics[0]?.id || "");
+          }}
           onStartSession={handleStartSession}
         />
       ) : (
@@ -327,6 +475,7 @@ export const FeynmanDemoPage: React.FC = () => {
                 onPlayAudio={(text, id) => speechSynthesis.speak(text, id)}
                 onStopAudio={() => speechSynthesis.stop()}
                 initialTopicName={selectedTopic.title}
+                isProcessing={isProcessing}
               />
 
               {/* Controles de Entrada (PTT por defecto o Opción de Texto) */}
@@ -363,6 +512,8 @@ export const FeynmanDemoPage: React.FC = () => {
               <ConceptChecklistCard
                 subtopics={selectedTopic.subtopics}
                 coveredIds={coveredSubtopicIds}
+                subtopicScores={subtopicScores}
+                activeSubtopicId={activeSubtopicId}
                 sessionDuration={sessionTimer.formattedTime}
                 onFinishSession={handleFinishSession}
               />

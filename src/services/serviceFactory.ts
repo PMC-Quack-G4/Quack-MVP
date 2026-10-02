@@ -31,14 +31,30 @@ class FeynmanServiceAdapter implements IFeynmanService {
     topic: FeynmanTopic,
     history: ChatMessage[],
     studentInput: string,
-    currentCoveredIds: string[]
+    currentCoveredIds: string[],
+    subtopicScores?: Record<string, SubtopicScoreData>,
+    activeSubtopicId?: string
   ): Promise<FeynmanEvaluationResult> {
     if (hasApiKey) {
       try {
-        return await geminiFeynmanService.sendMessage(topic, history, studentInput, currentCoveredIds);
+        return await geminiFeynmanService.sendMessage(
+          topic,
+          history,
+          studentInput,
+          currentCoveredIds,
+          subtopicScores,
+          activeSubtopicId
+        );
       } catch (err: unknown) {
         console.warn("Fallo en GeminiFeynmanService tras reintentos. Conmutando a MockFeynmanService:", err);
-        const mockResult = await mockFeynmanService.sendMessage(topic, history, studentInput, currentCoveredIds);
+        const mockResult = await mockFeynmanService.sendMessage(
+          topic,
+          history,
+          studentInput,
+          currentCoveredIds,
+          subtopicScores,
+          activeSubtopicId
+        );
         return {
           ...mockResult,
           engineUsed: "mock",
@@ -46,7 +62,14 @@ class FeynmanServiceAdapter implements IFeynmanService {
         };
       }
     }
-    return await mockFeynmanService.sendMessage(topic, history, studentInput, currentCoveredIds);
+    return await mockFeynmanService.sendMessage(
+      topic,
+      history,
+      studentInput,
+      currentCoveredIds,
+      subtopicScores,
+      activeSubtopicId
+    );
   }
 }
 

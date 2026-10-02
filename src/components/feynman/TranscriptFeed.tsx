@@ -13,6 +13,7 @@ export interface TranscriptFeedProps {
   onPlayAudio: (text: string, id: string) => void;
   onStopAudio: () => void;
   initialTopicName: string;
+  isProcessing?: boolean;
 }
 
 export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
@@ -24,12 +25,13 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
   onPlayAudio,
   onStopAudio,
   initialTopicName,
+  isProcessing = false,
 }) => {
   const bottomRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, interimTranscript, isListening]);
+  }, [messages, interimTranscript, isListening, isProcessing]);
 
   // Helper para renderizar texto que pueda contener bloques LaTeX inline estilo $f(x)$ o $$f(x)$$
   const renderMessageContent = (text: string) => {
@@ -166,6 +168,31 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
               <p className="italic text-slate-100 min-h-[20px]">
                 {interimTranscript || "Habla con claridad..."}
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Burbuja animada de Quack pensando / escribiendo */}
+        {isProcessing && (
+          <div className="flex gap-3 items-start max-w-[85%] sm:max-w-[75%] animate-fadeIn">
+            <div className="h-9 w-9 rounded-full bg-quack-dandelion border border-quack-amber flex items-center justify-center p-1 shrink-0 shadow-sm animate-pulse">
+              <img src="/brand/quack-logo.png" alt="Quack Avatar" className="h-7 w-7 object-contain" />
+            </div>
+            <div className="rounded-2xl rounded-tl-sm bg-white border border-amber-200/90 p-3.5 shadow-sm text-sm space-y-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-brand font-bold text-quack-gunmetal">
+                <Sparkles className="h-3 w-3 text-quack-caramel" />
+                Quack está reflexionando...
+              </div>
+              <div className="flex items-center gap-2 py-0.5">
+                <div className="flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-quack-amber animate-bounce [animation-delay:-0.3s]" />
+                  <span className="h-2 w-2 rounded-full bg-quack-sandy animate-bounce [animation-delay:-0.15s]" />
+                  <span className="h-2 w-2 rounded-full bg-quack-caramel animate-bounce" />
+                </div>
+                <span className="text-xs text-slate-500 italic">
+                  Analizando tu explicación...
+                </span>
+              </div>
             </div>
           </div>
         )}

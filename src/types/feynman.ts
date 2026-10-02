@@ -35,12 +35,22 @@ export interface ChatMessage {
   audioId?: string;
 }
 
+export type SubtopicMasteryStatus = "pending" | "evaluating" | "mastered" | "partial" | "failed";
+
+export interface SubtopicScoreData {
+  subtopicId: string;
+  status: SubtopicMasteryStatus;
+  score: number;
+  attempts: number;
+}
+
 export interface FeynmanSessionSummary {
   topicId: string;
   topicTitle: string;
   durationSeconds: number;
   totalExplanations: number;
   masteredSubtopics: SubtopicKey[];
+  partialSubtopics?: SubtopicKey[];
   missingSubtopics: SubtopicKey[];
   masteryPercentage: number;
   pedagogicalAdvice: string;

@@ -1,4 +1,4 @@
-import { FeynmanTopic, ChatMessage } from "@/types/feynman";
+import { FeynmanTopic, ChatMessage, SubtopicScoreData } from "@/types/feynman";
 import { IFeynmanService, FeynmanEvaluationResult } from "./types";
 
 interface MisconceptionRule {
@@ -11,7 +11,8 @@ interface SocraticSubtopicValidation {
   name: string;
   question: string;
   acknowledgment: string;
-  requiredConcepts: string[][]; // Cada grupo debe tener al menos una coincidencia
+  requiredConcepts: string[][]; // Cada grupo debe tener al menos una coincidencia para maestría (100%)
+  partialConcepts?: string[];   // Conceptos que evidencian intuición parcial (50%)
 }
 
 // Reglas pedagógicas de detección de errores comunes por tema
@@ -26,9 +27,10 @@ const TOPIC_MISCONCEPTIONS: Record<string, MisconceptionRule[]> = {
         "no necesita fuerza",
         "sin necesidad de fuerza",
         "sin necesidad de fuerzas",
+        "fuerza de voluntad",
       ],
       reply:
-        "¡Espera profe, me dejaste súper confundida! Si los objetos se movieran solos sin fuerzas, ¿por qué tengo que empujar un mueble pesado para moverlo? ¿No decía Newton que la fuerza neta es justamente lo que cambia el movimiento?",
+        "¡Espera profe, me explotó la cabeza! Si los objetos se mueven solos sin fuerzas, ¿por qué tengo que empujar un auto cuando se queda sin batería? ¿No decía Newton que la fuerza neta es lo que causa aceleración?",
     },
     {
       patterns: [
@@ -39,9 +41,10 @@ const TOPIC_MISCONCEPTIONS: Record<string, MisconceptionRule[]> = {
         "combustible sigue pesando",
         "combustible no cambia",
         "pesando lo mismo",
+        "no sabia multiplicar",
       ],
       reply:
-        "¡Espera un momento profe! ¿Cómo que la masa de un cohete no cambia mientras vuela? ¡Pero si va expulsando y quemando toneladas de combustible cada segundo! Si la masa varía con el tiempo, ¿de verdad da lo mismo usar F = m·a que dp/dt?",
+        "¡Pero profe, cómo va a decir que Newton no sabía multiplicar si inventó el cálculo! Y si un cohete quema toneladas de combustible, ¿cómo no va a perder masa y volverse más liviano mientras sube?",
     },
     {
       patterns: [
@@ -50,9 +53,11 @@ const TOPIC_MISCONCEPTIONS: Record<string, MisconceptionRule[]> = {
         "se conservan solo al frenar",
         "al detenerse de repente",
         "cuando las cosas se detienen",
+        "se transforma en calor",
+        "momentum es lo mismo que la energia",
       ],
       reply:
-        "¡Ay profe! Pero si algo se frena de golpe, ¿su velocidad y su momentum no se van a cero? ¿Cómo se va a conservar el momentum solo al detenerse? ¿No dependía más bien de que no hubiera fuerzas externas netas sobre el sistema?",
+        "¡Ay profe! ¿No está confundiendo el momentum con la energía al decir que se transforma en calor? Si algo frena hasta detenerse, ¿su velocidad y su momentum no se hacen cero en lugar de conservarse?",
     },
     {
       patterns: [
@@ -69,7 +74,7 @@ const TOPIC_MISCONCEPTIONS: Record<string, MisconceptionRule[]> = {
     {
       patterns: ["numero fijo", "no es una funcion", "no cambia", "solo un numero"],
       reply:
-        "¡Espera profe! Pero si el límite superior es x y esa frontera se va moviendo hacia la derecha, ¿el área bajo la curva no va creciendo o cambiando en función de x? ¿Por qué sería un número fijo?",
+        "¡Espera profe! Pero si el límite superior es x y esa frontera se va moviendo, ¿el área bajo la curva no va creciendo en función de x? ¿Por qué sería un número fijo?",
     },
     {
       patterns: [
@@ -91,14 +96,14 @@ const TOPIC_MISCONCEPTIONS: Record<string, MisconceptionRule[]> = {
         "sumando los otros da independiente",
       ],
       reply:
-        "¡Espera profe! Si un vector se puede armar sumando los múltiplos de los otros dos, ¿no significa que es redundante y por lo tanto dependiente? ¿Cómo va a ser independiente si no aporta una dirección nueva?",
+        "¡Espera profe! Si un vector se puede armar sumando los múltiplos de los otros dos, ¿no significa que es redundante y por lo tanto dependiente?",
     },
   ],
   "edo-separables": [
     {
       patterns: ["sumar en vez de multiplicar", "fraccion comun", "da igual separar"],
       reply:
-        "¡Espera profe! Si en dy/dx las variables x e y están sumadas como x + y en vez de multiplicadas, ¿cómo las pasas dividiendo a lados contrarios sin mezclar diferenciales? ¿No deben ser factorizables como producto g(x)*h(y)?",
+        "¡Espera profe! Si en dy/dx las variables x e y están sumadas como x + y en vez de multiplicadas, ¿cómo las pasas dividiendo sin mezclar diferenciales? ¿No deben ser factorizables como producto g(x)*h(y)?",
     },
   ],
 };
@@ -117,6 +122,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["resistencia", "inercia", "oponerse", "cuesta mover"],
         ["peso", "gravedad", "fuerza gravitacional", "planeta", "luna", "atraccion"],
       ],
+      partialConcepts: ["masa", "inercia", "fuerza", "kilogramos", "peso"],
     },
     {
       subtopicId: "diferencial",
@@ -129,6 +135,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["dp/dt", "derivada", "cambio de momentum", "producto", "regla del producto"],
         ["varia", "variable", "cambia con el tiempo", "dm/dt", "cohete", "combustible", "constante"],
       ],
+      partialConcepts: ["derivada", "cambio", "dp", "dt", "cohete", "tiempo"],
     },
     {
       subtopicId: "impulso",
@@ -141,6 +148,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["impulso", "j", "area"],
         ["integral", "tiempo", "delta p", "variacion de momentum", "cambio de velocidad"],
       ],
+      partialConcepts: ["impulso", "fuerza", "tiempo", "integral", "choque"],
     },
     {
       subtopicId: "conservacion",
@@ -153,6 +161,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["aislado", "externas", "fuerza externa", "neta cero", "sin friccion"],
         ["conserva", "constante", "igual", "mismo momentum", "cero"],
       ],
+      partialConcepts: ["sistema", "aislado", "conserva", "choque", "externa"],
     },
   ],
   "calculo-ftc": [
@@ -167,6 +176,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["acumula", "acumulada", "movil", "cambia", "frontera"],
         ["funcion", "limite", "x", "limite superior"],
       ],
+      partialConcepts: ["area", "acumulada", "limite", "x"],
     },
     {
       subtopicId: "relacion-inversa",
@@ -179,6 +189,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["inversa", "anulan", "operacion inversa", "rectangulo", "altura"],
         ["f(x)", "derivada", "tasa de cambio"],
       ],
+      partialConcepts: ["inversa", "anulan", "derivada", "rectangulo"],
     },
     {
       subtopicId: "regla-barrow",
@@ -191,6 +202,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["barrow", "antiderivada", "primitiva"],
         ["f(b) - f(a)", "extremos", "limites", "resta"],
       ],
+      partialConcepts: ["antiderivada", "barrow", "extremos"],
     },
     {
       subtopicId: "continuidad",
@@ -203,6 +215,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["continua", "continuidad"],
         ["intervalo", "cerrado", "asintota", "salto", "discontinuidad"],
       ],
+      partialConcepts: ["continua", "asintota", "salto"],
     },
   ],
   "algebra-espacios": [
@@ -217,6 +230,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["escalar", "multiplicar", "ponderar"],
         ["sumar", "vectores", "espacio"],
       ],
+      partialConcepts: ["escalar", "sumar", "vector"],
     },
     {
       subtopicId: "independencia",
@@ -229,6 +243,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["independiente", "redundante", "sobra", "combinacion"],
         ["cero", "trivial", "coeficiente"],
       ],
+      partialConcepts: ["independiente", "redundante", "cero"],
     },
     {
       subtopicId: "generador",
@@ -241,6 +256,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["span", "generador", "alcanzar", "cubrir"],
         ["espacio", "diferencia"],
       ],
+      partialConcepts: ["span", "generador", "espacio"],
     },
     {
       subtopicId: "base-dimension",
@@ -253,6 +269,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["base", "dimension"],
         ["minimo", "coordenadas", "r3", "independiente"],
       ],
+      partialConcepts: ["base", "dimension", "coordenadas"],
     },
   ],
   "edo-separables": [
@@ -267,6 +284,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["factorizar", "producto", "multiplicar"],
         ["x", "y", "g(x)", "h(y)"],
       ],
+      partialConcepts: ["factorizar", "producto", "g(x)"],
     },
     {
       subtopicId: "separacion-algebraica",
@@ -279,6 +297,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["diferencial", "dx", "dy"],
         ["sustitucion", "lados", "fraccion", "separar"],
       ],
+      partialConcepts: ["diferencial", "dx", "dy"],
     },
     {
       subtopicId: "integracion-ambos",
@@ -291,6 +310,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["constante", "c", "arbitraria"],
         ["agrupar", "ambos lados", "restar", "una sola"],
       ],
+      partialConcepts: ["constante", "c", "ambos lados"],
     },
     {
       subtopicId: "constante-solucion",
@@ -303,24 +323,23 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
         ["inicial", "particular", "general"],
         ["valor", "fijar", "despejar", "c"],
       ],
+      partialConcepts: ["inicial", "particular", "c"],
     },
   ],
 };
 
 /**
- * Servicio Mock Inteligente y Riguroso para Feynman Oral.
- * - Detecta falacias, errores físicos y afirmaciones absurdas mostrando perplejidad socrática.
- * - NUNCA desbloquea subconceptos ante respuestas erróneas o insuficientes.
- * - Solo otorga progreso cuando el estudiante explica con conceptos físicos válidos.
+ * Servicio Mock Inteligente con control de 3 intentos y avance automático.
  */
 export class MockFeynmanService implements IFeynmanService {
   async sendMessage(
     topic: FeynmanTopic,
     history: ChatMessage[],
     studentInput: string,
-    currentCoveredIds: string[]
+    currentCoveredIds: string[],
+    subtopicScores?: Record<string, SubtopicScoreData>,
+    activeSubtopicId?: string
   ): Promise<FeynmanEvaluationResult> {
-    // Simular un tiempo breve de reflexión natural
     await new Promise((res) => setTimeout(res, 500));
 
     const normalizedInput = studentInput
@@ -328,98 +347,130 @@ export class MockFeynmanService implements IFeynmanService {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
 
-    // 1. PASO CRÍTICO: DETECTAR ERRORES O FALACIAS CONCEPTUALES
-    const topicMisconceptions = TOPIC_MISCONCEPTIONS[topic.id] || [];
-    for (const rule of topicMisconceptions) {
-      const matchesMisconception = rule.patterns.some((pattern) => {
-        const normPattern = pattern
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "");
-        return normalizedInput.includes(normPattern);
-      });
-
-      if (matchesMisconception) {
-        // Encontró una falacia: Quack muestra confusión y NO DESBLOQUEA NADA
-        const allCovered = currentCoveredIds;
-        const progress = Math.round((allCovered.length / topic.subtopics.length) * 100);
-        return {
-          reply: rule.reply,
-          unlockedSubtopicIds: [],
-          detectedGaps: topic.subtopics.filter((s) => !allCovered.includes(s.id)).map((s) => s.name),
-          masteryProgressPercentage: progress,
-          engineUsed: "mock",
-        };
-      }
-    }
-
-    // 2. EVALUAR SI EL ESTUDIANTE EXPLICÓ CORRECTAMENTE ALGÚN SUBCONCEPTO PENDIENTE
     const validations = TOPIC_VALIDATIONS[topic.id] || [];
-    const newUnlockedIds: string[] = [];
-    let acknowledgment = "";
 
-    // Evaluar primero el subconcepto correspondiente a la última pregunta formulada por Quack
-    const lastQuackMessage = [...history].reverse().find((m) => m.sender === "quack");
-    let activeValidation: SocraticSubtopicValidation | undefined;
+    // Determinar subconcepto activo
+    const currentActive =
+      activeSubtopicId ||
+      topic.subtopics.find(
+        (s) =>
+          !currentCoveredIds.includes(s.id) &&
+          subtopicScores?.[s.id]?.status !== "failed" &&
+          subtopicScores?.[s.id]?.status !== "partial"
+      )?.id ||
+      topic.subtopics[0].id;
 
-    if (lastQuackMessage) {
-      activeValidation = validations.find((v) =>
-        lastQuackMessage.text.toLowerCase().includes(v.subtopicId.toLowerCase()) ||
-        v.question.slice(0, 25).toLowerCase().includes(lastQuackMessage.text.slice(0, 25).toLowerCase()) ||
-        lastQuackMessage.text.includes(v.question.slice(0, 30))
-      );
-    }
+    const attemptsSoFar = (subtopicScores?.[currentActive]?.attempts || 0) + 1;
 
-    // Si no identificamos la etapa por la última pregunta, tomar la primera no cubierta
-    if (!activeValidation) {
-      activeValidation = validations.find((v) => !currentCoveredIds.includes(v.subtopicId));
-    }
+    // 1. EVALUAR DOMINIO MULTI-ÍTEM SIMULTÁNEO
+    // Comprobar si el estudiante explicó con éxito uno o más subtemas en esta misma respuesta
+    const newlyUnlockedIds: string[] = [];
+    let multiItemAcknowledgment = "";
 
-    if (activeValidation && !currentCoveredIds.includes(activeValidation.subtopicId)) {
-      // Verificar si cumple TODOS los grupos de conceptos requeridos
-      const meetsAllRequirements = activeValidation.requiredConcepts.every((conceptGroup) =>
-        conceptGroup.some((concept) => normalizedInput.includes(concept))
-      );
-
-      if (meetsAllRequirements) {
-        newUnlockedIds.push(activeValidation.subtopicId);
-        acknowledgment = activeValidation.acknowledgment;
+    for (const val of validations) {
+      if (!currentCoveredIds.includes(val.subtopicId) && !newlyUnlockedIds.includes(val.subtopicId)) {
+        const isMastered = val.requiredConcepts.every((group) =>
+          group.some((term) => normalizedInput.includes(term))
+        );
+        if (isMastered) {
+          newlyUnlockedIds.push(val.subtopicId);
+          multiItemAcknowledgment += (multiItemAcknowledgment ? " Además, " : "") + val.acknowledgment;
+        }
       }
     }
 
-    const allCovered = Array.from(new Set([...currentCoveredIds, ...newUnlockedIds]));
+    // 2. DETECCIÓN DE FALACIAS EN EL TEMA ACTIVO
+    const topicMisconceptions = TOPIC_MISCONCEPTIONS[topic.id] || [];
+    let detectedMisconception: MisconceptionRule | undefined;
 
-    // 3. BUSCAR LA SIGUIENTE PREGUNTA SOCRÁTICA PENDIENTE
-    const pendingValidation = validations.find((v) => !allCovered.includes(v.subtopicId));
+    for (const rule of topicMisconceptions) {
+      const matches = rule.patterns.some((pattern) => {
+        const norm = pattern.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return normalizedInput.includes(norm);
+      });
+      if (matches) {
+        detectedMisconception = rule;
+        break;
+      }
+    }
 
+    // Buscar siguientes subtemas pendientes
+    const alreadyEvaluated = (id: string) =>
+      currentCoveredIds.includes(id) ||
+      newlyUnlockedIds.includes(id) ||
+      subtopicScores?.[id]?.status === "failed" ||
+      subtopicScores?.[id]?.status === "partial";
+
+    const nextPendingSubtopic = topic.subtopics.find((s) => s.id !== currentActive && !alreadyEvaluated(s.id));
+    const nextValidation = validations.find((v) => v.subtopicId === nextPendingSubtopic?.id);
+
+    const newlyPartialIds: string[] = [];
+    const newlyFailedIds: string[] = [];
     let reply = "";
+    let isSessionFinished = false;
 
-    if (newUnlockedIds.length === 0) {
-      // El estudiante no cometió una falacia explícita, pero su respuesta fue vaga o insuficiente
-      if (pendingValidation) {
-        reply = `Mmm, entiendo lo que dices a grandes rasgos, pero siento que me falta ver el porqué físico. ${pendingValidation.question}`;
+    // CASO A: Hubo dominio de al menos un subtema
+    if (newlyUnlockedIds.length > 0) {
+      if (nextPendingSubtopic && nextValidation) {
+        reply = `${multiItemAcknowledgment} Ahora cuéntame: ${nextValidation.question}`;
+      } else {
+        reply = `${multiItemAcknowledgment} ¡Guao, profe! Me quedó clarísimo todo el concepto de ${topic.title}. Conectaste cada definición matemática y física sin dejar vacíos lógicos. ¡Muchas gracias por enseñarme!`;
+        isSessionFinished = true;
+      }
+    }
+    // CASO B: Se alcanzó el límite de 3 intentos en el subtema activo sin lograr dominio completo
+    else if (attemptsSoFar >= 3) {
+      const activeVal = validations.find((v) => v.subtopicId === currentActive);
+      const hasPartialKnowledge =
+        !detectedMisconception &&
+        activeVal?.partialConcepts?.some((c) => normalizedInput.includes(c));
+
+      if (hasPartialKnowledge) {
+        newlyPartialIds.push(currentActive);
+      } else {
+        newlyFailedIds.push(currentActive);
+      }
+
+      if (nextPendingSubtopic && nextValidation) {
+        reply = `Mmm profe, veo que en este punto todavía nos quedamos un poco enredados, pero para no quedarnos atascados aquí, avancemos al siguiente tema: ${nextPendingSubtopic.name}. ${nextValidation.question}`;
       } else {
         reply =
-          "Entendido, pero ¿podrías darme un ejemplo concreto de cómo se aplicaría esto en la vida real para estar 100% segura?";
+          "Mmm profe, veo que en esta parte nos costó un poco aterrizar la teoría, pero hemos cubierto todo el temario. ¡Revisemos juntos nuestro balance pedagógico final!";
+        isSessionFinished = true;
       }
-    } else if (allCovered.length >= topic.subtopics.length) {
-      // Logró explicar satisfactoriamente TODOS los subconceptos
-      reply = `${acknowledgment} ¡Guao, profe! Me quedó clarísimo todo el concepto de ${topic.title}. Conectaste cada definición matemática y física sin dejar vacíos lógicos. ¡Muchas gracias por enseñarme!`;
-    } else if (pendingValidation) {
-      // Desbloqueó este subconcepto y Quack formula la siguiente duda socrática
-      reply = `${acknowledgment} ${pendingValidation.question}`;
-    } else {
-      reply = `${acknowledgment} ¡Excelente! Siento que ahora tengo una intuición mucho más clara de este tema.`;
+    }
+    // CASO C: Menos de 3 intentos y se detectó una falacia
+    else if (detectedMisconception) {
+      reply = detectedMisconception.reply;
+    }
+    // CASO D: Menos de 3 intentos, respuesta insuficiente pero no falaz
+    else {
+      const activeVal = validations.find((v) => v.subtopicId === currentActive);
+      reply = `Mmm, entiendo en parte lo que dices, pero todavía no me queda del todo claro el fundamento físico. ${
+        activeVal ? activeVal.question : "¿Podrías darme un ejemplo concreto?"
+      }`;
     }
 
-    const totalSubtopics = topic.subtopics.length;
-    const progress = totalSubtopics > 0 ? Math.round((allCovered.length / totalSubtopics) * 100) : 100;
-    const detectedGaps = topic.subtopics.filter((s) => !allCovered.includes(s.id)).map((s) => s.name);
+    // Cálculo ponderado del progreso
+    const allMastered = Array.from(new Set([...currentCoveredIds, ...newlyUnlockedIds]));
+    let scoreSum = 0;
+    for (const s of topic.subtopics) {
+      if (allMastered.includes(s.id)) {
+        scoreSum += 100;
+      } else if (newlyPartialIds.includes(s.id) || subtopicScores?.[s.id]?.status === "partial") {
+        scoreSum += 50;
+      }
+    }
+    const progress = topic.subtopics.length > 0 ? Math.round(scoreSum / topic.subtopics.length) : 0;
 
     return {
       reply,
-      unlockedSubtopicIds: newUnlockedIds,
-      detectedGaps,
+      unlockedSubtopicIds: newlyUnlockedIds,
+      partialSubtopicIds: newlyPartialIds,
+      failedSubtopicIds: newlyFailedIds,
+      nextActiveSubtopicId: nextPendingSubtopic?.id,
+      isSessionFinished,
+      detectedGaps: topic.subtopics.filter((s) => !allMastered.includes(s.id)).map((s) => s.name),
       masteryProgressPercentage: progress,
       engineUsed: "mock",
     };

@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { FeynmanTopic, ChatMessage } from "@/types/feynman";
+import { FeynmanTopic, ChatMessage, SubtopicScoreData } from "@/types/feynman";
 import { IFeynmanService, FeynmanEvaluationResult } from "./types";
 import { getActiveModel } from "./serviceFactory";
 
@@ -41,7 +41,8 @@ async function callWithRetry<T>(
 
 /**
  * Servicio Feynman conectado a Google Gemini API mediante el SDK oficial @google/genai.
- * Implementa cascada de modelos modernos y reintentos ante picos de demanda.
+ * Implementa límite de 3 intentos por subtema con transición automática para no estancarse,
+ * soporte para dominio multi-ítem en un solo turno y puntuación graduada (100%, 50%, 0%).
  */
 export class GeminiFeynmanService implements IFeynmanService {
   private getClient(): GoogleGenAI | null {
@@ -59,20 +60,36 @@ export class GeminiFeynmanService implements IFeynmanService {
     topic: FeynmanTopic,
     history: ChatMessage[],
     studentInput: string,
-    currentCoveredIds: string[]
+    currentCoveredIds: string[],
+    subtopicScores?: Record<string, SubtopicScoreData>,
+    activeSubtopicId?: string
   ): Promise<FeynmanEvaluationResult> {
     const client = this.getClient();
     if (!client) {
       throw new Error("No hay API Key de Gemini configurada en VITE_GEMINI_API_KEY.");
     }
 
+    // Determinar el subconcepto en evaluación activa y el número de intentos que lleva
+    const currentActive =
+      activeSubtopicId ||
+      topic.subtopics.find((s) => !currentCoveredIds.includes(s.id) && subtopicScores?.[s.id]?.status !== "failed" && subtopicScores?.[s.id]?.status !== "partial")?.id ||
+      topic.subtopics[0].id;
+
+    const attemptsSoFar = (subtopicScores?.[currentActive]?.attempts || 0) + 1;
+
     const subtopicsList = topic.subtopics
-      .map(
-        (s) =>
-          `- ID: "${s.id}" | Nombre: "${s.name}" | Descripción: "${s.description || ""}" (Ya cubierto: ${
-            currentCoveredIds.includes(s.id) ? "SÍ" : "NO"
-          })`
-      )
+      .map((s) => {
+        const score = subtopicScores?.[s.id];
+        const statusText = score
+          ? `${score.status.toUpperCase()} (${score.score}%)`
+          : currentCoveredIds.includes(s.id)
+          ? "MASTERED (100%)"
+          : "PENDING";
+        const isCurrent = s.id === currentActive;
+        return `- ID: "${s.id}" | Nombre: "${s.name}" | Descripción: "${s.description || ""}" | Estado actual: ${statusText} ${
+          isCurrent ? `[SUBCONCEPTO EN EVALUACIÓN ACTIVA - INTENTO ${attemptsSoFar} DE 3]` : ""
+        }`;
+      })
       .join("\n");
 
     const systemInstruction = `
@@ -87,20 +104,33 @@ ${subtopicsList}
 
 REGLAS DE ORO OBLIGATORIAS:
 1. ROL Y TONO: Eres una alumna simpática, informal y curiosa en español latinoamericano. NUNCA des la respuesta correcta ni expliques el tema por tu cuenta.
-2. DETECCIÓN RIGUROSA DE ERRORES Y FALACIAS (CRUCIAL):
-   - Si el estudiante dice cosas erróneas, absurdas, contradictorias o inventadas (por ejemplo: que las cosas se mueven solas sin fuerzas, que la masa de un cohete nunca cambia, que Newton formuló algo por moda, que el momentum solo se conserva al frenar, etc.), NUNCA lo felicites ni aceptes su error.
-   - Reacciona con perplejidad e incredulidad socrática como alumna confundida (ej: "Espera profe, ¡me confundí! Si se mueven solas sin fuerzas, ¿entonces por qué tengo que empujar algo pesado para moverlo? ¿No decía la ley que una fuerza neta causa aceleración?").
-   - Bajo NINGUNA circunstancia agregues un ID a "unlockedSubtopicIds" si la explicación del estudiante fue incorrecta, falaz o incompleta. Solo déjalo vacío: [].
-3. VALIDACIÓN DE MAESTRÍA: Solo agrega un ID a "unlockedSubtopicIds" si el estudiante explicó ese subconcepto con razonamiento físico/matemático genuino, coherente y correcto.
-4. REPREGUNTA SOCRÁTICA: Si el estudiante explicó bien un punto previo, valida brevemente su intuición y haz una pregunta socrática sobre el SIGUIENTE subconcepto que aún esté marcado como NO cubierto.
-5. MEMORIA CONVERSACIONAL: Revisa todo el historial previo. No repitas dudas que ya te aclaró satisfactoriamente.
-6. BREVEDAD ESTRICTA: Máximo 2 a 3 oraciones cortas (para que la síntesis de voz TTS sea ágil y natural).
+2. DETECCIÓN RIGUROSA DE ERRORES Y FALACIAS:
+   - Si el estudiante dice cosas erróneas, absurdas, contradictorias o inventadas (por ejemplo: que las cosas se mueven solas sin fuerzas, que la masa de un cohete no cambia, que Newton formuló algo por moda, que el momentum solo se conserva al frenar, etc.), NUNCA lo felicites ni aceptes su error.
+   - Reacciona con perplejidad e incredulidad socrática como alumna confundida.
+3. DOMINIO MULTI-ÍTEM EN UNA SOLA RESPUESTA (IMPORTANTE):
+   - Si el estudiante en su explicación verbaliza con claridad y rigor conceptual más de un subconcepto del temario oficial a la vez, incluye TODOS los IDs dominados en "unlockedSubtopicIds" (100%). No lo obligues a responder preguntas redundantes para subconceptos que ya demostró dominar con claridad.
+4. REGLA ESTRICTA DE MÁXIMO 3 INTENTOS Y TRANSICIÓN (EVITAR ESTANCAMIENTO):
+   - El subconcepto en evaluación activa es "${currentActive}". Este es su intento ${attemptsSoFar} de 3.
+   - Si en este intento el estudiante domina el concepto con éxito: agrégalo a "unlockedSubtopicIds".
+   - Si el estudiante NO logró explicarlo bien y este es su intento 3 (o insiste en el error tras 3 preguntas):
+     * NO continúes preguntando sobre este mismo subconcepto para evitar conversaciones infinitas.
+     * Si demostró cierta intuición o entendimiento medio (50%): agrégalo a "partialSubtopicIds".
+     * Si no demostró nada válido, fue erróneo o disparatado (0%): agrégalo a "failedSubtopicIds".
+     * En "quackReply", concluye con amabilidad tu duda y HAZ UNA TRANSICIÓN DIRECTA hacia el siguiente subtema pendiente (ej: "Mmm profe, veo que en este punto no nos pusimos de acuerdo, pero para no quedarnos atascados, pasemos al siguiente tema: [nombre nuevo tema]. ¿Cómo me explicarías [pregunta del nuevo tema]?").
+     * Asigna a "nextActiveSubtopicId" el ID del siguiente subtema pendiente.
+5. FINALIZACIÓN DE SESIÓN:
+   - Si todos los subtemas del temario ya quedaron evaluados (bien sea en 100%, 50% o 0%), o el estudiante dominó todos los conceptos, concluye agradeciendo a tu profe y pon "isSessionFinished": true.
+6. BREVEDAD: Máximo 2 a 3 oraciones cortas (para que la síntesis de voz TTS sea ágil).
 
 FORMATO DE SALIDA ESTRICTO (JSON):
 Debes responder ÚNICAMENTE con un objeto JSON válido con esta estructura:
 {
-  "quackReply": "Tu reacción socrática en tono de alumna (2-3 oraciones breves)",
-  "unlockedSubtopicIds": ["id-del-subtema-si-y-solo-si-lo-explico-correctamente"]
+  "quackReply": "Tu reacción socrática o tu transición fluida al siguiente tema (2-3 oraciones)",
+  "unlockedSubtopicIds": ["id-del-subtema-dominado-100%"],
+  "partialSubtopicIds": ["id-del-subtema-con-dominio-medio-50%"],
+  "failedSubtopicIds": ["id-del-subtema-no-dominado-0%"],
+  "nextActiveSubtopicId": "id-del-siguiente-subtema-a-evaluar",
+  "isSessionFinished": false
 }
 `;
 
@@ -119,12 +149,12 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con esta estructura:
       role: "user",
       parts: [
         {
-          text: `El estudiante (profesor) responde:\n"${studentInput}"\n\nRecuerda: Si dijo algo erróneo o disparatado, muestra perplejidad y NO desbloquees ningún subtema. Si explicó bien, haz la siguiente duda socrática. Responde en JSON.`,
+          text: `El estudiante (profesor) responde:\n"${studentInput}"\n\nRecuerda: Subconcepto activo "${currentActive}" (Intento ${attemptsSoFar}/3). Si falló por 3a vez, asigna 0% o 50% y pasa al siguiente tema. Si explicó múltiples temas a la vez, desbloquéalos. Responde en JSON.`,
         },
       ],
     });
 
-    // Cascada de modelos compatibles: predeterminado latest y alternativas en orden descendente (3.8, 3.7, 3.6, 3.5)
+    // Cascada ordenada de modelos compatibles
     const primaryModel = getActiveModel();
     const candidateModels = Array.from(
       new Set([
@@ -138,7 +168,6 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con esta estructura:
     ).filter(Boolean);
 
     let responseText = "";
-    let modelUsed = primaryModel;
     let lastError: unknown = null;
 
     for (const model of candidateModels) {
@@ -154,7 +183,6 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con esta estructura:
           })
         );
         responseText = response.text || "";
-        modelUsed = model;
         if (responseText) {
           break;
         }
@@ -170,6 +198,10 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con esta estructura:
 
     let parsedReply = "";
     let newlyUnlocked: string[] = [];
+    let newlyPartial: string[] = [];
+    let newlyFailed: string[] = [];
+    let nextActiveSubtopicId: string | undefined = undefined;
+    let isSessionFinished = false;
 
     try {
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
@@ -177,9 +209,25 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con esta estructura:
         const parsed = JSON.parse(jsonMatch[0]);
         parsedReply = parsed.quackReply || "";
         if (Array.isArray(parsed.unlockedSubtopicIds)) {
-          newlyUnlocked = parsed.unlockedSubtopicIds.filter(
-            (id: string) => topic.subtopics.some((s) => s.id === id) && !currentCoveredIds.includes(id)
+          newlyUnlocked = parsed.unlockedSubtopicIds.filter((id: string) =>
+            topic.subtopics.some((s) => s.id === id)
           );
+        }
+        if (Array.isArray(parsed.partialSubtopicIds)) {
+          newlyPartial = parsed.partialSubtopicIds.filter((id: string) =>
+            topic.subtopics.some((s) => s.id === id)
+          );
+        }
+        if (Array.isArray(parsed.failedSubtopicIds)) {
+          newlyFailed = parsed.failedSubtopicIds.filter((id: string) =>
+            topic.subtopics.some((s) => s.id === id)
+          );
+        }
+        if (typeof parsed.nextActiveSubtopicId === "string") {
+          nextActiveSubtopicId = parsed.nextActiveSubtopicId;
+        }
+        if (typeof parsed.isSessionFinished === "boolean") {
+          isSessionFinished = parsed.isSessionFinished;
         }
       } else {
         parsedReply = responseText.trim();
@@ -189,13 +237,31 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con esta estructura:
       parsedReply = responseText.replace(/```json|```/g, "").trim();
     }
 
-    const allCovered = Array.from(new Set([...currentCoveredIds, ...newlyUnlocked]));
-    const progress = Math.round((allCovered.length / topic.subtopics.length) * 100);
+    // Calcular progreso ponderado: 100% por mastered, 50% por partial, 0% por failed
+    const totalSubtopics = topic.subtopics.length;
+    let totalScoreSum = 0;
+    for (const sub of topic.subtopics) {
+      if (newlyUnlocked.includes(sub.id) || currentCoveredIds.includes(sub.id)) {
+        totalScoreSum += 100;
+      } else if (newlyPartial.includes(sub.id) || subtopicScores?.[sub.id]?.status === "partial") {
+        totalScoreSum += 50;
+      } else if (newlyFailed.includes(sub.id) || subtopicScores?.[sub.id]?.status === "failed") {
+        totalScoreSum += 0;
+      }
+    }
+
+    const progress = totalSubtopics > 0 ? Math.round(totalScoreSum / totalSubtopics) : 0;
 
     return {
       reply: parsedReply || topic.fallbackReply,
       unlockedSubtopicIds: newlyUnlocked,
-      detectedGaps: topic.subtopics.filter((s) => !allCovered.includes(s.id)).map((s) => s.name),
+      partialSubtopicIds: newlyPartial,
+      failedSubtopicIds: newlyFailed,
+      nextActiveSubtopicId,
+      isSessionFinished,
+      detectedGaps: topic.subtopics
+        .filter((s) => !newlyUnlocked.includes(s.id) && !currentCoveredIds.includes(s.id))
+        .map((s) => s.name),
       masteryProgressPercentage: progress,
       engineUsed: "gemini",
     };
