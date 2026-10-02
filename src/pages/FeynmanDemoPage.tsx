@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Mic, BookOpen, RotateCcw, Cpu, Database } from "lucide-react";
+import { ArrowLeft, Mic, BookOpen, RotateCcw, Cpu, Database, Keyboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockFeynmanTopics } from "@/mocks/quackData";
@@ -41,6 +41,7 @@ export const FeynmanDemoPage: React.FC = () => {
     setMessages([]);
     setCoveredSubtopicIds([]);
     setSummary(null);
+    setForceTextInput(false);
     sessionTimer.reset();
     sessionTimer.start();
   };
@@ -204,6 +205,7 @@ export const FeynmanDemoPage: React.FC = () => {
               size="sm"
               onClick={() => {
                 setIsSessionActive(false);
+                setForceTextInput(false);
                 speechSynthesis.stop();
               }}
               className="gap-1.5 rounded-xl text-xs"
@@ -247,17 +249,42 @@ export const FeynmanDemoPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2 self-start sm:self-auto">
-              {/* Selector de modo voz vs teclado */}
+              {/* Indicador de modo: Voz activa (predeterminada) vs Opción texto */}
               {speechRecognition.isSupported && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setForceTextInput(!forceTextInput)}
-                  className="text-xs text-slate-600 hover:text-quack-gunmetal"
-                >
-                  {forceTextInput ? "Usar Micrófono (PTT)" : "Usar Teclado"}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border bg-white/90 text-quack-gunmetal shadow-2xs border-amber-200">
+                    {forceTextInput ? (
+                      <>
+                        <Keyboard className="h-3.5 w-3.5 text-quack-caramel" />
+                        Texto activo
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="h-3.5 w-3.5 text-quack-caramel" />
+                        Voz activa (Por defecto)
+                      </>
+                    )}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setForceTextInput(!forceTextInput)}
+                    className="h-7 text-xs rounded-lg border-amber-200 bg-white/80 hover:bg-white text-slate-700 hover:text-quack-gunmetal gap-1 shadow-2xs"
+                  >
+                    {forceTextInput ? (
+                      <>
+                        <Mic className="h-3 w-3 text-quack-caramel" />
+                        Volver a Voz
+                      </>
+                    ) : (
+                      <>
+                        <Keyboard className="h-3 w-3 text-slate-500" />
+                        Opción Texto
+                      </>
+                    )}
+                  </Button>
+                </div>
               )}
             </div>
           </div>
@@ -276,13 +303,14 @@ export const FeynmanDemoPage: React.FC = () => {
                 initialTopicName={selectedTopic.title}
               />
 
-              {/* Controles de Entrada (PTT o Fallback Escrito) */}
+              {/* Controles de Entrada (PTT por defecto o Opción de Texto) */}
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                 {!speechRecognition.isSupported || forceTextInput ? (
                   <SpeechFallbackInput
                     onSendMessage={handleProcessStudentExplanation}
                     isProcessing={isProcessing}
                     reason={!speechRecognition.isSupported ? "not-supported" : "user-choice"}
+                    onSwitchToVoice={speechRecognition.isSupported ? () => setForceTextInput(false) : undefined}
                   />
                 ) : (
                   <div className="space-y-3">
@@ -291,11 +319,12 @@ export const FeynmanDemoPage: React.FC = () => {
                       isProcessing={isProcessing}
                       onStartTalk={handleStartPtt}
                       onEndTalk={handleEndPtt}
+                      onEnableTextInput={() => setForceTextInput(true)}
                     />
 
                     {speechRecognition.error && (
                       <div className="text-center text-xs text-rose-600 font-medium">
-                        {speechRecognition.error}. Si prefieres, activa el modo teclado.
+                        {speechRecognition.error}. Si prefieres, puedes habilitar la opción por texto.
                       </div>
                     )}
                   </div>

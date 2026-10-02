@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Mic, Loader2, Volume2 } from "lucide-react";
+import { Mic, Loader2, Volume2, Keyboard } from "lucide-react";
 
 export interface PushToTalkButtonProps {
   isListening: boolean;
@@ -7,6 +7,7 @@ export interface PushToTalkButtonProps {
   disabled?: boolean;
   onStartTalk: () => void;
   onEndTalk: () => void;
+  onEnableTextInput?: () => void;
 }
 
 /**
@@ -20,6 +21,7 @@ export const PushToTalkButton: React.FC<PushToTalkButtonProps> = ({
   disabled = false,
   onStartTalk,
   onEndTalk,
+  onEnableTextInput,
 }) => {
   const isInteractingRef = React.useRef(false);
 
@@ -143,9 +145,26 @@ export const PushToTalkButton: React.FC<PushToTalkButtonProps> = ({
             Quack está reflexionando sobre lo dicho...
           </div>
         ) : (
-          <p className="text-xs font-medium text-slate-600">
-            <span className="font-semibold text-quack-gunmetal">Mantén presionado</span> con el ratón, dedo o barra espaciadora para hablar.
-          </p>
+          <div className="space-y-3">
+            <p className="text-xs font-medium text-slate-600">
+              <span className="font-semibold text-quack-gunmetal">Mantén presionado</span> con el ratón, dedo o barra espaciadora para hablar.
+            </p>
+
+            {onEnableTextInput && (
+              <div className="flex items-center justify-center pt-0.5">
+                <button
+                  type="button"
+                  onClick={onEnableTextInput}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-quack-gunmetal bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all hover:border-amber-300 active:scale-95 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-quack-amber"
+                  aria-label="Habilitar opción por texto"
+                  title="Habilitar opción para escribir tu explicación por texto"
+                >
+                  <Keyboard className="h-3.5 w-3.5 text-quack-caramel" />
+                  <span>Habilitar opción por texto</span>
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
