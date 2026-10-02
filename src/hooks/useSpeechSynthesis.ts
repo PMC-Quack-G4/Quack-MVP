@@ -4,7 +4,7 @@ export interface UseSpeechSynthesisReturn {
   isSupported: boolean;
   isSpeaking: boolean;
   currentSpeakingId: string | null;
-  speak: (text: string, id?: string) => void;
+  speak: (text: string, id?: string, onEnd?: () => void) => void;
   stop: () => void;
 }
 
@@ -15,6 +15,7 @@ export interface UseSpeechSynthesisReturn {
 export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
   const [isSpeaking, setIsSpeaking] = React.useState<boolean>(false);
   const [currentSpeakingId, setCurrentSpeakingId] = React.useState<string | null>(null);
+  const activeUtteranceRef = React.useRef<SpeechSynthesisUtterance | null>(null);
 
   const isSupported = React.useMemo(() => {
     return typeof window !== "undefined" && "speechSynthesis" in window;
@@ -27,13 +28,17 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
     } catch {
       // Ignorar fallos de cancelación
     }
+    activeUtteranceRef.current = null;
     setIsSpeaking(false);
     setCurrentSpeakingId(null);
   }, [isSupported]);
 
   const speak = React.useCallback(
-    (text: string, id?: string) => {
-      if (!isSupported || !text.trim()) return;
+    (text: string, id?: string, onEnd?: () => void) => {
+      if (!isSupported || !text.trim()) {
+        if (onEnd) onEnd();
+        return;
+      }
 
       // Cancelar cualquier audio en reproducción previa
       try {
@@ -43,6 +48,7 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
       }
 
       const utterance = new SpeechSynthesisUtterance(text);
+      activeUtteranceRef.current = utterance;
       utterance.lang = "es-ES";
       // Tono ligeramente más ágil y juvenil para Quack ("alumna curiosa")
       utterance.rate = 1.05;
@@ -57,14 +63,25 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
         utterance.voice = spanishVoice;
       }
 
+      let hasEnded = false;
+      const finish = () => {
+        if (hasEnded) return;
+        hasEnded = true;
+        activeUtteranceRef.current = null;
+        setIsSpeaking(false);
+        setCurrentSpeakingId(null);
+        if (onEnd) {
+          onEnd();
+        }
+      };
+
       utterance.onstart = () => {
         setIsSpeaking(true);
         if (id) setCurrentSpeakingId(id);
       };
 
       utterance.onend = () => {
-        setIsSpeaking(false);
-        setCurrentSpeakingId(null);
+        finish();
       };
 
       utterance.onerror = (e) => {
@@ -72,16 +89,14 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
         if (e.error !== "canceled" && e.error !== "interrupted") {
           console.warn("Error en SpeechSynthesis:", e.error);
         }
-        setIsSpeaking(false);
-        setCurrentSpeakingId(null);
+        finish();
       };
 
       try {
         window.speechSynthesis.speak(utterance);
       } catch (err) {
         console.warn("Fallo al reproducir locución:", err);
-        setIsSpeaking(false);
-        setCurrentSpeakingId(null);
+        finish();
       }
     },
     [isSupported]

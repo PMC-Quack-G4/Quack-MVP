@@ -213,19 +213,39 @@ export const FeynmanDemoPage: React.FC = () => {
 
       setMessages((prev) => [...prev, quackMessage]);
 
-      // Reproducción automática de voz mediante Web Speech Synthesis
-      speechSynthesis.speak(result.reply, quackMsgId);
-
       // Verificar si todos los subtemas han sido concluidos (100% de items evaluados)
       const allEvaluated = selectedTopic.subtopics.every((s) => {
         const st = nextScores[s.id]?.status;
         return st === "mastered" || st === "partial" || st === "failed";
       });
 
-      if (result.isSessionFinished || allEvaluated) {
+      const isFinished = Boolean(result.isSessionFinished || allEvaluated);
+
+      if (isFinished) {
+        let finishTriggered = false;
+        const triggerFinish = () => {
+          if (finishTriggered) return;
+          finishTriggered = true;
+          // Pausa natural de 700ms tras concluir el audio para no cortar abruptamente
+          setTimeout(() => {
+            handleFinishSession(nextScores);
+          }, 700);
+        };
+
+        // Reproducir la voz y SOLO tras terminar el audio de Quack se despliega el balance
+        speechSynthesis.speak(result.reply, quackMsgId, () => {
+          triggerFinish();
+        });
+
+        // Temporizador de seguridad: si el navegador no emite onend o el audio no está soportado
+        const wordCount = result.reply.trim().split(/\s+/).length;
+        const estimatedDurationMs = Math.max(5000, Math.round(wordCount * 450) + 2500);
         setTimeout(() => {
-          handleFinishSession(nextScores);
-        }, 1500);
+          triggerFinish();
+        }, estimatedDurationMs);
+      } else {
+        // Reproducción automática de voz habitual en turnos intermedios
+        speechSynthesis.speak(result.reply, quackMsgId);
       }
     } catch (err) {
       console.warn("Error al procesar mensaje con Quack:", err);
