@@ -1,38 +1,54 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 820" width="650" height="820">
   <defs>
     <pattern id="grid-physics" width="20" height="20" patternUnits="userSpaceOnUse">
       <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/>
     </pattern>
     <filter id="handwriting-shadow-p" x="-5%" y="-5%" width="110%" height="110%">
-      <feDropShadow dx="1" dy="1" stdDeviation="0.5" flood-color="#0f172a" flood-opacity="0.25"/>
+      <feDropShadow dx="0.8" dy="0.8" stdDeviation="0.4" flood-color="#0f172a" flood-opacity="0.2"/>
     </filter>
   </defs>
 
-  <rect width="600" height="800" fill="#fafafa"/>
-  <rect width="600" height="800" fill="url(#grid-physics)" opacity="0.6"/>
-  <line x1="80" y1="0" x2="80" y2="800" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="4 2"/>
+  <!-- Fondo de hoja cuadriculada con margen -->
+  <rect width="650" height="820" fill="#fdfbf7"/>
+  <rect width="650" height="820" fill="url(#grid-physics)" opacity="0.65"/>
+  <line x1="75" y1="0" x2="75" y2="820" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="4 2"/>
 
-  <text x="100" y="50" font-family="'Comic Sans MS', 'Caveat', cursive, sans-serif" font-size="16" fill="#0f172a" font-weight="bold">
-    Física Mecánica — Conservación de Momento
+  <!-- Encabezado manuscrito -->
+  <text x="95" y="50" font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" font-size="16" fill="#0f172a" font-weight="bold">
+    Física Mecánica — Parcial 2 (Camilo Vargas)
   </text>
-  <text x="100" y="75" font-family="'Comic Sans MS', 'Caveat', cursive, sans-serif" font-size="14" fill="#64748b">
-    Problema: Impulso sobre partícula m = 2kg
+  <text x="95" y="76" font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" font-size="13" fill="#475569">
+    Datos: m₁ = 2 kg, v₁ = 6 m/s, m₂ = 4 kg (reposo, v₂ = 0). Choque inelástico.
   </text>
-  <line x1="100" y1="90" x2="520" y2="90" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="95" y1="92" x2="590" y2="92" stroke="#cbd5e1" stroke-width="1"/>
 
-  <g font-family="'Comic Sans MS', 'Caveat', cursive, sans-serif" fill="#1e293b" font-size="20" filter="url(#handwriting-shadow-p)">
-    <text x="100" y="140">1) F(t) = 6t² - 2t  [N],  t ∈ [0, 3]</text>
-    <text x="100" y="210">2) J = ∫ [0 a 3] F(t) dt = Δp</text>
-    <text x="100" y="280">3) J = [ 2t³ - t² ] de 0 a 3</text>
-    <text x="100" y="350">4) J = 2(27) - (9) = 54 - 9 = 45 N·s</text>
-    <text x="100" y="420">5) Δp = m·v_f - m·v_i  (v_i = 0)</text>
-    <text x="100" y="490">6) v_f = 45 / 2 = 22.5 m/s</text>
+  <!-- Desarrollo manuscrito paso a paso (con error algebraico en el paso 5 y arrastre en el 6) -->
+  <g font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" fill="#1e3a8a" font-size="18" filter="url(#handwriting-shadow-p)">
+    <!-- Paso 1 -->
+    <text x="95" y="145">1) Momento inicial:  p_i = m₁·v₁ + m₂·v₂ = (2)(6) + (4)(0) = 12 kg·m/s</text>
 
-    <rect x="95" y="460" width="280" height="50" fill="none" stroke="#0f172a" stroke-width="2" rx="4"/>
+    <!-- Paso 2 -->
+    <text x="95" y="215">2) Choque inelástico (masas unidas):  p_f = (m₁ + m₂)·v_f = (2 + 4)·v_f = 6·v_f</text>
+
+    <!-- Paso 3 -->
+    <text x="95" y="285">3) Conservación (p_i = p_f):  12 = 6·v_f   =&gt;   v_f = 2 m/s</text>
+
+    <!-- Paso 4 -->
+    <text x="95" y="360">4) Energía cinética inicial:  K_i = (1/2)·m₁·v₁² = (1/2)(2)(6)² = 36 J</text>
+
+    <!-- Paso 5 (Error algebraico intencional: olvida elevar v_f al cuadrado) -->
+    <text x="95" y="435">5) Energía cinética final:  K_f = (1/2)·(m₁ + m₂)·v_f = (1/2)(6)(2) = 6 J</text>
+
+    <!-- Paso 6 (Arrastre de error previo con K_f = 6 J) -->
+    <text x="95" y="515">6) Energía disipada:  ΔK = K_f - K_i = 6 - 36 = -30 J</text>
+
+    <!-- Recuadro de respuesta final -->
+    <rect x="90" y="480" width="465" height="55" fill="none" stroke="#1e3a8a" stroke-width="2" rx="6"/>
   </g>
 
-  <rect x="360" y="700" width="200" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>
-  <text x="375" y="735" font-family="sans-serif" font-size="12" fill="#475569" font-weight="bold">
+  <!-- Sello de muestra -->
+  <rect x="390" y="720" width="220" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="408" y="753" font-family="sans-serif" font-size="12" fill="#475569" font-weight="bold">
     QUACK SAMPLE OCR #02
   </text>
 </svg>

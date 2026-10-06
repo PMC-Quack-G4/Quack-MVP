@@ -22,6 +22,11 @@ export interface MockAuditResult {
   summary: string;
   diagnosisTitle?: string;
   steps: AuditStep[];
+  engineUsed?: "gemini" | "mock";
+  warning?: string;
+  isValidSubmission?: boolean;
+  completionPercentage?: number;
+  pedagogicalRecommendation?: string;
 }
 
 export interface ExamProblem {

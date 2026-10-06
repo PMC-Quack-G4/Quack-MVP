@@ -13,15 +13,24 @@ import { EvidenceDropzone } from "@/components/exam/EvidenceDropzone";
 import { AuditProgressAnimation } from "@/components/exam/AuditProgressAnimation";
 import { AuditSplitView } from "@/components/exam/AuditSplitView";
 
+function formatDuration(totalSeconds: number): string {
+  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+  const mins = Math.floor(safeSeconds / 60);
+  const secs = safeSeconds % 60;
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
 export const ExamPage: React.FC = () => {
   const [phase, setPhase] = React.useState<ExamPhase>("SETUP");
   const [selectedProblem, setSelectedProblem] = React.useState<ExamProblem>(mockExamProblems[0]);
-  const [selectedImage, setSelectedImage] = React.useState<string>(mockExamProblems[0].defaultSampleImage);
+  const [selectedImage, setSelectedImage] = React.useState<string>("");
   const [rotation, setRotation] = React.useState<number>(0);
   const [isAuditing, setIsAuditing] = React.useState<boolean>(false);
   const [auditResult, setAuditResult] = React.useState<MockAuditResult | null>(null);
+  const [activeEngine, setActiveEngine] = React.useState<"gemini" | "mock">(
+    isGeminiActive() ? "gemini" : "mock"
+  );
 
-  const isOnline = isGeminiActive();
   const activeModel = getActiveModel();
 
   // Temporizador de examen a libro cerrado
@@ -30,37 +39,61 @@ export const ExamPage: React.FC = () => {
     mode: "countdown",
   });
 
+  // Tiempo invertido en papel durante el examen
+  const totalEstimatedSeconds = selectedProblem.estimatedMinutes * 60;
+  const elapsedPaperSeconds = Math.max(0, totalEstimatedSeconds - examTimer.seconds);
+  const elapsedTimeFormatted = formatDuration(elapsedPaperSeconds);
+
   // Cuando cambia el problema seleccionado
   const handleSelectProblem = (problem: ExamProblem) => {
     setSelectedProblem(problem);
-    setSelectedImage(problem.defaultSampleImage);
+    setSelectedImage("");
     setRotation(0);
+    setAuditResult(null);
     examTimer.reset(problem.estimatedMinutes * 60);
   };
 
   // Comenzar examen (fase SOLVING)
   const handleStartExam = () => {
+    setSelectedImage("");
+    setRotation(0);
+    setAuditResult(null);
+    setActiveEngine(isGeminiActive() ? "gemini" : "mock");
     examTimer.reset(selectedProblem.estimatedMinutes * 60);
     examTimer.start();
     setPhase("SOLVING");
   };
 
-  // Finalizar papel y pasar a carga de evidencia
+  // Finalizar papel y pasar a carga de evidencia (inicia vacía para subir foto o usar cámara)
   const handleFinishPaper = () => {
     examTimer.pause();
     setPhase("UPLOAD");
   };
 
-  // Iniciar auditoría OCR
+  // Iniciar auditoría OCR con Gemini Vision (o fallback local)
   const handleStartAudit = async () => {
+    if (!selectedImage) return;
     setIsAuditing(true);
 
     try {
-      const result = await ocrAuditService.auditSolution(selectedProblem, selectedImage);
+      const result = await ocrAuditService.auditSolution(
+        selectedProblem,
+        selectedImage,
+        rotation
+      );
+      if (result.engineUsed) {
+        setActiveEngine(result.engineUsed);
+      }
       setAuditResult(result);
     } catch (err) {
-      console.warn("Error en auditoría OCR:", err);
-      setAuditResult(selectedProblem.mockAudit);
+      console.warn("Error inesperado en auditoría OCR:", err);
+      setActiveEngine("mock");
+      setAuditResult({
+        ...selectedProblem.mockAudit,
+        engineUsed: "mock",
+        warning:
+          "Ocurrió un error al procesar la solicitud con Gemini Vision. Se muestra la evaluación pedagógica local.",
+      });
     } finally {
       setIsAuditing(false);
       setPhase("AUDIT");
@@ -84,7 +117,7 @@ export const ExamPage: React.FC = () => {
               Módulo 2: Parcial a Ciegas OCR
             </h1>
 
-            {isOnline ? (
+            {activeEngine === "gemini" ? (
               <Badge
                 variant="outline"
                 className="border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
@@ -98,10 +131,10 @@ export const ExamPage: React.FC = () => {
               <Badge
                 variant="outline"
                 className="border-slate-300 bg-slate-50 text-slate-700 font-medium text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
-                title="Modo Mock local activo"
+                title="Modo pedagógico local activo"
               >
                 <Database className="h-3.5 w-3.5 text-slate-500" />
-                Modo Mock
+                Modo Local
               </Badge>
             )}
           </div>
@@ -180,9 +213,11 @@ export const ExamPage: React.FC = () => {
         />
       )}
 
-      {/* FASE 3: UPLOAD (Arrastre de Foto y Previsualización) */}
+      {/* FASE 3: UPLOAD (Captura con Cámara, Arrastre de Foto y Previsualización) */}
       {phase === "UPLOAD" && !isAuditing && (
         <EvidenceDropzone
+          problem={selectedProblem}
+          allProblems={mockExamProblems}
           selectedImage={selectedImage}
           rotation={rotation}
           onRotate={() => setRotation((prev) => (prev + 90) % 360)}
@@ -190,7 +225,10 @@ export const ExamPage: React.FC = () => {
             setSelectedImage(img);
             setRotation(0);
           }}
-          onClearImage={() => setSelectedImage("")}
+          onClearImage={() => {
+            setSelectedImage("");
+            setRotation(0);
+          }}
           onBackToTimer={() => setPhase("SOLVING")}
           onStartAudit={handleStartAudit}
           isAuditing={isAuditing}
@@ -200,15 +238,22 @@ export const ExamPage: React.FC = () => {
       {/* ANIMACIÓN DE PROGRESO OCR */}
       {isAuditing && <AuditProgressAnimation />}
 
-      {/* FASE 4: AUDIT (Split View en KaTeX con Badges de Error) */}
+      {/* FASE 4: AUDIT (Split View en KaTeX con Badges de Error y Nota Final) */}
       {phase === "AUDIT" && auditResult && !isAuditing && (
         <AuditSplitView
           problem={selectedProblem}
           auditResult={auditResult}
           selectedImage={selectedImage}
           rotation={rotation}
+          elapsedTimeFormatted={elapsedTimeFormatted}
           onRotate={() => setRotation((prev) => (prev + 90) % 360)}
-          onSelectAnotherProblem={() => setPhase("SETUP")}
+          onRetryAudit={handleStartAudit}
+          onSelectAnotherProblem={() => {
+            setSelectedImage("");
+            setRotation(0);
+            setAuditResult(null);
+            setPhase("SETUP");
+          }}
           onReuploadEvidence={() => setPhase("UPLOAD")}
         />
       )}

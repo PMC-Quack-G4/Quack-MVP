@@ -80,17 +80,28 @@ class FeynmanServiceAdapter implements IFeynmanService {
 class OcrAuditServiceAdapter implements IOcrAuditService {
   async auditSolution(
     problem: ExamProblem,
-    imageBase64OrUrl: string
+    imageBase64OrUrl: string,
+    rotation = 0
   ): Promise<MockAuditResult> {
     if (hasApiKey) {
       try {
-        return await geminiOcrAuditService.auditSolution(problem, imageBase64OrUrl);
+        return await geminiOcrAuditService.auditSolution(problem, imageBase64OrUrl, rotation);
       } catch (err) {
         console.warn("Fallo en GeminiOcrAuditService. Conmutando a MockOcrAuditService:", err);
-        return await mockOcrAuditService.auditSolution(problem, imageBase64OrUrl);
+        const mockResult = await mockOcrAuditService.auditSolution(
+          problem,
+          imageBase64OrUrl,
+          rotation
+        );
+        return {
+          ...mockResult,
+          engineUsed: "mock",
+          warning:
+            "La API de Gemini Vision experimentó un pico de demanda temporal o límite de cuota (503/429). Se evaluó con el motor de auditoría pedagógica local.",
+        };
       }
     }
-    return await mockOcrAuditService.auditSolution(problem, imageBase64OrUrl);
+    return await mockOcrAuditService.auditSolution(problem, imageBase64OrUrl, rotation);
   }
 }
 

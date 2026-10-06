@@ -347,6 +347,9 @@ export const mockExamProblems: ExamProblem[] = [
       maxScore: 5.0,
       diagnosisTitle: "Dominio Sobresaliente",
       summary: "Excelente aplicación de las propiedades de logaritmos antes de derivar. El desarrollo algebraico es riguroso y el resultado es completamente canónico.",
+      completionPercentage: 100,
+      isValidSubmission: true,
+      pedagogicalRecommendation: "Dominas con solidez la simplificación logarítmica previa a la regla de la cadena. Para el 5.0 absoluto, recuerda indicar explícitamente el dominio de validez del argumento del logaritmo (x² + 3x + 1 > 0).",
       steps: [
         {
           stepNumber: 1,
@@ -394,6 +397,9 @@ export const mockExamProblems: ExamProblem[] = [
       maxScore: 5.0,
       diagnosisTitle: "Error Algebraico con Arrastre",
       summary: "Excelente planteamiento del principio de conservación del momento lineal. Sin embargo, hubo un olvido del exponente al calcular la energía cinética final en el paso 5, lo cual provocó un arrastre de error al calcular la disipación.",
+      completionPercentage: 85,
+      isValidSubmission: true,
+      pedagogicalRecommendation: "Tu intuición física sobre colisiones inelásticas es correcta y obtuviste crédito parcial en el paso 6 por consistencia con tu dato previo. Revisa siempre la homogeneidad dimensional de la energía cinética (J = kg·m²/s²) para no omitir el cuadrado de la velocidad.",
       steps: [
         {
           stepNumber: 1,
@@ -443,12 +449,15 @@ export const mockExamProblems: ExamProblem[] = [
     difficulty: "Medio",
     statementLatex: "\\int \\frac{3x + 5}{x^2 + 3x + 2} \\, dx. \\quad \\text{Resolver la integral indefinida expresando el resultado con logaritmos.}",
     estimatedMinutes: 18,
-    defaultSampleImage: "/samples/sample_exam_derivatives.svg",
+    defaultSampleImage: "/samples/sample_exam_integrals.svg",
     mockAudit: {
-      finalScore: 4.2,
+      finalScore: 4.9,
       maxScore: 5.0,
-      diagnosisTitle: "Dominio Intermedio Sólido",
-      summary: "Factorización y descomposición en fracciones simples perfectamente ejecutadas. Buena integración de términos logarítmicos.",
+      diagnosisTitle: "Dominio Sólido en Integración",
+      summary: "Factorización y descomposición en fracciones simples perfectamente ejecutadas. Buena integración de términos logarítmicos con constante de integración.",
+      completionPercentage: 100,
+      isValidSubmission: true,
+      pedagogicalRecommendation: "Procedimiento algebraico y cálculo de primitivas impecables. También puedes expresar la respuesta final compactada como ln|(x+1)²(x+2)| + C usando propiedades de logaritmos.",
       steps: [
         {
           stepNumber: 1,
@@ -490,12 +499,15 @@ export const mockExamProblems: ExamProblem[] = [
     difficulty: "Fácil",
     statementLatex: "A = \\begin{pmatrix} 4 & 1 \\\\ 2 & 3 \\end{pmatrix}. \\quad \\text{Determinar los autovalores } \\lambda \\text{ resolviendo } \\det(A - \\lambda I) = 0.",
     estimatedMinutes: 12,
-    defaultSampleImage: "/samples/sample_exam_physics.svg",
+    defaultSampleImage: "/samples/sample_exam_algebra.svg",
     mockAudit: {
       finalScore: 5.0,
       maxScore: 5.0,
       diagnosisTitle: "Procedimiento Perfecto",
       summary: "Deducción matricial ejemplar. Planteamiento riguroso del determinante y factorización cuadrática sin errores.",
+      completionPercentage: 100,
+      isValidSubmission: true,
+      pedagogicalRecommendation: "¡Dominio total! Puedes verificar rápidamente tus autovalores comprobando que su suma (5 + 2 = 7) coincide con la traza de A (4 + 3 = 7) y su producto (5 · 2 = 10) coincide con det(A) (12 - 2 = 10).",
       steps: [
         {
           stepNumber: 1,

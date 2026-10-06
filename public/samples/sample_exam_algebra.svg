@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 820" width="650" height="820">
+  <defs>
+    <pattern id="grid-algebra" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    </pattern>
+    <filter id="handwriting-shadow-a" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0.8" dy="0.8" stdDeviation="0.4" flood-color="#0f172a" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Fondo de hoja cuadriculada con margen -->
+  <rect width="650" height="820" fill="#fdfbf7"/>
+  <rect width="650" height="820" fill="url(#grid-algebra)" opacity="0.65"/>
+  <line x1="75" y1="0" x2="75" y2="820" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="4 2"/>
+
+  <!-- Encabezado manuscrito -->
+  <text x="95" y="50" font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" font-size="16" fill="#0f172a" font-weight="bold">
+    Álgebra Lineal — Parcial 3 (Camilo Vargas)
+  </text>
+  <text x="95" y="76" font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" font-size="13" fill="#475569">
+    Problema: Autovalores de A = [[4, 1], [2, 3]] resolviendo det(A - λI) = 0
+  </text>
+  <line x1="95" y1="92" x2="590" y2="92" stroke="#cbd5e1" stroke-width="1"/>
+
+  <!-- Desarrollo manuscrito paso a paso -->
+  <g font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" fill="#1e293b" font-size="18" filter="url(#handwriting-shadow-a)">
+    <!-- Paso 1 -->
+    <text x="95" y="150">1) Plantear matriz característica:  det( [ [4 - λ,  1], [2,  3 - λ] ] ) = 0</text>
+
+    <!-- Paso 2 -->
+    <text x="95" y="230">2) Determinante 2x2:  (4 - λ)(3 - λ) - (1)(2) = 0</text>
+
+    <!-- Paso 3 -->
+    <text x="95" y="310">3) Expandir polinomio:  12 - 4λ - 3λ + λ² - 2 = 0   =&gt;   λ² - 7λ + 10 = 0</text>
+
+    <!-- Paso 4 -->
+    <text x="95" y="395">4) Factorizar raíces:  (λ - 5)(λ - 2) = 0   =&gt;   λ₁ = 5,   λ₂ = 2</text>
+
+    <!-- Recuadro de respuesta final -->
+    <rect x="90" y="360" width="510" height="55" fill="none" stroke="#0f172a" stroke-width="2" rx="6"/>
+  </g>
+
+  <!-- Sello de muestra -->
+  <rect x="390" y="720" width="220" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="408" y="753" font-family="sans-serif" font-size="12" fill="#475569" font-weight="bold">
+    QUACK SAMPLE OCR #04
+  </text>
+</svg>

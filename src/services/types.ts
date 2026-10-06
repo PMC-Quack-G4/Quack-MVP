@@ -28,6 +28,7 @@ export interface IFeynmanService {
 export interface IOcrAuditService {
   auditSolution(
     problem: ExamProblem,
-    imageBase64OrUrl: string
+    imageBase64OrUrl: string,
+    rotation?: number
   ): Promise<MockAuditResult>;
 }
