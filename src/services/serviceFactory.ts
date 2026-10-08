@@ -6,7 +6,7 @@ import { mockOcrAuditService } from "./mockOcrAuditService";
 import { FeynmanTopic, ChatMessage } from "@/types/feynman";
 import { ExamProblem, MockAuditResult } from "@/types/exam";
 
-const hasApiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY);
+const hasApiKey = Boolean(import.meta.env.VITE_GCP_GEMINI_API_KEY);
 
 /**
  * Indica si el servicio de Gemini está configurado vía variables de entorno (.env).
@@ -24,7 +24,7 @@ export function getActiveModel(): string {
 
 /**
  * Adaptador para Feynman Oral:
- * Utiliza Gemini si VITE_GEMINI_API_KEY está configurada en .env, con reintentos y fallback a Mock pedagógico.
+ * Utiliza Gemini si VITE_GCP_GEMINI_API_KEY está configurada en .env, con reintentos y fallback a Mock pedagógico.
  */
 class FeynmanServiceAdapter implements IFeynmanService {
   async sendMessage(
@@ -75,7 +75,7 @@ class FeynmanServiceAdapter implements IFeynmanService {
 
 /**
  * Adaptador para Parcial a Ciegas OCR:
- * Utiliza Gemini Vision si VITE_GEMINI_API_KEY está configurada en .env, con fallback automático a Mock.
+ * Utiliza Gemini Vision si VITE_GCP_GEMINI_API_KEY está configurada en .env, con fallback automático a Mock.
  */
 class OcrAuditServiceAdapter implements IOcrAuditService {
   async auditSolution(
