@@ -40,7 +40,7 @@ export const ExamProblemSelector: React.FC<ExamProblemSelectorProps> = ({
           <Button
             size="lg"
             onClick={onStartExam}
-            className="bg-quack-gunmetal hover:bg-slate-800 text-white font-bold rounded-xl shadow-md gap-2 shrink-0 self-start sm:self-auto transition-transform hover:scale-[1.02]"
+            className="bg-quack-gunmetal hover:bg-slate-800 text-white font-bold rounded-xl  gap-2 shrink-0 self-start sm:self-auto transition-transform hover:scale-[1.02]"
           >
             Comenzar Parcial a Ciegas
             <ArrowRight className="h-4 w-4" />
@@ -56,9 +56,9 @@ export const ExamProblemSelector: React.FC<ExamProblemSelectorProps> = ({
             <Card
               key={problem.id}
               onClick={() => onSelectProblem(problem)}
-              className={`cursor-pointer transition-all duration-200 border-2 rounded-2xl overflow-hidden hover:shadow-md ${
+              className={`cursor-pointer transition-all duration-200 border-2 rounded-2xl overflow-hidden hover: ${
                 isSelected
-                  ? "border-quack-gunmetal bg-slate-50/80 shadow-md ring-2 ring-quack-gunmetal/20"
+                  ? "border-quack-gunmetal bg-slate-50  ring-2 ring-quack-gunmetal/20"
                   : "border-slate-200 hover:border-slate-300 bg-white"
               }`}
             >
@@ -100,11 +100,11 @@ export const ExamProblemSelector: React.FC<ExamProblemSelectorProps> = ({
                   <span className="text-[10px] uppercase font-semibold text-slate-400 block mb-1">
                     Enunciado del Problema
                   </span>
-                  <MathRenderer math={problem.statementLatex} block className="text-base text-slate-900" />
+                  <MathRenderer math={problem.statementLatex} block className="text-base text-quack-gunmetal" />
                 </div>
               </CardContent>
 
-              <CardFooter className="pt-0 flex justify-between items-center text-xs text-slate-500 border-t bg-slate-50/40 py-2.5 px-6">
+              <CardFooter className="pt-0 flex justify-between items-center text-xs text-slate-500 border-t/40 py-2.5 px-6">
                 <span className="flex items-center gap-1 text-quack-caramel font-medium">
                   <AlertCircle className="h-3.5 w-3.5" />
                   Resolución manual en papel

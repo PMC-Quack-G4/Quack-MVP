@@ -76,7 +76,7 @@ export const SpeechFallbackInput: React.FC<SpeechFallbackInputProps> = ({
         <Button
           type="submit"
           disabled={!inputText.trim() || isProcessing}
-          className="bg-quack-amber hover:bg-amber-400 text-quack-gunmetal font-bold rounded-xl px-4 gap-1.5 shrink-0 shadow-sm"
+          className="bg-quack-amber hover:bg-quack-sandy text-quack-gunmetal font-bold rounded-xl px-4 gap-1.5 shrink-0 "
         >
           <Send className="h-4 w-4" />
           <span className="hidden sm:inline">Enviar</span>

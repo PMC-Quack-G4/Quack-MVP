@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { FileCheck2, ArrowLeft, Cpu, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +21,19 @@ function formatDuration(totalSeconds: number): string {
 }
 
 export const ExamPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const moduleParam = searchParams.get("module");
+
+  const filteredProblems = React.useMemo(() => {
+    if (!moduleParam) return mockExamProblems;
+    if (moduleParam === "algebra") return mockExamProblems.filter(p => p.subject === "Álgebra Lineal");
+    if (moduleParam === "calculo") return mockExamProblems.filter(p => p.subject === "Cálculo Diferencial" || p.subject === "Cálculo Integral");
+    if (moduleParam === "fisica") return mockExamProblems.filter(p => p.subject === "Física Mecánica");
+    return mockExamProblems;
+  }, [moduleParam]);
+
   const [phase, setPhase] = React.useState<ExamPhase>("SETUP");
-  const [selectedProblem, setSelectedProblem] = React.useState<ExamProblem>(mockExamProblems[0]);
+  const [selectedProblem, setSelectedProblem] = React.useState<ExamProblem>(filteredProblems[0] || mockExamProblems[0]);
   const [selectedImage, setSelectedImage] = React.useState<string>("");
   const [rotation, setRotation] = React.useState<number>(0);
   const [isAuditing, setIsAuditing] = React.useState<boolean>(false);
@@ -106,9 +117,9 @@ export const ExamPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b pb-6">
         <div>
           <Button asChild variant="ghost" size="sm" className="mb-2 -ml-3 text-muted-foreground">
-            <Link to="/">
+            <Link to="/dashboard">
               <ArrowLeft className="mr-1.5 h-4 w-4" />
-              Volver al Inicio
+              Volver al Panel
             </Link>
           </Button>
           <div className="flex flex-wrap items-center gap-3">
@@ -120,7 +131,7 @@ export const ExamPage: React.FC = () => {
             {activeEngine === "gemini" ? (
               <Badge
                 variant="outline"
-                className="border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
+                className="border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold text-xs py-1 px-2.5 gap-1.5 "
                 title={`Motor de Visión: ${activeModel}`}
               >
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -130,7 +141,7 @@ export const ExamPage: React.FC = () => {
             ) : (
               <Badge
                 variant="outline"
-                className="border-slate-300 bg-slate-50 text-slate-700 font-medium text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
+                className="border-slate-300 bg-slate-50 text-slate-700 font-medium text-xs py-1 px-2.5 gap-1.5 "
                 title="Modo pedagógico local activo"
               >
                 <Database className="h-3.5 w-3.5 text-slate-500" />
@@ -148,7 +159,7 @@ export const ExamPage: React.FC = () => {
           <span
             className={`px-3 py-1.5 rounded-xl transition-all ${
               phase === "SETUP"
-                ? "bg-white text-quack-gunmetal shadow-sm font-bold"
+                ? "bg-white text-quack-gunmetal  font-bold"
                 : "text-slate-500"
             }`}
           >
@@ -157,7 +168,7 @@ export const ExamPage: React.FC = () => {
           <span
             className={`px-3 py-1.5 rounded-xl transition-all ${
               phase === "SOLVING"
-                ? "bg-white text-quack-caramel shadow-sm font-bold"
+                ? "bg-white text-quack-caramel  font-bold"
                 : "text-slate-500"
             }`}
           >
@@ -166,7 +177,7 @@ export const ExamPage: React.FC = () => {
           <span
             className={`px-3 py-1.5 rounded-xl transition-all ${
               phase === "UPLOAD"
-                ? "bg-white text-quack-amber shadow-sm font-bold"
+                ? "bg-white text-quack-amber  font-bold"
                 : "text-slate-500"
             }`}
           >
@@ -175,7 +186,7 @@ export const ExamPage: React.FC = () => {
           <span
             className={`px-3 py-1.5 rounded-xl transition-all ${
               phase === "AUDIT"
-                ? "bg-white text-emerald-700 shadow-sm font-bold"
+                ? "bg-white text-emerald-700  font-bold"
                 : "text-slate-500"
             }`}
           >
@@ -189,7 +200,7 @@ export const ExamPage: React.FC = () => {
       {/* FASE 1: SETUP */}
       {phase === "SETUP" && (
         <ExamProblemSelector
-          problems={mockExamProblems}
+          problems={filteredProblems}
           selectedProblemId={selectedProblem.id}
           onSelectProblem={handleSelectProblem}
           onStartExam={handleStartExam}
@@ -217,7 +228,7 @@ export const ExamPage: React.FC = () => {
       {phase === "UPLOAD" && !isAuditing && (
         <EvidenceDropzone
           problem={selectedProblem}
-          allProblems={mockExamProblems}
+          allProblems={filteredProblems}
           selectedImage={selectedImage}
           rotation={rotation}
           onRotate={() => setRotation((prev) => (prev + 90) % 360)}

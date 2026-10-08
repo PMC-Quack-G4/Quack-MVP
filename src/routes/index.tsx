@@ -3,6 +3,7 @@ import { RootLayout } from "@/layouts/RootLayout";
 import { HomePage } from "@/pages/HomePage";
 import { FeynmanDemoPage } from "@/pages/FeynmanDemoPage";
 import { ExamPage } from "@/pages/ExamPage";
+import { DashboardPage } from "@/pages/DashboardPage";
 
 export const router = createBrowserRouter([
   {
@@ -12,6 +13,10 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <HomePage />,
+      },
+      {
+        path: "dashboard",
+        element: <DashboardPage />,
       },
       {
         path: "feynman",

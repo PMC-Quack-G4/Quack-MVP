@@ -71,3 +71,9 @@ Thumbs.db
 scratch/
 tmp/
 temp/
+
+# Entornos de agentes de IA y herramientas locales
+.agent/
+.agents/
+.gemini/
+.impeccable/

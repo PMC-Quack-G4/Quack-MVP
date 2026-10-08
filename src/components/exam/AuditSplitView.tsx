@@ -101,7 +101,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
       {auditResult.warning && !warningDismissed && (
         <div
           role="alert"
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 text-xs bg-amber-50 border border-amber-300 rounded-2xl text-amber-900 shadow-2xs"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 text-xs bg-amber-50 border border-amber-300 rounded-2xl text-amber-900 "
         >
           <div className="flex items-center gap-2.5">
             <AlertCircle className="h-4 w-4 text-quack-caramel shrink-0" />
@@ -131,12 +131,12 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
 
       {/* Banner de Rúbrica y Diagnóstico Global */}
       <div
-        className={`rounded-3xl border-2 p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm ${
+        className={`rounded-3xl border-2 p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6  ${
           isHighPass
-            ? "border-emerald-300 bg-gradient-to-br from-emerald-50 via-emerald-50/50 to-white"
+            ? "border-emerald-300 bg-emerald-50"
             : isPassing
-            ? "border-amber-300 bg-gradient-to-br from-amber-50 via-amber-50/50 to-white"
-            : "border-rose-300 bg-gradient-to-br from-rose-50 via-rose-50/50 to-white"
+            ? "border-amber-300 bg-amber-50"
+            : "border-rose-300 bg-rose-50"
         }`}
       >
         <div className="space-y-3 max-w-2xl">
@@ -157,7 +157,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
             {auditResult.engineUsed === "gemini" ? (
               <Badge
                 variant="outline"
-                className="border-emerald-400 bg-white/90 text-emerald-800 text-[11px] font-semibold gap-1"
+                className="border-emerald-400 bg-white text-emerald-800 text-[11px] font-semibold gap-1"
               >
                 <Cpu className="h-3 w-3 text-emerald-600" />
                 Auditado con Gemini Vision
@@ -165,7 +165,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
             ) : (
               <Badge
                 variant="outline"
-                className="border-slate-300 bg-white/90 text-slate-700 text-[11px] font-medium gap-1"
+                className="border-slate-300 bg-white text-slate-700 text-[11px] font-medium gap-1"
               >
                 <Database className="h-3 w-3 text-slate-500" />
                 Evaluador Local
@@ -175,7 +175,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
             {elapsedTimeFormatted && (
               <Badge
                 variant="outline"
-                className="border-slate-300 bg-white/90 text-slate-600 text-[11px] font-medium gap-1"
+                className="border-slate-300 bg-white text-slate-600 text-[11px] font-medium gap-1"
               >
                 <Clock className="h-3 w-3 text-quack-caramel" />
                 Tiempo en papel: {elapsedTimeFormatted}
@@ -197,7 +197,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
           </p>
 
           {auditResult.pedagogicalRecommendation && (
-            <div className="rounded-2xl bg-white/85 border border-slate-200/90 p-3.5 flex items-start gap-2.5 text-xs text-slate-700 shadow-2xs">
+            <div className="rounded-2xl bg-white border border-slate-200 p-3.5 flex items-start gap-2.5 text-xs text-slate-700 ">
               <Lightbulb className="h-4 w-4 text-quack-amber shrink-0 mt-0.5" />
               <div>
                 <strong className="text-quack-gunmetal font-bold">Recomendación Pedagógica de Quack: </strong>
@@ -208,7 +208,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
         </div>
 
         {/* Calificación Final Destacada y Métricas */}
-        <div className="rounded-2xl bg-white border-2 border-slate-200/80 p-5 text-center shadow-md shrink-0 self-stretch md:self-auto min-w-[220px] flex flex-col justify-center gap-3">
+        <div className="rounded-2xl bg-white border-2 border-slate-200 p-5 text-center  shrink-0 self-stretch md:self-auto min-w-[220px] flex flex-col justify-center gap-3">
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
               Calificación del Parcial
@@ -290,7 +290,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={onRotate}
-                className="h-7 px-2 text-[11px] gap-1 bg-white rounded-lg shadow-2xs"
+                className="h-7 px-2 text-[11px] gap-1 bg-white rounded-lg "
                 title="Rotar imagen 90 grados"
               >
                 <RotateCw className="h-3 w-3" />
@@ -302,7 +302,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsZoomed(!isZoomed)}
-                className="h-7 px-2 text-[11px] gap-1 bg-white rounded-lg shadow-2xs"
+                className="h-7 px-2 text-[11px] gap-1 bg-white rounded-lg "
               >
                 <ZoomIn className="h-3 w-3" />
                 {isZoomed ? "Ajustar" : "Zoom"}
@@ -310,7 +310,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
             </div>
           </div>
 
-          <div className="rounded-3xl border-2 border-slate-200 bg-white p-3 shadow-sm sticky top-20 overflow-hidden">
+          <div className="rounded-3xl border-2 border-slate-200 bg-white p-3  sticky top-20 overflow-hidden">
             <div className={`overflow-auto transition-all ${isZoomed ? "max-h-[700px]" : "max-h-[520px]"}`}>
               <img
                 src={selectedImage}
@@ -347,7 +347,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
             return (
               <Card
                 key={step.stepNumber}
-                className={`rounded-2xl border-2 shadow-sm transition-all overflow-hidden ${
+                className={`rounded-2xl border-2  transition-all overflow-hidden ${
                   isCorrect
                     ? "border-slate-200 bg-white"
                     : isAlgebraic
@@ -357,7 +357,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
                     : "border-slate-300 bg-slate-50/40"
                 }`}
               >
-                <CardHeader className="py-3 px-5 border-b bg-slate-50/50 flex flex-row items-center justify-between">
+                <CardHeader className="py-3 px-5 border-b flex flex-row items-center justify-between">
                   <span className="font-bold text-xs text-slate-700">
                     Paso #{step.stepNumber}
                   </span>
@@ -366,24 +366,24 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
 
                 <CardContent className="p-5 space-y-3">
                   {/* Expresión en KaTeX */}
-                  <div className="rounded-xl bg-slate-50/80 p-3.5 border text-center shadow-inner overflow-x-auto">
-                    <MathRenderer math={step.latexExpression} block className="text-base sm:text-lg text-slate-900" />
+                  <div className="rounded-xl bg-slate-50 p-3.5 border text-center  overflow-x-auto">
+                    <MathRenderer math={step.latexExpression} block className="text-base sm:text-lg text-quack-gunmetal" />
                   </div>
 
                   {/* Feedback puntual del paso */}
-                  <div className="text-xs text-slate-700 leading-relaxed bg-white/70 p-3 rounded-xl border border-slate-100">
+                  <div className="text-xs text-slate-700 leading-relaxed bg-white p-3 rounded-xl border border-slate-100">
                     <strong className="text-quack-gunmetal">Evaluación analítica: </strong>
                     {step.feedback}
                   </div>
 
                   {/* Sugerencia de corrección con KaTeX (si hubo fallo) */}
                   {step.suggestedFixLatex && (
-                    <div className="rounded-xl bg-amber-50/80 border border-amber-200 p-3 space-y-1.5 overflow-x-auto">
+                    <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 space-y-1.5 overflow-x-auto">
                       <span className="text-[11px] font-bold text-amber-900 flex items-center gap-1 uppercase tracking-wide">
                         <CheckCheck className="h-3.5 w-3.5 text-amber-700" />
                         Corrección Matemática Esperada:
                       </span>
-                      <MathRenderer math={step.suggestedFixLatex} block className="text-sm text-slate-900" />
+                      <MathRenderer math={step.suggestedFixLatex} block className="text-sm text-quack-gunmetal" />
                     </div>
                   )}
                 </CardContent>
@@ -405,7 +405,7 @@ export const AuditSplitView: React.FC<AuditSplitViewProps> = ({
             <Button
               size="sm"
               onClick={onReuploadEvidence}
-              className="w-full sm:w-auto bg-quack-gunmetal hover:bg-slate-800 text-white font-bold rounded-xl text-xs gap-1.5 shadow-sm"
+              className="w-full sm:w-auto bg-quack-gunmetal hover:bg-slate-800 text-white font-bold rounded-xl text-xs gap-1.5 "
             >
               Subir Otra Evidencia o Tomar Foto
               <ArrowRight className="h-3.5 w-3.5" />

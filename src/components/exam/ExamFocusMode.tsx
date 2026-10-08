@@ -34,7 +34,7 @@ export const ExamFocusMode: React.FC<ExamFocusModeProps> = ({
           variant="ghost"
           size="sm"
           onClick={onBackToSelector}
-          className="text-slate-500 hover:text-slate-900 -ml-2 gap-1.5"
+          className="text-slate-500 hover:text-quack-gunmetal -ml-2 gap-1.5"
         >
           <ArrowLeft className="h-4 w-4" />
           Abandonar / Cambiar Ejercicio
@@ -46,8 +46,8 @@ export const ExamFocusMode: React.FC<ExamFocusModeProps> = ({
         </Badge>
       </div>
 
-      <Card className="border-2 border-slate-300 shadow-lg rounded-3xl overflow-hidden bg-white">
-        <CardHeader className="border-b bg-slate-50/70 pb-4">
+      <Card className="border-2 border-slate-300  rounded-3xl overflow-hidden bg-white">
+        <CardHeader className="border-b/70 pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
               <Badge variant="secondary" className="text-xs mb-1">
@@ -69,19 +69,19 @@ export const ExamFocusMode: React.FC<ExamFocusModeProps> = ({
 
         <CardContent className="space-y-8 p-6 sm:p-8">
           {/* Enunciado Oficial destacado en KaTeX */}
-          <div className="rounded-2xl bg-slate-50 border-2 border-slate-200/80 p-6 sm:p-8 text-center shadow-inner">
+          <div className="rounded-2xl bg-slate-50 border-2 border-slate-200 p-6 sm:p-8 text-center ">
             <span className="text-xs uppercase font-bold text-slate-500 tracking-wider block mb-3">
               Enunciado Oficial del Examen
             </span>
             <MathRenderer
               math={problem.statementLatex}
               block
-              className="text-xl sm:text-2xl font-medium text-slate-900 leading-relaxed overflow-x-auto py-2"
+              className="text-xl sm:text-2xl font-medium text-quack-gunmetal leading-relaxed overflow-x-auto py-2"
             />
           </div>
 
           {/* Cronómetro de Enfoque con Controles */}
-          <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-amber-50/40 border border-amber-200 space-y-4">
+          <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-amber-50 border border-amber-200 space-y-4">
             <div className="flex items-center gap-2">
               <span className={`h-2.5 w-2.5 rounded-full ${isPaused ? "bg-amber-500" : "bg-emerald-500 animate-pulse"}`} />
               <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -126,7 +126,7 @@ export const ExamFocusMode: React.FC<ExamFocusModeProps> = ({
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t bg-slate-50/60 p-6">
+        <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t/60 p-6">
           <span className="text-xs text-slate-500 text-center sm:text-left">
             Al confirmar, el cronómetro se detendrá y podrás tomar o subir la foto de tu hoja manuscrita.
           </span>
@@ -134,7 +134,7 @@ export const ExamFocusMode: React.FC<ExamFocusModeProps> = ({
           <Button
             size="lg"
             onClick={onFinishPaper}
-            className="w-full sm:w-auto bg-quack-amber hover:bg-amber-400 text-quack-gunmetal font-bold rounded-xl shadow-md gap-2"
+            className="w-full sm:w-auto bg-quack-amber hover:bg-amber-400 text-quack-gunmetal font-bold rounded-xl  gap-2"
           >
             <UploadCloud className="h-5 w-5" />
             He terminado en papel (Subir foto)

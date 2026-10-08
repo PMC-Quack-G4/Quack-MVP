@@ -93,12 +93,12 @@ export const PushToTalkButton: React.FC<PushToTalkButtonProps> = ({
               ? "Quack está reflexionando"
               : "Mantén presionado para hablar con Quack"
           }
-          className={`relative z-10 flex h-24 w-24 sm:h-28 sm:w-28 flex-col items-center justify-center rounded-full border-4 shadow-xl transition-all duration-200 select-none cursor-pointer outline-none focus-visible:ring-4 focus-visible:ring-quack-amber ${
+          className={`relative z-10 flex h-24 w-24 sm:h-28 sm:w-28 flex-col items-center justify-center rounded-full border-4  transition-all duration-200 select-none cursor-pointer outline-none focus-visible:ring-4 focus-visible:ring-quack-amber ${
             isListening
-              ? "scale-105 border-quack-caramel bg-gradient-to-br from-quack-amber via-quack-sandy to-quack-caramel text-white shadow-quack-amber/50 shadow-2xl"
+              ? "scale-105 border-quack-caramel bg-quack-amber text-white  "
               : isProcessing
               ? "border-amber-300 bg-amber-50 text-quack-gunmetal cursor-wait"
-              : "border-quack-amber bg-quack-amber hover:bg-amber-400 text-quack-gunmetal hover:scale-105 active:scale-95 shadow-amber-300/40"
+              : "border-quack-amber bg-quack-amber hover:bg-quack-sandy text-quack-gunmetal hover:scale-105 active:scale-95 "
           } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           {isProcessing ? (
@@ -155,7 +155,7 @@ export const PushToTalkButton: React.FC<PushToTalkButtonProps> = ({
                 <button
                   type="button"
                   onClick={onEnableTextInput}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-quack-gunmetal bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all hover:border-amber-300 active:scale-95 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-quack-amber"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-quack-gunmetal bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all hover:border-amber-300 active:scale-95  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-quack-amber"
                   aria-label="Habilitar opción por texto"
                   title="Habilitar opción para escribir tu explicación por texto"
                 >

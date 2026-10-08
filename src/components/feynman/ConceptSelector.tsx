@@ -41,7 +41,7 @@ export const ConceptSelector: React.FC<ConceptSelectorProps> = ({
           <Button
             size="lg"
             onClick={onStartSession}
-            className="bg-quack-amber hover:bg-amber-500 text-quack-gunmetal font-bold shadow-md gap-2 rounded-xl shrink-0 self-start sm:self-auto transition-all transform hover:scale-[1.02]"
+            className="bg-quack-amber hover:bg-quack-sandy text-quack-gunmetal font-bold  gap-2 rounded-xl shrink-0 self-start sm:self-auto transition-all transform hover:scale-[1.02]"
           >
             Iniciar Sesión con Quack
             <ArrowRight className="h-4 w-4" />
@@ -57,9 +57,9 @@ export const ConceptSelector: React.FC<ConceptSelectorProps> = ({
             <Card
               key={topic.id}
               onClick={() => onSelectTopic(topic)}
-              className={`cursor-pointer transition-all duration-200 border-2 rounded-2xl overflow-hidden hover:shadow-md ${
+              className={`cursor-pointer transition-all duration-200 border-2 rounded-2xl overflow-hidden hover: ${
                 isSelected
-                  ? "border-quack-amber bg-quack-dandelion/15 shadow-sm ring-2 ring-quack-amber/30"
+                  ? "border-quack-amber bg-quack-dandelion  ring-2 ring-quack-amber"
                   : "border-slate-200 hover:border-slate-300 bg-white"
               }`}
             >
@@ -92,7 +92,7 @@ export const ConceptSelector: React.FC<ConceptSelectorProps> = ({
 
               <CardContent className="space-y-3">
                 {topic.formulaLatex && (
-                  <div className="rounded-xl bg-slate-50/80 p-2.5 border text-center">
+                  <div className="rounded-xl bg-slate-50 p-2.5 border text-center">
                     <MathRenderer math={topic.formulaLatex} block className="text-base text-slate-900" />
                   </div>
                 )}
@@ -115,7 +115,7 @@ export const ConceptSelector: React.FC<ConceptSelectorProps> = ({
                 </div>
               </CardContent>
 
-              <CardFooter className="pt-0 flex justify-between items-center text-xs text-slate-500 border-t bg-slate-50/40 py-2.5 px-6">
+              <CardFooter className="pt-0 flex justify-between items-center text-xs text-slate-500 border-t/40 py-2.5 px-6">
                 <span>{topic.subtopics.length} subconceptos críticos</span>
                 <span className={`font-semibold ${isSelected ? "text-quack-caramel" : "text-slate-400"}`}>
                   {isSelected ? "✓ Seleccionado para enseñar" : "Click para elegir"}

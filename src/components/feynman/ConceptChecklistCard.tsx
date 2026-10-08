@@ -40,8 +40,8 @@ export const ConceptChecklistCard: React.FC<ConceptChecklistCardProps> = ({
   const allMastered = masteredCount === totalCount && totalCount > 0;
 
   return (
-    <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden bg-white">
-      <CardHeader className="pb-3 border-b bg-slate-50/50">
+    <Card className="border-slate-200  rounded-2xl overflow-hidden bg-white">
+      <CardHeader className="pb-3 border-b">
         <div className="flex items-center justify-between">
           <Badge className="bg-quack-dandelion text-quack-gunmetal border-quack-amber/40 font-semibold text-[11px]">
             Auditoría en Tiempo Real
@@ -99,13 +99,13 @@ export const ConceptChecklistCard: React.FC<ConceptChecklistCardProps> = ({
               key={subtopic.id}
               className={`p-3 rounded-xl border transition-all duration-200 ${
                 isMastered
-                  ? "border-emerald-200 bg-emerald-50/40 text-emerald-950 shadow-2xs"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-950 "
                   : isPartial
-                  ? "border-amber-300 bg-amber-50/50 text-amber-950 shadow-2xs"
+                  ? "border-amber-300 bg-amber-50 text-amber-950 "
                   : isFailed
                   ? "border-slate-300 bg-slate-100/60 text-slate-700"
                   : isEvaluating
-                  ? "border-amber-400 bg-amber-50/60 text-quack-gunmetal ring-2 ring-quack-amber/30"
+                  ? "border-amber-400 bg-amber-50 text-quack-gunmetal ring-2 ring-quack-amber"
                   : "border-slate-200 bg-slate-50/40 text-slate-700"
               }`}
             >
@@ -187,7 +187,7 @@ export const ConceptChecklistCard: React.FC<ConceptChecklistCardProps> = ({
         })}
       </CardContent>
 
-      <CardFooter className="pt-2 pb-4 px-4 border-t bg-slate-50/50 flex flex-col gap-2">
+      <CardFooter className="pt-2 pb-4 px-4 border-t flex flex-col gap-2">
         <Button
           onClick={onFinishSession}
           className={`w-full font-semibold rounded-xl text-xs gap-1.5 ${

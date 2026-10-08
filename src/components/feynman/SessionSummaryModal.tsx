@@ -27,15 +27,15 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-      <Card className="w-full max-w-xl rounded-3xl border-2 border-quack-amber shadow-2xl bg-white overflow-hidden animate-scaleUp">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-quack-gunmetal  animate-fadeIn">
+      <Card className="w-full max-w-xl rounded-3xl border-2 border-quack-amber  bg-white overflow-hidden animate-scaleUp">
         {/* Banner Superior con Identidad Quack */}
         <div className="relative bg-gradient-to-r from-quack-dandelion via-quack-amber to-quack-sandy p-6 text-quack-gunmetal flex items-center gap-4">
-          <div className="h-16 w-16 rounded-2xl bg-white/90 p-2 shadow-md shrink-0 flex items-center justify-center border border-amber-300">
+          <div className="h-16 w-16 rounded-2xl bg-white p-2  shrink-0 flex items-center justify-center border border-amber-300">
             <img src="/brand/quack-logo.png" alt="Quack Rubber Duck" className="h-12 w-12 object-contain" />
           </div>
           <div>
-            <Badge className="bg-white/80 text-quack-gunmetal font-bold border-0 text-[10px] uppercase tracking-wider mb-1">
+            <Badge className="bg-white text-quack-gunmetal font-bold border-0 text-[10px] uppercase tracking-wider mb-1">
               Balance Final de Sesión
             </Badge>
             <CardTitle className="font-brand text-2xl text-quack-gunmetal leading-tight">
@@ -147,7 +147,7 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
           )}
 
           {/* Consejo pedagógico */}
-          <div className="rounded-2xl bg-amber-50/60 border border-amber-200/80 p-3.5 text-xs text-slate-700 space-y-1">
+          <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3.5 text-xs text-slate-700 space-y-1">
             <span className="font-bold text-quack-caramel block">
               💡 Consejo Pedagógico de Quack:
             </span>
@@ -157,7 +157,7 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col sm:flex-row gap-2 border-t bg-slate-50/50 p-4">
+        <CardFooter className="flex flex-col sm:flex-row gap-2 border-t p-4">
           <Button
             variant="outline"
             size="sm"
@@ -180,7 +180,7 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
           <Button
             size="sm"
             onClick={onChooseOtherTopic}
-            className="w-full sm:w-auto sm:ml-auto bg-quack-amber hover:bg-amber-400 text-quack-gunmetal font-bold text-xs gap-1.5 rounded-xl shadow-sm"
+            className="w-full sm:w-auto sm:ml-auto bg-quack-amber hover:bg-quack-sandy text-quack-gunmetal font-bold text-xs gap-1.5 rounded-xl "
           >
             Elegir Otro Concepto
             <ArrowRight className="h-3.5 w-3.5" />

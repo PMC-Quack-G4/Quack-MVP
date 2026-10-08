@@ -57,15 +57,15 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-[460px] rounded-2xl border border-slate-200 bg-slate-50/50 overflow-hidden shadow-inner">
+    <div className="flex flex-col h-[460px] rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden ">
       {/* Feed Scrollable */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
         {/* Mensaje de bienvenida inicial de Quack */}
         <div className="flex gap-3 items-start max-w-[85%] sm:max-w-[75%]">
-          <div className="h-9 w-9 rounded-full bg-quack-dandelion border border-quack-amber flex items-center justify-center p-1 shrink-0 shadow-sm">
+          <div className="h-9 w-9 rounded-full bg-quack-dandelion border border-quack-amber flex items-center justify-center p-1 shrink-0 ">
             <img src="/brand/quack-logo.png" alt="Quack Avatar" className="h-7 w-7 object-contain" />
           </div>
-          <div className="rounded-2xl rounded-tl-sm bg-white border border-amber-200 p-4 shadow-sm text-sm text-slate-800 space-y-2">
+          <div className="rounded-2xl rounded-tl-sm bg-white border border-amber-200 p-4  text-sm text-slate-800 space-y-2">
             <div className="flex items-center justify-between gap-2 border-b pb-1.5">
               <span className="font-brand font-bold text-xs text-quack-gunmetal flex items-center gap-1">
                 <Sparkles className="h-3 w-3 text-quack-caramel" />
@@ -88,7 +88,7 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
           if (isStudent) {
             return (
               <div key={message.id} className="flex gap-2.5 items-start justify-end max-w-[85%] sm:max-w-[75%] ml-auto">
-                <div className="rounded-2xl rounded-tr-sm bg-quack-gunmetal text-white p-4 shadow-sm text-sm space-y-1.5">
+                <div className="rounded-2xl rounded-tr-sm bg-quack-gunmetal text-white p-4  text-sm space-y-1.5">
                   <div className="flex items-center justify-between gap-3 border-b border-white/20 pb-1">
                     <span className="font-semibold text-xs text-quack-dandelion flex items-center gap-1">
                       <User className="h-3 w-3" />
@@ -106,10 +106,10 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
 
           return (
             <div key={message.id} className="flex gap-3 items-start max-w-[85%] sm:max-w-[75%]">
-              <div className="h-9 w-9 rounded-full bg-quack-dandelion border border-quack-amber flex items-center justify-center p-1 shrink-0 shadow-sm">
+              <div className="h-9 w-9 rounded-full bg-quack-dandelion border border-quack-amber flex items-center justify-center p-1 shrink-0 ">
                 <img src="/brand/quack-logo.png" alt="Quack Avatar" className="h-7 w-7 object-contain" />
               </div>
-              <div className="rounded-2xl rounded-tl-sm bg-white border border-amber-200/80 p-4 shadow-sm text-sm text-slate-800 space-y-2">
+              <div className="rounded-2xl rounded-tl-sm bg-white border border-amber-200 p-4  text-sm text-slate-800 space-y-2">
                 <div className="flex items-center justify-between gap-3 border-b pb-1.5">
                   <span className="font-brand font-bold text-xs text-quack-gunmetal flex items-center gap-1">
                     <Sparkles className="h-3 w-3 text-quack-caramel" />
@@ -160,7 +160,7 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
         {/* Burbuja activa de escucha en tiempo real */}
         {isListening && (
           <div className="flex gap-2.5 items-start justify-end max-w-[85%] sm:max-w-[75%] ml-auto animate-fadeIn">
-            <div className="rounded-2xl rounded-tr-sm bg-quack-gunmetal/85 text-white p-3.5 shadow-md text-sm border-2 border-quack-amber">
+            <div className="rounded-2xl rounded-tr-sm bg-quack-gunmetal text-white p-3.5  text-sm border-2 border-quack-amber">
               <div className="flex items-center gap-2 mb-1 text-[11px] text-quack-dandelion font-semibold">
                 <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
                 Capturando tu voz en vivo...
@@ -175,10 +175,10 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
         {/* Burbuja animada de Quack pensando / escribiendo */}
         {isProcessing && (
           <div className="flex gap-3 items-start max-w-[85%] sm:max-w-[75%] animate-fadeIn">
-            <div className="h-9 w-9 rounded-full bg-quack-dandelion border border-quack-amber flex items-center justify-center p-1 shrink-0 shadow-sm animate-pulse">
+            <div className="h-9 w-9 rounded-full bg-quack-dandelion border border-quack-amber flex items-center justify-center p-1 shrink-0  animate-pulse">
               <img src="/brand/quack-logo.png" alt="Quack Avatar" className="h-7 w-7 object-contain" />
             </div>
-            <div className="rounded-2xl rounded-tl-sm bg-white border border-amber-200/90 p-3.5 shadow-sm text-sm space-y-1.5">
+            <div className="rounded-2xl rounded-tl-sm bg-white border border-amber-200 p-3.5  text-sm space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-brand font-bold text-quack-gunmetal">
                 <Sparkles className="h-3 w-3 text-quack-caramel" />
                 Quack está reflexionando...
