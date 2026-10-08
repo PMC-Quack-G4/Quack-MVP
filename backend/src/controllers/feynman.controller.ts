@@ -27,12 +27,24 @@ router.post('/', async (req: Request, res: Response): Promise<any> => {
   try {
     const { topic, history, studentInput, currentCoveredIds, subtopicScores, activeSubtopicId } = req.body;
 
-    const apiKey = process.env.GCP_GEMINI_API_KEY || process.env.VITE_GCP_GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: "No hay API Key de Gemini configurada en el backend." });
-    }
+    // Inicializar el cliente (soporta Vertex AI o API Key)
+    let client;
+    const isVertex = process.env.USE_VERTEX_AI === 'true';
 
-    const client = new GoogleGenAI({ apiKey });
+    if (isVertex) {
+      client = new GoogleGenAI({
+        vertexai: {
+          project: process.env.GCP_PROJECT_ID || 'carloscafe-511015',
+          location: process.env.GCP_LOCATION || 'us-central1'
+        }
+      });
+    } else {
+      const apiKey = process.env.GCP_GEMINI_API_KEY || process.env.VITE_GCP_GEMINI_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: "No hay API Key ni configuración de Vertex AI en el servidor." });
+      }
+      client = new GoogleGenAI({ apiKey });
+    }
 
     // Determinar el subconcepto en evaluación activa
     let currentActive = activeSubtopicId;

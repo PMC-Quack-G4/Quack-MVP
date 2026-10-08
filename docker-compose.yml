@@ -7,6 +7,10 @@ services:
     container_name: quack_backend
     env_file:
       - .env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-service-account.json
+    volumes:
+      - ./gcp-service-account.json:/app/gcp-service-account.json:ro
     expose:
       - "3000"
     restart: always

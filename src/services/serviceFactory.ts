@@ -6,13 +6,13 @@ import { mockOcrAuditService } from "./mockOcrAuditService";
 import { FeynmanTopic, ChatMessage } from "@/types/feynman";
 import { ExamProblem, MockAuditResult } from "@/types/exam";
 
-const hasApiKey = Boolean(import.meta.env.VITE_GCP_GEMINI_API_KEY);
+const useBackend = import.meta.env.VITE_FORCE_MOCK !== 'true';
 
 /**
- * Indica si el servicio de Gemini está configurado vía variables de entorno (.env).
+ * Indica si el servicio de Gemini está intentando conectarse vía backend.
  */
 export function isGeminiActive(): boolean {
-  return hasApiKey;
+  return useBackend;
 }
 
 /**
@@ -35,7 +35,7 @@ class FeynmanServiceAdapter implements IFeynmanService {
     subtopicScores?: Record<string, SubtopicScoreData>,
     activeSubtopicId?: string
   ): Promise<FeynmanEvaluationResult> {
-    if (hasApiKey) {
+    if (useBackend) {
       try {
         return await geminiFeynmanService.sendMessage(
           topic,
@@ -83,7 +83,7 @@ class OcrAuditServiceAdapter implements IOcrAuditService {
     imageBase64OrUrl: string,
     rotation = 0
   ): Promise<MockAuditResult> {
-    if (hasApiKey) {
+    if (useBackend) {
       try {
         return await geminiOcrAuditService.auditSolution(problem, imageBase64OrUrl, rotation);
       } catch (err) {
