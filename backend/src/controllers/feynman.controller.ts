@@ -33,10 +33,9 @@ router.post('/', async (req: Request, res: Response): Promise<any> => {
 
     if (isVertex) {
       client = new GoogleGenAI({
-        vertexai: {
-          project: process.env.GCP_PROJECT_ID || 'carloscafe-511015',
-          location: process.env.GCP_LOCATION || 'us-central1'
-        }
+        vertexai: true,
+        project: process.env.GCP_PROJECT_ID || 'carloscafe-511015',
+        location: process.env.GCP_LOCATION || 'us-central1'
       });
     } else {
       const apiKey = process.env.GCP_GEMINI_API_KEY || process.env.VITE_GCP_GEMINI_API_KEY;

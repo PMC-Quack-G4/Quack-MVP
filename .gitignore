@@ -77,3 +77,5 @@ temp/
 .agents/
 .gemini/
 .impeccable/
+
+gcp-service-account.json
