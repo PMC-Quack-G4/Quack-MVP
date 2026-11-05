@@ -19,6 +19,8 @@ export default {
       fontFamily: {
         sans: ["Inter", "sans-serif"],
         brand: ["Comfortaa", "cursive", "sans-serif"],
+        // Solo para anotaciones "manuscritas" decorativas de la landing
+        hand: ["Caveat", "cursive"],
       },
       colors: {
         // Quack Official Brand Palette

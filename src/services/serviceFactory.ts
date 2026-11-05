@@ -3,7 +3,7 @@ import { geminiFeynmanService } from "./geminiFeynmanService";
 import { mockFeynmanService } from "./mockFeynmanService";
 import { geminiOcrAuditService } from "./geminiOcrAuditService";
 import { mockOcrAuditService } from "./mockOcrAuditService";
-import { FeynmanTopic, ChatMessage } from "@/types/feynman";
+import { FeynmanTopic, ChatMessage, SubtopicScoreData } from "@/types/feynman";
 import { ExamProblem, MockAuditResult } from "@/types/exam";
 
 const hasApiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY);

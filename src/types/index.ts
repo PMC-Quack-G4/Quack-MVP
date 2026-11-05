@@ -4,6 +4,7 @@
 
 export * from "./feynman";
 export * from "./exam";
+export * from "./landing";
 
 export type StemSubject =
   | "fisica-mecanica"

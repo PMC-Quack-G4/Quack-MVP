@@ -334,7 +334,7 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
 export class MockFeynmanService implements IFeynmanService {
   async sendMessage(
     topic: FeynmanTopic,
-    history: ChatMessage[],
+    _history: ChatMessage[],
     studentInput: string,
     currentCoveredIds: string[],
     subtopicScores?: Record<string, SubtopicScoreData>,

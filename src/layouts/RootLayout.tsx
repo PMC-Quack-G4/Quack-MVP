@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   Sparkles,
   Home,
@@ -14,6 +14,14 @@ import { isGeminiActive, getActiveModel } from "@/services/serviceFactory";
 export const RootLayout: React.FC = () => {
   const isOnline = isGeminiActive();
   const activeModel = getActiveModel();
+  const location = useLocation();
+  const isLanding = location.pathname === "/";
+
+  // En la landing page ("/") aplicamos el principio StoryBrand de Simplicidad Radical:
+  // encabezado minimalista sin menús de fuga y footer completo tipo "Junk Drawer".
+  if (isLanding) {
+    return <Outlet />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50/50 text-slate-900">
@@ -62,7 +70,7 @@ export const RootLayout: React.FC = () => {
                 }
               >
                 <Mic className="h-4 w-4" />
-                Módulo 1: Feynman Oral
+                Explícale a Quack
               </NavLink>
 
               <NavLink
@@ -76,7 +84,7 @@ export const RootLayout: React.FC = () => {
                 }
               >
                 <FileCheck2 className="h-4 w-4" />
-                Módulo 2: Parcial a Ciegas OCR
+                Parcial a Ciegas
               </NavLink>
             </nav>
           </div>

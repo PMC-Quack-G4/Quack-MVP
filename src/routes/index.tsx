@@ -1,8 +1,22 @@
+import * as React from "react";
 import { createBrowserRouter } from "react-router-dom";
 import { RootLayout } from "@/layouts/RootLayout";
 import { HomePage } from "@/pages/HomePage";
-import { FeynmanDemoPage } from "@/pages/FeynmanDemoPage";
-import { ExamPage } from "@/pages/ExamPage";
+
+// Code-splitting de los módulos interactivos para que la landing page ("/")
+// cargue en < 2 segundos sin descargar el SDK de Gemini ni los mocks pesados.
+const FeynmanDemoPage = React.lazy(() =>
+  import("@/pages/FeynmanDemoPage").then((m) => ({ default: m.FeynmanDemoPage }))
+);
+const ExamPage = React.lazy(() =>
+  import("@/pages/ExamPage").then((m) => ({ default: m.ExamPage }))
+);
+
+const RouteFallback: React.FC = () => (
+  <div className="container py-16 text-center font-brand text-quack-gunmetal">
+    Cargando módulo de práctica…
+  </div>
+);
 
 export const router = createBrowserRouter([
   {
@@ -15,11 +29,19 @@ export const router = createBrowserRouter([
       },
       {
         path: "feynman",
-        element: <FeynmanDemoPage />,
+        element: (
+          <React.Suspense fallback={<RouteFallback />}>
+            <FeynmanDemoPage />
+          </React.Suspense>
+        ),
       },
       {
         path: "parcial-ciegas",
-        element: <ExamPage />,
+        element: (
+          <React.Suspense fallback={<RouteFallback />}>
+            <ExamPage />
+          </React.Suspense>
+        ),
       },
       {
         path: "*",
