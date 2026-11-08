@@ -1,54 +1,56 @@
 import * as React from "react";
-import { Check, ChevronDown } from "lucide-react";
 import { CtaButton } from "./CtaButton";
 import { Hero3DScene } from "./Hero3DScene";
-import { MathRenderer } from "@/components/common/MathRenderer";
-import { heroVariants, studyTopics } from "@/mocks/landingContent";
+import { heroVariants } from "@/mocks/landingContent";
 import { useABVariant } from "@/hooks/useABVariant";
 import type { HeroVariantId } from "@/types/landing";
 
 const variantIds: readonly HeroVariantId[] = heroVariants.map((v) => v.id);
 
-const marqueeItems: readonly { label: string; math: string }[] = [
-  { label: studyTopics[0] ?? "Física", math: "\\vec{F} = \\frac{d\\vec{p}}{dt}" },
-  { label: studyTopics[1] ?? "Cálculo", math: "\\int_a^b f(x)\\,dx = F(b) - F(a)" },
-  { label: studyTopics[2] ?? "Álgebra lineal", math: "\\det(A - \\lambda I) = 0" },
-  { label: studyTopics[3] ?? "Ecuaciones", math: "\\frac{dy}{dx} = g(x)\\,h(y)" },
-];
+const stemTicker = [
+  "Programación y Algoritmia",
+  "Estructuras de Datos",
+  "Química y Termodinámica",
+  "Biología Celular",
+  "Física y Circuitos",
+  "Cálculo y Álgebra Lineal",
+  "Cursos Ready‑to‑Go vía LTI",
+  "Estadísticas de Éxito Estudiantil",
+] as const;
 
 /**
- * HERO — Prueba del cavernícola (Grunt Test) en < 5 s:
- *  1. ¿Qué ofreces?     → App de estudio con IA para parciales STEM (eyebrow + subtítulo).
- *  2. ¿Cómo mejora mi vida? → Llegar al parcial con seguridad (titular aspiracional).
- *  3. ¿Qué hago?        → Botón dominante "Practicar gratis ahora".
+ * HERO — Versión B activa por defecto + Escena 3D multicapa y transición diagonal hacia sección oscura.
  */
 export const HeroSection: React.FC = () => {
   const variantId = useABVariant("hero_headline", variantIds);
-  const variant = heroVariants.find((v) => v.id === variantId) ?? heroVariants[0];
+  const variant = heroVariants.find((v) => v.id === variantId) ?? heroVariants[1];
 
   return (
     <section
       aria-labelledby="hero-title"
-      className="lp-paper lp-grain relative isolate overflow-hidden pt-[72px]"
+      className="lp-paper relative isolate flex min-h-[calc(100svh-4rem)] flex-col justify-between overflow-hidden pt-16 sm:pt-20"
       data-variant={variant.id}
     >
-      {/* Atmósfera cálida */}
-      <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 h-[620px] w-[620px] rounded-full bg-quack-amber/30 blur-3xl" />
-      <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -left-32 -z-10 h-[460px] w-[460px] rounded-full bg-quack-dandelion/50 blur-3xl" />
+      {/* Luces ambientales cálidas de fondo */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-24 left-1/4 -z-10 h-96 w-96 rounded-full bg-quack-amber/25 blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-10 top-1/3 -z-10 h-80 w-80 rounded-full bg-quack-sandy/20 blur-3xl"
+      />
 
-      <div className="mx-auto grid max-w-7xl items-center gap-4 px-5 pb-10 pt-10 sm:px-8 lg:min-h-[calc(100svh-120px)] lg:grid-cols-[1.02fr_1fr] lg:gap-8 lg:pt-6">
-        <div className="relative z-10 max-w-2xl">
-          <p className="animate-fadeIn inline-flex items-center gap-2 rounded-full border-2 border-quack-gunmetal/15 bg-white/80 px-3.5 py-1.5 text-xs font-semibold text-quack-gunmetal shadow-sm backdrop-blur sm:text-sm">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-quack-sandy opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-quack-caramel" />
-            </span>
-            App de estudio con IA para parciales de ingeniería y ciencias
+      <div className="mx-auto my-auto grid w-full max-w-6xl items-center gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[1.06fr_0.94fr] lg:gap-12">
+        <div className="max-w-xl">
+          <p className="inline-flex items-center gap-2 rounded-full border-2 border-quack-gunmetal bg-white px-3.5 py-1 text-xs font-bold text-quack-gunmetal shadow-[3px_3px_0_0_#FFC800]">
+            <span className="h-2 w-2 rounded-full bg-quack-amber" aria-hidden="true" />
+            <span>{variant.badgeText}</span>
           </p>
 
           <h1
             id="hero-title"
-            className="mt-6 font-brand text-[2.6rem] font-bold leading-[1.05] tracking-tight text-quack-gunmetal text-balance sm:text-6xl lg:text-[4.4rem]"
+            className="mt-5 font-brand text-4xl font-bold leading-[1.07] tracking-tight text-quack-gunmetal text-balance sm:text-5xl lg:text-[3.35rem]"
           >
             {variant.lead}{" "}
             <span className="relative inline-block">
@@ -57,69 +59,57 @@ export const HeroSection: React.FC = () => {
                 aria-hidden="true"
                 viewBox="0 0 400 30"
                 preserveAspectRatio="none"
-                className="absolute -bottom-2 left-0 z-0 h-4 w-full sm:h-5"
+                className="absolute -bottom-1.5 left-0 z-0 h-3.5 w-full sm:h-4"
               >
                 <path
                   className="scribble-path"
                   d="M4 20 C 80 6, 180 4, 260 12 S 370 22, 396 10"
                   fill="none"
                   stroke="#FFC800"
-                  strokeWidth="9"
+                  strokeWidth="10"
                   strokeLinecap="round"
                 />
               </svg>
             </span>
-            {variant.tail && <> {variant.tail}</>}
           </h1>
 
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-quack-gunmetal/85 text-pretty sm:text-xl">
-            Quack es la IA a la que <strong className="font-semibold text-quack-gunmetal">tú le explicas</strong>.
-            Enséñale el tema en voz alta, resuelve a mano como en el examen y descubre el{" "}
-            <span className="marker-highlight font-semibold text-quack-gunmetal">paso exacto donde te equivocas</span>.
+          <p className="mt-5 text-base leading-relaxed text-quack-gunmetal/80 text-pretty sm:text-lg">
+            {variant.subtitle}
           </p>
 
-          <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            <CtaButton to="/feynman" location="hero" size="xl" className="w-full sm:w-auto">
-              Practicar gratis ahora
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <CtaButton to="/feynman" location="hero_primary" size="xl">
+              Empezar prueba gratis
             </CtaButton>
             <a
-              href="#como-funciona"
-              className="group inline-flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-semibold text-quack-gunmetal/80 underline-offset-4 hover:text-quack-gunmetal hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-quack-gunmetal/40"
+              href="#precios"
+              className="rounded-xl px-3 py-2.5 font-brand text-sm font-bold text-quack-gunmetal underline decoration-quack-amber decoration-2 underline-offset-4 transition-colors hover:text-quack-caramel"
             >
-              Ver cómo funciona en 3 pasos
-              <ChevronDown className="h-4 w-4 transition-transform group-hover:translate-y-0.5" aria-hidden="true" />
+              Ver planes desde $4.99 USD/mes
             </a>
           </div>
-
-          <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-quack-gunmetal/75">
-            {["Gratis", "Sin crear cuenta", "Funciona en tu navegador y celular"].map((item) => (
-              <li key={item} className="flex items-center gap-1.5">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-quack-amber text-quack-gunmetal">
-                  <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
-                </span>
-                {item}
-              </li>
-            ))}
-          </ul>
         </div>
 
         <Hero3DScene />
       </div>
 
-      {/* Cinta de materias: deja claro el "género" del producto */}
-      <div className="relative border-y-2 border-quack-gunmetal bg-quack-gunmetal py-3.5 text-quack-dandelion">
-        <div className="flex w-max animate-marquee items-center gap-10 whitespace-nowrap pr-10" aria-hidden="true">
-          {[...marqueeItems, ...marqueeItems, ...marqueeItems, ...marqueeItems].map((item, i) => (
-            <span key={`${item.label}-${i}`} className="flex items-center gap-3 text-sm">
-              <span className="font-brand font-bold uppercase tracking-wider">{item.label}</span>
-              <span className="text-white/80">
-                <MathRenderer math={item.math} />
-              </span>
-              <span className="text-quack-amber">✦</span>
-            </span>
-          ))}
+      {/* Transición 3D hacia la sección oscura: cinta diagonal STEM + corte en perspectiva */}
+      <div className="relative mt-6 w-full">
+        <div
+          aria-hidden="true"
+          className="relative z-10 border-y-2 border-quack-gunmetal bg-quack-amber py-2.5 text-quack-gunmetal shadow-[0_10px_28px_rgba(21,25,34,0.3)]"
+        >
+          <div className="flex overflow-hidden whitespace-nowrap">
+            <div className="animate-marquee flex items-center gap-8 pr-8 font-brand text-xs font-bold uppercase tracking-wider">
+              {[...stemTicker, ...stemTicker].map((item, idx) => (
+                <span key={`${item}-${idx}`} className="inline-flex items-center gap-3">
+                  <span className="h-2 w-2 rotate-45 bg-quack-gunmetal" />
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
-        <p className="sr-only">Materias disponibles: {studyTopics.join(", ")}.</p>
       </div>
     </section>
   );

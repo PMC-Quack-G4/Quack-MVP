@@ -1,49 +1,81 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { Cpu, Database, Mail, Plus } from "lucide-react";
+import {
+  CheckCircle2,
+  Cpu,
+  Database,
+  Download,
+  Mail,
+  Plus,
+} from "lucide-react";
 import { Reveal } from "./Reveal";
-import { CtaButton } from "./CtaButton";
-import { DuckModel } from "./DuckModel";
 import { faqItems, landingConfig } from "@/mocks/landingContent";
+import { EMAIL_PATTERN, leadService } from "@/services/leadService";
 import { isGeminiActive, getActiveModel } from "@/services/serviceFactory";
+import { trackEvent } from "@/lib/analytics";
+import { playQuackSound } from "@/lib/quackSound";
 
 /**
- * CIERRE + EL "CAJÓN DE LOS DESHECHOS" (Junk Drawer / Footer — StoryBrand):
- * Agrupa preguntas frecuentes, enlaces secundarios, estado técnico de la API
- * y contacto al fondo de la página para mantener limpio el encabezado.
+ * SECCIÓN 6: PREGUNTAS FRECUENTES + LEAD MAGNET 3D + JUNK DRAWER (Footer — StoryBrand).
+ * Fondo oscuro profundo que cierra la página con elegancia y contraste, sin paneles técnicos de verificación.
  */
 export const LandingFooter: React.FC = () => {
   const isOnline = isGeminiActive();
   const activeModel = getActiveModel();
 
+  const [email, setEmail] = React.useState("");
+  const [leadError, setLeadError] = React.useState<string | null>(null);
+  const [leadDone, setLeadDone] = React.useState(false);
+  const leadStartedRef = React.useRef(false);
+
+  const handleLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = email.trim();
+    if (!EMAIL_PATTERN.test(clean)) {
+      setLeadError("Ingresa un correo válido (ej. camilo@uniandes.edu.co).");
+      return;
+    }
+    setLeadError(null);
+    const result = await leadService.capture({
+      email: clean,
+      source: "footer_lead_magnet",
+      variant: "B",
+    });
+    trackEvent("generate_lead", { source: "checklist_download", mode: result.mode });
+    setLeadDone(true);
+  };
+
   return (
     <>
-      {/* FAQ + CTA final */}
-      <section id="preguntas" aria-labelledby="faq-title" className="lp-paper py-24 sm:py-32">
+      <section
+        id="preguntas"
+        aria-labelledby="faq-title"
+        className="lp-paper-dark relative overflow-hidden py-20 text-white sm:py-28"
+      >
         <div className="mx-auto max-w-4xl px-5 sm:px-8">
           <Reveal className="text-center">
-            <p className="font-brand text-sm font-bold uppercase tracking-[0.25em] text-quack-caramel">
+            <span className="inline-flex items-center gap-2 rounded-full border border-quack-amber/40 bg-quack-amber/10 px-3.5 py-1 font-brand text-xs font-bold uppercase tracking-[0.2em] text-quack-amber">
               Preguntas frecuentes
-            </p>
+            </span>
             <h2
               id="faq-title"
-              className="mt-3 font-brand text-3xl font-bold text-quack-gunmetal sm:text-5xl"
+              className="mt-4 font-brand text-3xl font-bold text-white sm:text-4xl"
             >
               Respuestas claras antes de empezar
             </h2>
           </Reveal>
 
-          <div className="mt-12 space-y-3.5">
+          <div className="mt-10 space-y-3.5">
             {faqItems.map((item, i) => (
-              <Reveal key={item.id} delay={i * 70}>
-                <details className="faq-item group rounded-2xl border-2 border-quack-gunmetal/20 bg-white px-6 py-4 transition-colors open:border-quack-gunmetal open:shadow-[5px_5px_0_0_#3B4151]">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-brand text-base font-bold text-quack-gunmetal sm:text-lg">
+              <Reveal key={item.id} delay={i * 60}>
+                <details className="faq-item group rounded-2xl border border-white/15 bg-[#1B202C] px-6 py-4 transition-all open:border-quack-amber open:shadow-[0_10px_30px_-10px_rgba(255,200,0,0.2)]">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-brand text-sm font-bold text-white sm:text-base">
                     <span>{item.question}</span>
-                    <span className="faq-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-quack-dandelion text-quack-gunmetal transition-transform duration-200">
+                    <span className="faq-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-quack-amber text-quack-gunmetal transition-transform duration-200">
                       <Plus className="h-4 w-4" aria-hidden="true" />
                     </span>
                   </summary>
-                  <p className="mt-3 border-t border-quack-gunmetal/10 pt-3 text-sm leading-relaxed text-quack-gunmetal/80 sm:text-base">
+                  <p className="mt-3 border-t border-white/10 pt-3 text-sm leading-relaxed text-white/80">
                     {item.answer}
                   </p>
                 </details>
@@ -51,31 +83,79 @@ export const LandingFooter: React.FC = () => {
             ))}
           </div>
 
-          {/* Banner final de conversión */}
-          <Reveal delay={200} className="mt-20">
-            <div className="relative overflow-hidden rounded-[32px] border-2 border-quack-gunmetal bg-quack-amber p-8 text-quack-gunmetal shadow-[10px_10px_0_0_#3B4151] sm:p-12">
-              <div className="grid items-center gap-8 md:grid-cols-[1fr_auto]">
+          {/* Lead Magnet en Tarjeta 3D */}
+          <Reveal delay={140} className="scene-3d mt-16">
+            <div
+              id="guia-gratis"
+              className="card-3d-amber rounded-3xl border-2 border-quack-amber bg-gradient-to-br from-[#232938] to-[#151922] p-7 text-white sm:p-9"
+            >
+              <div className="grid items-center gap-6 md:grid-cols-[1.15fr_0.85fr]">
                 <div>
-                  <h3 className="font-brand text-3xl font-bold leading-tight sm:text-4xl">
-                    No esperes al día del parcial para descubrir qué no sabías.
+                  <span className="inline-block rounded-full bg-quack-amber px-3 py-0.5 font-brand text-[11px] font-bold text-quack-gunmetal">
+                    Recurso gratuito
+                  </span>
+                  <h3 className="mt-3 font-brand text-2xl font-bold text-white">
+                    Checklist Anti‑Ilusión de Competencia
                   </h3>
-                  <p className="mt-3 text-base font-medium text-quack-gunmetal/85 sm:text-lg">
-                    Elige un tema ahora, explícaselo a Quack y llega al examen sabiendo que sabes.
+                  <p className="mt-2 text-sm leading-relaxed text-white/80">
+                    Recibe gratis la guía imprimible de 1 página con los 5 autochequeos para verificar tu dominio 48
+                    horas antes de cualquier parcial.
                   </p>
-                  <div className="mt-7 flex flex-wrap items-center gap-4">
-                    <CtaButton to="/feynman" location="final" tone="dark" size="xl">
-                      Practicar gratis ahora
-                    </CtaButton>
-                    <Link
-                      to="/parcial-ciegas"
-                      className="rounded-xl px-4 py-2.5 font-brand text-sm font-bold text-quack-gunmetal underline decoration-2 underline-offset-4 hover:bg-white/40"
-                    >
-                      O ir directo al Parcial a ciegas →
-                    </Link>
-                  </div>
                 </div>
-                <div className="mx-auto hidden md:block">
-                  <DuckModel size={148} layers={7} />
+
+                <div>
+                  {!leadDone ? (
+                    <form onSubmit={handleLeadSubmit} noValidate className="space-y-2.5">
+                      <label htmlFor="footer-lead-email" className="sr-only">
+                        Tu correo universitario
+                      </label>
+                      <input
+                        id="footer-lead-email"
+                        type="email"
+                        required
+                        value={email}
+                        onFocus={() => {
+                          if (!leadStartedRef.current) {
+                            leadStartedRef.current = true;
+                            trackEvent("form_start", { form_type: "lead_magnet_checklist" });
+                          }
+                        }}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (leadError) setLeadError(null);
+                        }}
+                        placeholder="tu.correo@uniandes.edu.co"
+                        className="h-11 w-full rounded-xl border-2 border-white bg-white px-3.5 text-sm font-medium text-quack-gunmetal placeholder:text-quack-gunmetal/45 focus:border-quack-amber focus:outline-none"
+                      />
+                      <button
+                        type="submit"
+                        className="btn-toy btn-toy-light h-11 w-full cursor-pointer bg-quack-amber text-xs text-quack-gunmetal sm:text-sm"
+                      >
+                        <Download className="h-4 w-4" aria-hidden="true" />
+                        Descargar checklist gratis
+                      </button>
+                      {leadError && (
+                        <p role="alert" className="text-xs font-semibold text-quack-sandy">
+                          {leadError}
+                        </p>
+                      )}
+                    </form>
+                  ) : (
+                    <div className="rounded-2xl border border-quack-amber bg-white/10 p-4">
+                      <p className="flex items-center gap-2 font-brand text-sm font-bold text-quack-amber">
+                        <CheckCircle2 className="h-4 w-4" /> ¡Checklist listo!
+                      </p>
+                      <a
+                        href={landingConfig.leadMagnetUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackEvent("lead_magnet_download", { source: "footer" })}
+                        className="btn-toy btn-toy-light mt-3 h-10 w-full bg-quack-amber text-xs text-quack-gunmetal"
+                      >
+                        <Download className="h-4 w-4" /> Abrir Checklist Imprimible
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -83,119 +163,106 @@ export const LandingFooter: React.FC = () => {
         </div>
       </section>
 
-      {/* Junk Drawer (Pie de página completo) */}
-      <footer className="border-t-2 border-quack-gunmetal bg-white text-quack-gunmetal">
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Marca */}
-            <div className="space-y-3">
-              <Link to="/" className="inline-flex items-center gap-2.5">
-                <img src="/brand/quack-logo.png" alt="Quack Logo" className="h-10 w-10 object-contain" />
-                <span className="font-brand text-2xl font-bold">quack</span>
+      {/* Junk Drawer (Pie de página StoryBrand en fondo oscuro) */}
+      <footer className="border-t border-white/10 bg-[#0D1017] text-white">
+        <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2.5">
+              <Link
+                to="/"
+                onClick={() => playQuackSound("footer_logo_easter_egg")}
+                className="inline-flex items-center gap-2.5"
+              >
+                <img
+                  src="/brand/quack-logo.png"
+                  alt=""
+                  className="h-9 w-9 object-contain"
+                />
+                <span className="font-brand text-xl font-bold text-white">quack</span>
               </Link>
-              <p className="text-sm text-quack-gunmetal/75">
-                La primera IA a la que tú le enseñas. Aprendizaje activo para estudiantes de ingeniería y ciencias.
+              <p className="text-xs leading-relaxed text-white/65">
+                La primera IA a la que tú le enseñas. Estudio activo para Programación, Ciencias e Ingeniería.
               </p>
               <div className="pt-1">
                 {isOnline ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
-                    <Cpu className="h-3.5 w-3.5" aria-hidden="true" /> IA en línea ({activeModel})
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300">
+                    <Cpu className="h-3 w-3" aria-hidden="true" /> Motor IA activo ({activeModel})
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                    <Database className="h-3.5 w-3.5" aria-hidden="true" /> Modo demostrativo local activo
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-semibold text-white/75">
+                    <Database className="h-3 w-3" aria-hidden="true" /> Modo Demo Local
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Práctica directa */}
             <div>
-              <h4 className="font-brand text-sm font-bold uppercase tracking-wider text-quack-gunmetal">
-                Modos de práctica
+              <h4 className="font-brand text-xs font-bold uppercase tracking-wider text-quack-amber">
+                Producto y Planes
               </h4>
-              <ul className="mt-4 space-y-2.5 text-sm text-quack-gunmetal/80">
+              <ul className="mt-3 space-y-2 text-xs text-white/75">
                 <li>
-                  <Link to="/feynman" className="hover:text-quack-caramel hover:underline">
-                    Explicar un tema a Quack (Feynman Oral)
+                  <Link to="/feynman" className="hover:text-quack-amber hover:underline">
+                    Feynman Oral (Voz e IA Invertida)
                   </Link>
                 </li>
                 <li>
-                  <Link to="/parcial-ciegas" className="hover:text-quack-caramel hover:underline">
-                    Simulacro de Parcial a Ciegas (OCR)
+                  <Link to="/parcial-ciegas" className="hover:text-quack-amber hover:underline">
+                    Parcial a Ciegas (Auditoría OCR)
                   </Link>
                 </li>
                 <li>
-                  <a
-                    href={landingConfig.leadMagnetUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-quack-caramel hover:underline"
-                  >
-                    Descargar Checklist anti‑ilusión
+                  <a href="#precios" className="hover:text-quack-amber hover:underline">
+                    Planes B2C y B2B (USD)
                   </a>
                 </li>
               </ul>
             </div>
 
-            {/* Navegación interna */}
             <div>
-              <h4 className="font-brand text-sm font-bold uppercase tracking-wider text-quack-gunmetal">
-                En esta página
+              <h4 className="font-brand text-xs font-bold uppercase tracking-wider text-quack-amber">
+                Universidades y Disciplinas
               </h4>
-              <ul className="mt-4 space-y-2.5 text-sm text-quack-gunmetal/80">
+              <ul className="mt-3 space-y-2 text-xs text-white/75">
                 <li>
-                  <a href="#guia" className="hover:text-quack-caramel hover:underline">
-                    Por qué funciona Quack
+                  <a href="#instituciones" className="hover:text-quack-amber hover:underline">
+                    Cursos Ready‑to‑Go vía LTI
                   </a>
                 </li>
                 <li>
-                  <a href="#soluciones" className="hover:text-quack-caramel hover:underline">
-                    Demostración de los 2 modos
+                  <a href="#instituciones" className="hover:text-quack-amber hover:underline">
+                    Estadísticas de Éxito Estudiantil
                   </a>
                 </li>
-                <li>
-                  <a href="#como-funciona" className="hover:text-quack-caramel hover:underline">
-                    El plan en 3 pasos
-                  </a>
-                </li>
-                <li>
-                  <a href="#preguntas" className="hover:text-quack-caramel hover:underline">
-                    Preguntas frecuentes
-                  </a>
+                <li className="text-white/55">
+                  Programación, Algoritmia, Química, Biología, Física y Matemáticas.
                 </li>
               </ul>
             </div>
 
-            {/* Contacto, privacidad y proyecto */}
             <div>
-              <h4 className="font-brand text-sm font-bold uppercase tracking-wider text-quack-gunmetal">
-                Contacto y transparencia
+              <h4 className="font-brand text-xs font-bold uppercase tracking-wider text-quack-amber">
+                Contacto
               </h4>
-              <ul className="mt-4 space-y-2.5 text-sm text-quack-gunmetal/80">
+              <ul className="mt-3 space-y-2 text-xs text-white/75">
                 <li>
                   <a
                     href={`mailto:${landingConfig.contactEmail}`}
-                    className="inline-flex items-center gap-1.5 hover:text-quack-caramel hover:underline"
+                    className="inline-flex items-center gap-1.5 hover:text-quack-amber hover:underline"
                   >
-                    <Mail className="h-4 w-4" aria-hidden="true" />
+                    <Mail className="h-3.5 w-3.5" aria-hidden="true" />
                     {landingConfig.contactEmail}
                   </a>
                 </li>
-                <li className="text-xs leading-relaxed text-quack-gunmetal/65">
-                  Privacidad: tu voz se procesa en tu navegador y las calificaciones del Parcial a ciegas son
-                  orientativas para estudio autónomo.
-                </li>
-                <li className="text-xs text-quack-gunmetal/60">
-                  Proyecto académico ISIS‑2007 · Diseño de Productos e Innovación en TI · Universidad de los Andes.
+                <li className="text-white/55">
+                  ISIS‑2007 · Diseño de Productos e Innovación en TI · Universidad de los Andes.
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-quack-gunmetal/10 pt-6 text-xs text-quack-gunmetal/60 sm:flex-row">
-            <p>© {new Date().getFullYear()} Quack MVP. Hecho por y para estudiantes STEM.</p>
-            <p>Arquitectura StoryBrand · React 18 · TypeScript · Tailwind CSS · KaTeX</p>
+          <div className="mt-8 border-t border-white/10 pt-5 text-center text-xs text-white/50 sm:text-left">
+            <p>© {new Date().getFullYear()} Quack · Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>

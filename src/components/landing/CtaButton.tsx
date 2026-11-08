@@ -9,7 +9,9 @@ type CtaSize = "md" | "lg" | "xl";
 type CtaTone = "amber" | "dark" | "light";
 
 interface CtaButtonProps {
-  to: string;
+  to?: string;
+  href?: string;
+  onClick?: () => void;
   location: CtaLocation;
   children: React.ReactNode;
   size?: CtaSize;
@@ -20,8 +22,8 @@ interface CtaButtonProps {
 
 const sizeClasses: Record<CtaSize, string> = {
   md: "h-11 px-5 text-sm",
-  lg: "h-14 px-7 text-base",
-  xl: "h-16 px-9 text-lg",
+  lg: "h-13 px-6 text-base py-3",
+  xl: "h-14 px-8 text-base sm:text-lg",
 };
 
 const toneClasses: Record<CtaTone, string> = {
@@ -31,29 +33,59 @@ const toneClasses: Record<CtaTone, string> = {
 };
 
 /**
- * Llamado a la acción principal: botón "juguete" con contraste alto,
- * que registra el clic en analítica según su ubicación.
+ * Llamado a la acción principal: botón "juguete" con contraste alto
+ * que dispara el evento principal de conversión `click_cta` en GA4.
  */
 export const CtaButton: React.FC<CtaButtonProps> = ({
   to,
+  href,
+  onClick,
   location,
   children,
   size = "lg",
   tone = "amber",
   showArrow = true,
   className,
-}) => (
-  <Link
-    to={to}
-    onClick={() => trackEvent("cta_click", { location, destination: to })}
-    className={cn("btn-toy group", sizeClasses[size], toneClasses[tone], className)}
-  >
-    {children}
-    {showArrow && (
-      <ArrowRight
-        aria-hidden="true"
-        className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1"
-      />
-    )}
-  </Link>
-);
+}) => {
+  const classes = cn("btn-toy group cursor-pointer", sizeClasses[size], toneClasses[tone], className);
+  const destination = to ?? href ?? "modal";
+
+  const handleClick = () => {
+    trackEvent("click_cta", { location, destination });
+    onClick?.();
+  };
+
+  const content = (
+    <>
+      {children}
+      {showArrow && (
+        <ArrowRight
+          aria-hidden="true"
+          className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1"
+        />
+      )}
+    </>
+  );
+
+  if (href) {
+    return (
+      <a href={href} onClick={handleClick} className={classes}>
+        {content}
+      </a>
+    );
+  }
+
+  if (to) {
+    return (
+      <Link to={to} onClick={handleClick} className={classes}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" onClick={handleClick} className={classes}>
+      {content}
+    </button>
+  );
+};

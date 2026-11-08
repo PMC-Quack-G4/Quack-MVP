@@ -1,194 +1,175 @@
 import * as React from "react";
-import { BookOpenCheck, Clock3, GraduationCap, HeartCrack, Sparkles, type LucideIcon } from "lucide-react";
+import { Check, Sparkles, X } from "lucide-react";
 import { Reveal } from "./Reveal";
-import { MathRenderer } from "@/components/common/MathRenderer";
-import { problemMetrics, stakeItems } from "@/mocks/landingContent";
+import { transformations } from "@/mocks/landingContent";
 import { useInView } from "@/hooks/useInView";
 import { useCountUp } from "@/hooks/useCountUp";
-import type { LandingMetric } from "@/types/landing";
-import { cn } from "@/lib/utils";
 
-const stakeIcons: Record<string, LucideIcon> = {
-  notas: GraduationCap,
-  semestre: Clock3,
-  ansiedad: HeartCrack,
+interface AnimatedStatProps {
+  end: number;
+  decimals?: number;
+  prefix?: string;
+  suffix?: string;
+  title: string;
+  description: string;
+}
+
+const AnimatedStatCard: React.FC<AnimatedStatProps> = ({
+  end,
+  decimals = 0,
+  prefix = "",
+  suffix = "",
+  title,
+  description,
+}) => {
+  const { ref, inView } = useInView<HTMLElement>({ threshold: 0.25 });
+  const current = useCountUp(end, inView, 1300);
+
+  return (
+    <article
+      ref={ref}
+      className="card-3d-dark relative flex h-full flex-col justify-between rounded-3xl border-2 border-white/15 bg-[#1B202C]/90 p-6 backdrop-blur-md sm:p-7"
+    >
+      <div>
+        <p className="text-3d-amber font-brand text-4xl font-bold tracking-tight text-quack-amber tabular-nums sm:text-5xl">
+          {prefix}
+          {current.toFixed(decimals)}
+          {suffix}
+        </p>
+        <h3 className="mt-4 font-brand text-lg font-bold text-white">{title}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-white/75">{description}</p>
+      </div>
+      <div className="mt-5 h-1 w-12 rounded-full bg-gradient-to-r from-quack-amber to-quack-caramel" />
+    </article>
+  );
 };
 
-const illusionSteps: readonly string[] = [
-  "Le pides a una IA que te explique el tema.",
-  "Lees el resumen. Todo tiene sentido.",
-  "Sientes que ya lo entendiste.",
-];
-
 /**
- * COSTO DE LA INACCIÓN (Stakes / Failure): el "imán" StoryBrand.
- * Contraste deliberado con el hero: fondo oscuro, hoja en blanco y cronómetro corriendo.
+ * SECCIÓN 2: EL PROBLEMA Y LA TRANSFORMACIÓN (Escenario Oscuro 3D con contadores animados).
  */
 export const StakesSection: React.FC = () => (
-  <section aria-labelledby="stakes-title" className="lp-paper-dark relative overflow-hidden py-24 text-white sm:py-32">
-    <div className="mx-auto max-w-7xl px-5 sm:px-8">
-      <Reveal className="max-w-3xl">
-        <p className="font-brand text-sm font-bold uppercase tracking-[0.25em] text-quack-sandy">El problema</p>
-        <h2 id="stakes-title" className="mt-4 font-brand text-4xl font-bold leading-tight text-balance sm:text-6xl">
-          Pero hoy estudias así, <span className="text-quack-amber">¿verdad?</span>
+  <section
+    aria-labelledby="stakes-title"
+    className="lp-paper-dark relative isolate overflow-hidden pt-20 pb-28 text-white sm:pt-28 sm:pb-36"
+  >
+    {/* Piso en perspectiva 3D al fondo de la sección */}
+    <div
+      aria-hidden="true"
+      className="perspective-grid-floor pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-72 opacity-50"
+    />
+
+    <div className="mx-auto max-w-6xl px-5 sm:px-8">
+      <Reveal className="mx-auto max-w-3xl text-center">
+        <span className="inline-flex items-center gap-2 rounded-full border border-quack-amber/40 bg-quack-amber/10 px-3.5 py-1 font-brand text-xs font-bold uppercase tracking-[0.2em] text-quack-amber">
+          El costo de la ilusión de competencia
+        </span>
+        <h2
+          id="stakes-title"
+          className="mt-4 font-brand text-3xl font-bold leading-tight text-balance sm:text-5xl"
+        >
+          Leer respuestas de IA se siente como aprender.{" "}
+          <span className="text-quack-amber">Hasta que te entregan el parcial.</span>
         </h2>
+        <p className="mt-4 text-base leading-relaxed text-white/75 sm:text-lg">
+          Entender la solución que escribió otro no equivale a saber resolverla por tu cuenta frente a una hoja en
+          blanco.
+        </p>
       </Reveal>
 
-      <div className="mt-14 grid items-center gap-14 lg:grid-cols-2">
-        {/* Relato de la ilusión */}
-        <div>
-          <ol className="space-y-4">
-            {illusionSteps.map((step, i) => (
-              <Reveal as="li" key={step} delay={i * 140}>
-                <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-sm">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 font-brand text-lg font-bold text-quack-dandelion">
-                    {i + 1}
-                  </span>
-                  <span className="text-lg text-white/90">{step}</span>
-                  {i === 2 && <Sparkles className="ml-auto h-5 w-5 text-quack-amber" aria-hidden="true" />}
-                </div>
-              </Reveal>
-            ))}
-          </ol>
-
-          <Reveal delay={480} className="mt-8">
-            <p className="text-2xl font-semibold leading-snug text-white sm:text-3xl">
-              Luego llega el parcial, te entregan una hoja en blanco…{" "}
-              <span className="text-quack-sandy">y la mente también se queda en blanco.</span>
-            </p>
-            <p className="mt-5 max-w-xl text-lg text-white/70">
-              Eso tiene nombre: <strong className="text-white">ilusión de competencia</strong>. Leer una explicación
-              no es lo mismo que poder explicarla ni resolver sin ayuda.
-            </p>
-          </Reveal>
-
-          <IllusionGap />
-        </div>
-
-        <BlankExamSheet />
-      </div>
-
-      {/* Lo que está en juego */}
-      <div className="mt-24">
-        <Reveal>
-          <h3 className="font-brand text-2xl font-bold sm:text-3xl">Lo que te cuesta seguir estudiando así</h3>
+      {/* 3 Cifras Clave con Contadores Animados y Tarjetas 3D */}
+      <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <Reveal delay={0}>
+          <AnimatedStatCard
+            end={93.9}
+            decimals={1}
+            suffix="%"
+            title="Ilusión de competencia"
+            description="Siente que domina el tema al leer la explicación de un chatbot, pero se bloquea frente al examen sin ayuda."
+          />
         </Reveal>
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
-          {stakeItems.map((item, i) => {
-            const Icon = stakeIcons[item.id] ?? BookOpenCheck;
-            return (
-              <Reveal key={item.id} delay={i * 120}>
-                <article className="group h-full rounded-3xl border-2 border-white/10 bg-gradient-to-b from-white/[0.07] to-transparent p-7 transition-colors duration-300 hover:border-quack-sandy/60">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-quack-caramel/20 text-quack-sandy transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110">
-                    <Icon className="h-6 w-6" aria-hidden="true" />
-                  </span>
-                  <h4 className="mt-5 font-brand text-xl font-bold leading-snug">{item.title}</h4>
-                  <p className="mt-3 text-white/70">{item.description}</p>
-                </article>
-              </Reveal>
-            );
-          })}
-        </div>
-
-        <div className="mt-14 grid gap-6 sm:grid-cols-2">
-          {problemMetrics.map((metric, i) => (
-            <MetricStat key={metric.id} metric={metric} delay={i * 150} />
-          ))}
-        </div>
+        <Reveal delay={110}>
+          <AnimatedStatCard
+            end={75.8}
+            decimals={1}
+            suffix="%"
+            title="Estudio pasivo sin práctica"
+            description="Usa la IA para pedir código o soluciones terminadas, anulando el esfuerzo mental que exige el parcial real."
+          />
+        </Reveal>
+        <Reveal delay={220}>
+          <AnimatedStatCard
+            end={1200}
+            decimals={0}
+            prefix="$"
+            suffix="+ USD"
+            title="Costo por materia reprobada"
+            description="Perder una asignatura filtro en la universidad cuesta más de $1,200 USD en créditos de matrícula y atrasa el grado."
+          />
+        </Reveal>
       </div>
+
+      {/* Contraste 3D: Sin Quack vs. Con Quack */}
+      <Reveal delay={180} className="mt-14">
+        <div className="scene-3d grid items-stretch gap-6 md:grid-cols-2">
+          {/* Tarjeta Izquierda: Sin Quack */}
+          <div className="card-3d-dark rounded-3xl border-2 border-white/15 bg-[#1B202C] p-6 sm:p-8">
+            <span className="inline-block rounded-full border border-red-400/30 bg-red-500/15 px-3 py-1 font-brand text-xs font-bold uppercase tracking-wider text-red-300">
+              Sin Quack · Estudio pasivo
+            </span>
+            <ul className="mt-5 space-y-3.5 text-sm text-white/80 sm:text-base">
+              {transformations.map((t) => (
+                <li key={t.id} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-500/20 text-red-300">
+                    <X className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />
+                  </span>
+                  <span>{t.before}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Tarjeta Derecha: Con Quack (Elevada en 3D con brillo Amber) */}
+          <div className="card-3d-amber relative rounded-3xl border-2 border-quack-amber bg-gradient-to-br from-[#232938] to-[#171B26] p-6 sm:p-8">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-quack-amber px-3 py-1 font-brand text-xs font-bold uppercase tracking-wider text-quack-gunmetal">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                Con Quack · Dominio activo
+              </span>
+              <span className="rounded-full border border-quack-amber/50 bg-quack-amber/15 px-2.5 py-0.5 font-mono text-xs font-bold text-quack-amber">
+                +25% aprobación
+              </span>
+            </div>
+
+            <ul className="mt-5 space-y-3.5 text-sm font-medium text-white sm:text-base">
+              {transformations.map((t) => (
+                <li key={t.id} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-quack-amber text-quack-gunmetal shadow-[0_0_12px_rgba(255,200,0,0.5)]">
+                    <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
+                  </span>
+                  <span>{t.after}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+
+    {/* Transición curva en capas hacia la sección clara */}
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-x-0 bottom-0 leading-none text-[#fffcf2]"
+    >
+      <svg
+        viewBox="0 0 1440 72"
+        preserveAspectRatio="none"
+        className="block h-10 w-full sm:h-14"
+      >
+        <path
+          d="M0,24 C360,72 1080,0 1440,48 L1440,72 L0,72 Z"
+          fill="currentColor"
+        />
+      </svg>
     </div>
   </section>
 );
-
-const MetricStat: React.FC<{ metric: LandingMetric; delay: number }> = ({ metric, delay }) => {
-  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.4 });
-  const value = useCountUp(metric.value, inView);
-  return (
-    <Reveal delay={delay}>
-      <div ref={ref} className="flex h-full flex-col gap-3 rounded-3xl bg-quack-amber p-7 text-quack-gunmetal sm:flex-row sm:items-center sm:gap-6">
-        <p className="font-brand text-6xl font-bold leading-none tabular-nums sm:text-7xl" aria-label={`${metric.value}${metric.suffix ?? ""}`}>
-          {value.toFixed(metric.decimals ?? 0)}
-          {metric.suffix}
-        </p>
-        <div>
-          <p className="text-base font-semibold leading-snug">{metric.label}</p>
-          {metric.source && <p className="mt-1.5 text-xs font-medium text-quack-gunmetal/70">Fuente: {metric.source}</p>}
-        </div>
-      </div>
-    </Reveal>
-  );
-};
-
-/** Barras que muestran la brecha entre "lo que creo saber" y "lo que demuestro". Ilustrativo. */
-const IllusionGap: React.FC = () => {
-  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.5 });
-  const bars = [
-    { label: "Lo que crees que sabes después de leer", width: "92%", color: "bg-quack-amber" },
-    { label: "Lo que logras demostrar en el parcial", width: "34%", color: "bg-quack-caramel" },
-  ];
-  return (
-    <div ref={ref} className="mt-10 space-y-4 rounded-3xl border border-white/10 bg-black/20 p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">La brecha de la ilusión (ilustrativo)</p>
-      {bars.map((bar, i) => (
-        <div key={bar.label}>
-          <p className="mb-1.5 text-sm font-medium text-white/85">{bar.label}</p>
-          <div className="h-4 overflow-hidden rounded-full bg-white/10">
-            <div
-              className={cn("h-full rounded-full transition-[width] ease-out", bar.color)}
-              style={{ width: inView ? bar.width : "0%", transitionDuration: "1400ms", transitionDelay: `${i * 300}ms` }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-/** Hoja de parcial vacía con cronómetro real corriendo: la ansiedad del papel en blanco. */
-const BlankExamSheet: React.FC = () => {
-  const [seconds, setSeconds] = React.useState(89 * 60 + 59);
-  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.3, once: false });
-
-  React.useEffect(() => {
-    if (!inView) return;
-    const id = window.setInterval(() => setSeconds((s) => (s > 0 ? s - 1 : 0)), 1000);
-    return () => window.clearInterval(id);
-  }, [inView]);
-
-  const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
-  const ss = String(seconds % 60).padStart(2, "0");
-
-  return (
-    <Reveal className="scene-3d">
-      <div
-        ref={ref}
-        className="relative mx-auto max-w-md rounded-[26px] border-2 border-white/20 bg-[#fdfcf7] p-7 text-quack-gunmetal shadow-[0_50px_100px_-30px_rgba(0,0,0,0.8)] transition-transform duration-700 hover:[transform:rotateY(0deg)_rotateX(0deg)]"
-        style={{ transform: "rotateY(10deg) rotateX(6deg) rotateZ(1.5deg)" }}
-      >
-        <div className="flex items-center justify-between border-b-2 border-dashed border-quack-gunmetal/20 pb-4">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-quack-gunmetal/50">Parcial 2 · Cálculo integral</p>
-            <p className="mt-1 font-brand text-lg font-bold">Problema 1 (2.5 pts)</p>
-          </div>
-          <div className="rounded-xl bg-red-600 px-3 py-1.5 font-mono text-lg font-bold tabular-nums text-white shadow-md" aria-label={`Tiempo restante ${mm} minutos ${ss} segundos`}>
-            {mm}:{ss}
-          </div>
-        </div>
-        <div className="py-4 text-center text-lg">
-          <MathRenderer math="\int \frac{3x + 5}{x^2 + 3x + 2}\,dx" block />
-        </div>
-        <div className="space-y-5 pt-2" aria-hidden="true">
-          <div className="flex items-end gap-1 border-b border-quack-gunmetal/15 pb-1">
-            <span className="h-6 w-0.5 bg-quack-gunmetal animate-blink" />
-          </div>
-          {[0, 1, 2, 3, 4].map((line) => (
-            <div key={line} className="border-b border-quack-gunmetal/15 pb-5" />
-          ))}
-        </div>
-        <p className="absolute -bottom-6 right-6 rotate-[-4deg] rounded-xl bg-quack-caramel px-4 py-2 font-hand text-2xl text-white shadow-lg">
-          …¿y ahora por dónde empiezo?
-        </p>
-      </div>
-    </Reveal>
-  );
-};

@@ -331,6 +331,108 @@ export const mockFeynmanTopics: FeynmanTopic[] = [
     fallbackReply:
       "Mmm, me suena un poco abstracto. ¿Por qué no resolvemos un ejemplo paso a paso juntos para que vea cómo se hace?",
   },
+  {
+    id: "algoritmos-avl",
+    title: "Árboles AVL, Rotaciones y Complejidad O(log n)",
+    category: "Programación y Algoritmia",
+    difficulty: "Intermedio",
+    formulaLatex: "\\text{FB}(u) = h(\\text{izq}) - h(\\text{der}) \\in \\{-1, 0, 1\\} \\implies h = \\mathcal{O}(\\log n)",
+    promptContext:
+      "El estudiante te explicará cómo los árboles binarios de búsqueda autobalanceados (AVL) garantizan operaciones en tiempo logarítmico mediante rotaciones locales.",
+    subtopics: [
+      {
+        id: "degeneracion-bst",
+        name: "Degeneración de un BST a Lista O(n)",
+        description: "Por qué un árbol binario normal se vuelve lento al insertar datos ya ordenados.",
+        covered: false,
+      },
+      {
+        id: "factor-balance",
+        name: "Invariante del Factor de Balanceo",
+        description: "La diferencia de alturas entre subárbol izquierdo y derecho nunca supera 1 en ningún nodo.",
+        covered: false,
+      },
+      {
+        id: "rotaciones-locales",
+        name: "Rotaciones Simples y Dobles en O(1)",
+        description: "Reajuste de punteros locales para restaurar el balance sin reconstruir todo el árbol.",
+        covered: false,
+      },
+    ],
+    mockDialogue: [
+      {
+        triggerWords: ["ordenado", "lista", "degenera", "peor", "lineal"],
+        quackReply:
+          "¡Quack! 🦆 O sea que si inserto 1, 2, 3, 4, 5 en un árbol binario normal, ¿termina siendo una fila india tan lenta como buscar elemento por elemento?",
+        unlocksSubtopicId: "degeneracion-bst",
+      },
+      {
+        triggerWords: ["altura", "factor", "balance", "diferencia", "uno"],
+        quackReply:
+          "Entiendo lo de restar las alturas… pero ¿por qué permitimos que la diferencia sea hasta 1 y no exigimos que siempre sea exactamente 0?",
+        unlocksSubtopicId: "factor-balance",
+      },
+      {
+        triggerWords: ["rotacion", "puntero", "simple", "doble", "constante"],
+        quackReply:
+          "¡Genial! ¿Y al hacer esa rotación de punteros no se daña el orden de búsqueda de los elementos menores a la izquierda y mayores a la derecha?",
+        unlocksSubtopicId: "rotaciones-locales",
+      },
+    ],
+    fallbackReply:
+      "Mmm… imagina que soy de primer semestre de programación: ¿por qué importa tanto la altura del árbol cuando buscamos un dato?",
+  },
+  {
+    id: "bioquimica-atp",
+    title: "Termodinámica Celular y Transporte Activo (Na⁺/K⁺)",
+    category: "Química y Biología",
+    difficulty: "Intermedio",
+    formulaLatex: "\\Delta G = \\Delta H - T\\Delta S, \\quad \\text{ATP} + \\text{H}_2\\text{O} \\longrightarrow \\text{ADP} + P_i \\; (\\Delta G^\\circ{}' = -30.5\\,\\text{kJ/mol})",
+    promptContext:
+      "El estudiante te explicará cómo las células acoplan reacciones exergónicas (hidrólisis de ATP) para impulsar el transporte activo contra gradiente electroquímico.",
+    subtopics: [
+      {
+        id: "gradiente-electroquimico",
+        name: "Movimiento Contra Gradiente Electroquímico",
+        description: "Diferencia entre difusión pasiva a favor del gradiente y transporte activo no espontáneo.",
+        covered: false,
+      },
+      {
+        id: "acoplamiento-atp",
+        name: "Acoplamiento Energético con Hidrólisis de ATP",
+        description: "Cómo una reacción con ΔG negativo impulsa un proceso con ΔG positivo.",
+        covered: false,
+      },
+      {
+        id: "bomba-sodio-potasio",
+        name: "Estequiometría 3 Na⁺ / 2 K⁺ y Potencial de Membrana",
+        description: "Expulsión de 3 iones sodio e ingreso de 2 potasio manteniendo el potencial en reposo.",
+        covered: false,
+      },
+    ],
+    mockDialogue: [
+      {
+        triggerWords: ["gradiente", "concentracion", "contra", "espontaneo", "difusion"],
+        quackReply:
+          "Espera… si los iones siempre quieren ir de donde hay más a donde hay menos, ¿por qué la célula gasta tanta energía llevándolos en contra?",
+        unlocksSubtopicId: "gradiente-electroquimico",
+      },
+      {
+        triggerWords: ["atp", "hidrolisis", "energia", "gibbs", "exergonica", "fosfato"],
+        quackReply:
+          "¡Ajá! ¿Y cómo hace el ATP para 'pasarle' esa energía a la proteína de la membrana sin que se pierda solo como calor?",
+        unlocksSubtopicId: "acoplamiento-atp",
+      },
+      {
+        triggerWords: ["sodio", "potasio", "tres", "dos", "potencial", "carga"],
+        quackReply:
+          "Si salen 3 cargas positivas de sodio y solo entran 2 de potasio, ¿qué le pasa al voltaje dentro de la célula?",
+        unlocksSubtopicId: "bomba-sodio-potasio",
+      },
+    ],
+    fallbackReply:
+      "¡Quack! 🦆 Explícamelo con un ejemplo sencillo: ¿qué pasaría con una neurona si de repente se quedara sin ATP?",
+  },
 ];
 
 export const mockExamProblems: ExamProblem[] = [

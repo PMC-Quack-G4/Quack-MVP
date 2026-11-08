@@ -1,4 +1,5 @@
 import * as React from "react";
+import { playQuackSound } from "@/lib/quackSound";
 import { cn } from "@/lib/utils";
 
 interface DuckModelProps {
@@ -12,19 +13,38 @@ interface DuckModelProps {
 }
 
 /**
- * Pato de goma "3D" construido sólo con CSS: se apilan copias del logo en el eje Z
- * (las traseras más oscuras) para simular volumen sin cargar librerías 3D pesadas.
+ * Pato de goma 3D con movimiento sereno y Easter Egg oculto:
+ * no muestra avisos de "tócame", pero si alguien descubre hacerle clic,
+ * suena "¡Quack!".
  */
-export const DuckModel: React.FC<DuckModelProps> = ({ size = 220, layers = 9, className, still = false }) => {
-  const depthStep = 1.6;
+export const DuckModel: React.FC<DuckModelProps> = ({
+  size = 160,
+  layers = 6,
+  className,
+  still = false,
+}) => {
+  const [quacking, setQuacking] = React.useState(false);
+  const depthStep = 1.4;
   const back = Array.from({ length: layers }, (_, i) => i);
 
+  const handleQuack = () => {
+    playQuackSound("duck_3d_easter_egg");
+    setQuacking(true);
+    window.setTimeout(() => setQuacking(false), 450);
+  };
+
   return (
-    <div className={cn("scene-3d", className)} style={{ width: size, height: size }} aria-hidden="true">
-      <div
-        className={cn("relative h-full w-full", still ? "preserve-3d" : "duck-3d")}
-        style={still ? undefined : { animationDelay: "-2s" }}
-      >
+    <div
+      onClick={handleQuack}
+      className={cn(
+        "scene-3d relative select-none",
+        quacking && "scale-105 transition-transform duration-150",
+        className
+      )}
+      style={{ width: size, height: size }}
+      aria-hidden="true"
+    >
+      <div className={cn("relative h-full w-full", still ? "preserve-3d" : "duck-3d")}>
         {back.map((i) => (
           <img
             key={i}
@@ -33,7 +53,7 @@ export const DuckModel: React.FC<DuckModelProps> = ({ size = 220, layers = 9, cl
             draggable={false}
             style={{
               transform: `translateZ(${-(layers - i) * depthStep}px)`,
-              filter: `brightness(${0.72 + (i / layers) * 0.2}) saturate(1.1)`,
+              filter: `brightness(${0.78 + (i / layers) * 0.18})`,
             }}
           />
         ))}
@@ -44,9 +64,9 @@ export const DuckModel: React.FC<DuckModelProps> = ({ size = 220, layers = 9, cl
           style={{ transform: "translateZ(0.5px)" }}
         />
       </div>
-      {/* Sombra en el piso */}
+
       <div
-        className="mx-auto -mt-3 h-4 w-2/3 rounded-[50%] bg-quack-gunmetal/20 blur-md"
+        className="mx-auto -mt-2.5 h-3 w-3/5 rounded-[50%] bg-quack-gunmetal/15 blur-md"
         style={{ transform: "rotateX(70deg)" }}
       />
     </div>

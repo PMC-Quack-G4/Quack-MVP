@@ -95,11 +95,75 @@
   }
 
   .lp-paper-dark {
-    background-color: #2c313e;
+    background-color: #151922;
     background-image:
-      linear-gradient(rgba(255, 233, 120, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 233, 120, 0.05) 1px, transparent 1px);
-    background-size: 24px 24px;
+      radial-gradient(circle at 18% 20%, rgba(255, 200, 0, 0.12), transparent 42%),
+      radial-gradient(circle at 82% 78%, rgba(217, 107, 67, 0.14), transparent 45%),
+      linear-gradient(rgba(255, 233, 120, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 233, 120, 0.045) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+  }
+
+  .lp-midnight {
+    background-color: #10131a;
+    background-image:
+      radial-gradient(circle at 50% 0%, rgba(255, 200, 0, 0.14), transparent 50%),
+      radial-gradient(circle at 85% 60%, rgba(248, 157, 79, 0.1), transparent 40%),
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+  }
+
+  /* Piso en perspectiva 3D para secciones oscuras */
+  .perspective-grid-floor {
+    background-image:
+      linear-gradient(to right, rgba(255, 200, 0, 0.14) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 200, 0, 0.14) 1px, transparent 1px);
+    background-size: 48px 48px;
+    transform: perspective(500px) rotateX(62deg);
+    transform-origin: center bottom;
+    mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.85) 10%, transparent 90%);
+  }
+
+  /* Tarjeta 3D interactiva para fondos claros */
+  .card-3d-light {
+    transform-style: preserve-3d;
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 10px 0 0 #3b4151, 0 22px 38px -12px rgba(21, 25, 34, 0.32);
+  }
+  .card-3d-light:hover {
+    transform: translate3d(0, -6px, 0) rotateX(2.5deg) rotateY(-2deg);
+    box-shadow: 0 16px 0 0 #3b4151, 0 30px 48px -12px rgba(21, 25, 34, 0.42);
+  }
+
+  /* Tarjeta 3D interactiva para fondos oscuros */
+  .card-3d-dark {
+    transform-style: preserve-3d;
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.35s ease;
+    box-shadow: 0 10px 0 0 #090b10, 0 24px 44px -12px rgba(0, 0, 0, 0.65);
+  }
+  .card-3d-dark:hover {
+    transform: translate3d(0, -7px, 0) rotateX(3deg) rotateY(-2.5deg);
+    box-shadow: 0 16px 0 0 #ffc800, 0 30px 55px -12px rgba(255, 200, 0, 0.22);
+    border-color: rgba(255, 200, 0, 0.7);
+  }
+
+  /* Tarjeta 3D destacada con borde y sombra Amber */
+  .card-3d-amber {
+    transform-style: preserve-3d;
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 10px 0 0 #ffc800, 0 26px 48px -12px rgba(255, 200, 0, 0.28);
+  }
+  .card-3d-amber:hover {
+    transform: translate3d(0, -7px, 0) rotateX(2.5deg) rotateY(2deg);
+    box-shadow: 0 16px 0 0 #ffc800, 0 34px 60px -12px rgba(255, 200, 0, 0.38);
   }
 
   /* Grano sutil para dar textura física */
@@ -170,10 +234,10 @@
     transform-style: preserve-3d;
   }
 
-  /* Pato extruido: capas apiladas en Z simulan volumen */
+  /* Pato extruido: movimiento muy suave y pausado */
   .duck-3d {
     transform-style: preserve-3d;
-    animation: duck-sway 7s ease-in-out infinite;
+    animation: duck-sway 14s ease-in-out infinite;
   }
   .duck-3d > img {
     position: absolute;
@@ -234,6 +298,30 @@
   .animate-wave {
     animation: wave 8s ease-in-out infinite alternate;
   }
+  .animate-scan {
+    animation: scan-line 4.5s ease-in-out infinite;
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 3.5s ease-in-out infinite;
+  }
+  .translate-z-10 {
+    transform: translateZ(14px);
+  }
+  .translate-z-20 {
+    transform: translateZ(26px);
+  }
+  .translate-z-30 {
+    transform: translateZ(42px);
+  }
+  .translate-z-40 {
+    transform: translateZ(60px);
+  }
+  .text-3d-amber {
+    text-shadow: 0 3px 0 #d96b43, 0 8px 20px rgba(255, 200, 0, 0.35);
+  }
+  .text-3d-dark {
+    text-shadow: 0 3px 0 #3b4151;
+  }
   .delay-1 { animation-delay: 0.15s; }
   .delay-2 { animation-delay: 0.3s; }
   .delay-3 { animation-delay: 0.45s; }
@@ -243,11 +331,19 @@
 
 @keyframes float {
   0%, 100% { transform: translate3d(0, 0, var(--z, 0px)) rotate(var(--r, 0deg)); }
-  50% { transform: translate3d(0, -14px, var(--z, 0px)) rotate(calc(var(--r, 0deg) * -1)); }
+  50% { transform: translate3d(0, -8px, var(--z, 0px)) rotate(var(--r, 0deg)); }
+}
+@keyframes scan-line {
+  0%, 100% { top: 8%; opacity: 0.25; }
+  50% { top: 88%; opacity: 0.85; }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.06); }
 }
 @keyframes duck-sway {
-  0%, 100% { transform: rotateY(-28deg) rotateX(6deg) translateY(0); }
-  50% { transform: rotateY(22deg) rotateX(-4deg) translateY(-12px); }
+  0%, 100% { transform: rotateY(-6deg) rotateX(2deg) translateY(0); }
+  50% { transform: rotateY(6deg) rotateX(-2deg) translateY(-5px); }
 }
 @keyframes draw {
   to { stroke-dashoffset: 0; }

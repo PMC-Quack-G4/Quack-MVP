@@ -2,39 +2,36 @@ import * as React from "react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { StakesSection } from "@/components/landing/StakesSection";
-import { SuccessSection } from "@/components/landing/SuccessSection";
-import { GuideSection } from "@/components/landing/GuideSection";
 import { SolutionsSection } from "@/components/landing/SolutionsSection";
-import { PlanSection } from "@/components/landing/PlanSection";
-import { LeadGeneratorSection } from "@/components/landing/LeadGeneratorSection";
+import { GuideSection } from "@/components/landing/GuideSection";
+import { PricingSection } from "@/components/landing/PricingSection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { CtaButton } from "@/components/landing/CtaButton";
 import { initAnalytics } from "@/lib/analytics";
 
 /**
- * LANDING PAGE PRINCIPAL — Metodología StoryBrand + ISIS-2007
+ * LANDING PAGE PRINCIPAL DE QUACK — Metodología StoryBrand + Rúbrica Semana 12 ISIS-2007.
  *
- * Estructura secuencial:
- *  1. Encabezado minimalista (Logo + CTA en esquina superior derecha)
- *  2. Hero (Grunt Test en < 5 s: Qué ofrecemos, Cómo mejora tu vida, CTA directo + escena 3D)
- *  3. Costo de la inacción / Fracaso (La ilusión de competencia y hoja en blanco)
- *  4. Escenario de éxito (Transformación antes vs. después con tarjetas 3D)
- *  5. El Guía (Empatía + Autoridad: métricas, principios cognitivos, comparativa, testimonios e hitos)
- *  6. Catálogo de soluciones (Simulador Feynman Oral + Inspector Parcial a Ciegas OCR)
- *  7. El Plan en 3 Pasos ("Piedras en el arroyo")
- *  8. Generador de prospectos (Lead Magnet: Checklist anti-ilusión descargable)
- *  9. Cajón de deshechos / Junk Drawer (FAQ + CTA final + Footer completo)
+ * Estructura compacta, sin fatiga de scroll y 100% orientada a conversión:
+ *  1. LandingHeader: Logo con sonido "¡Quack!", acceso directo a Precios/Instituciones y CTA dominante.
+ *  2. HeroSection: Grunt Test en < 5 s (Qué ofrece, Cómo mejora tu vida, Cómo comprarlo/probarlo + Escena 3D).
+ *  3. StakesSection: Costo de la inacción ($4.5M–$6M COP) + Transformación Sin Quack vs. Con Quack.
+ *  4. SolutionsSection: El Plan en 3 Pasos + Demo multidisciplinaria (Algoritmos, Química, Biología, Física) + Repetición Espaciada (en hoja de ruta).
+ *  5. GuideSection: Para Universidades (Cursos Ready-to-Go + Estadísticas de Éxito Estudiantil) vs. Individuales (Subir propio material) + Evidencia YODA.
+ *  6. PricingSection: Planes Free ($0), Quack Pro ($19.900 COP/mes), Quack Campus ($12 USD/año) y Certificación ($25 USD).
+ *  7. LandingFooter: FAQ + Lead Magnet + Junk Drawer + Panel en vivo de Prueba A/B y GA4.
  */
 export const HomePage: React.FC = () => {
   const [showStickyMobile, setShowStickyMobile] = React.useState(false);
 
   React.useEffect(() => {
-    initAnalytics();
+    const cleanup = initAnalytics();
+    return cleanup;
   }, []);
 
   React.useEffect(() => {
     const onScroll = () => {
-      setShowStickyMobile(window.scrollY > 520);
+      setShowStickyMobile(window.scrollY > 480);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -55,20 +52,24 @@ export const HomePage: React.FC = () => {
       <main id="contenido-principal">
         <HeroSection />
         <StakesSection />
-        <SuccessSection />
-        <GuideSection />
         <SolutionsSection />
-        <PlanSection />
-        <LeadGeneratorSection />
+        <GuideSection />
+        <PricingSection />
       </main>
 
       <LandingFooter />
 
-      {/* Barra móvil flotante para conversión rápida en pantallas pequeñas */}
+      {/* Barra móvil flotante con acceso a Precios y Prueba */}
       {showStickyMobile && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-quack-gunmetal bg-[#fffcf2]/95 p-3 shadow-[0_-10px_25px_-10px_rgba(59,65,81,0.3)] backdrop-blur-md sm:hidden">
-          <CtaButton to="/feynman" location="mobile_sticky" size="md" className="w-full">
-            Practicar gratis ahora
+        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t-2 border-quack-gunmetal bg-[#fffcf2]/95 p-3 shadow-[0_-10px_25px_-10px_rgba(59,65,81,0.3)] backdrop-blur-md sm:hidden">
+          <a
+            href="#precios"
+            className="flex h-11 items-center justify-center rounded-xl border-2 border-quack-gunmetal bg-white px-4 font-brand text-xs font-bold text-quack-gunmetal"
+          >
+            Precios
+          </a>
+          <CtaButton to="/feynman" location="mobile_sticky" size="md" className="flex-1">
+            Probar ahora
           </CtaButton>
         </div>
       )}

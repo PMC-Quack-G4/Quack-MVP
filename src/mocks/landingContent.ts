@@ -1,282 +1,470 @@
-import type { AuditStep } from "@/types/exam";
 import type {
-  ComparisonRow,
+  AuditStepDemo,
   FaqItem,
+  FeynmanSubjectDemo,
   HeroVariant,
   LandingMetric,
-  Milestone,
   PlanStep,
+  PricingTier,
   StakeItem,
+  SubjectDiscipline,
   Testimonial,
   TransformationItem,
 } from "@/types/landing";
 
 /**
- * Contenido centralizado de la landing page.
- * Todo el copy vive aquí para facilitar pruebas A/B y ajustes del equipo
- * sin tocar los componentes.
+ * Contenido centralizado de la Landing Page de Quack.
+ * Basado en el Documento Consolidado Ejercicios #1 al #5 (Lean Canvas, YODA N=20 y Precios Bill Aulet)
+ * y en la rúbrica de la Semana 12 (StoryBrand + Analítica GA4 + Prueba A/B).
  */
 
 export const landingConfig = {
-  /** ⚠️ Reemplazar por el correo real del equipo. */
-  contactEmail: "hola@quack-mvp.app",
+  contactEmail: "alianzas@quack.edu.co",
   leadMagnetUrl: "/recursos/checklist-ilusion-de-competencia.html",
-  leadMagnetTitle: "Checklist anti‑ilusión de competencia",
+  leadMagnetTitle: "Checklist Anti‑Ilusión de Competencia",
 } as const;
 
-/** Variantes del titular para experimentación A/B (se asignan 50/50). */
+/**
+ * Hipótesis de A/B Testing (Semana 12):
+ * - Versión A (Control): Enfoque aspiracional positivo ("Llega al parcial sabiendo que sabes").
+ * - Versión B (Variación): Enfoque de aversión a la pérdida académica y económica
+ *   ("Deja de estudiar con resúmenes de IA que te bloquean en el parcial").
+ */
 export const heroVariants: readonly HeroVariant[] = [
-  { id: "A", lead: "Llega al parcial", highlight: "sabiendo que sabes." },
-  { id: "B", lead: "Deja de creer que entiendes.", highlight: "Demuéstralo", tail: "antes del parcial." },
-];
-
-export const stakeItems: readonly StakeItem[] = [
   {
-    id: "notas",
-    title: "Notas que no reflejan tus horas de estudio",
-    description: "Estudiaste toda la semana, pero en el parcial no pudiste pasar del primer paso.",
+    id: "A",
+    badgeText: "Programación · Algoritmia · Química · Biología · Física · Cálculo",
+    lead: "Llega al parcial",
+    highlight: "sabiendo que sabes.",
+    subtitle:
+      "Quack es la primera IA a la que tú le enseñas. Explícale en voz alta, resuelve a ciegas con cronómetro y audita tu procedimiento paso a paso — con tus materias ya listas en tu universidad o subiendo tu propio material.",
+    primaryCtaText: "Ver planes y probar gratis",
   },
   {
-    id: "semestre",
-    title: "Materias repetidas, tiempo y dinero perdidos",
-    description: "Perder una materia cuesta un semestre más de matrícula y te atrasa frente a tu cohorte.",
-  },
-  {
-    id: "ansiedad",
-    title: "Ansiedad cada vez que se acerca un parcial",
-    description: "Nunca sabes si de verdad estás listo hasta que ya es demasiado tarde.",
+    id: "B",
+    badgeText: "Programación · Algoritmia · Química · Biología · Física · Cálculo",
+    lead: "No dejes que la IA estudie por ti y",
+    highlight: "te bloquee en el parcial.",
+    subtitle:
+      "El 93.9% siente que entiende al leer un chatbot, pero se queda en blanco frente al examen. En Quack tú le explicas a la IA por voz y auditas tu procedimiento a ciegas — con tus materias listas en tu universidad o subiendo tus propios apuntes.",
+    primaryCtaText: "Empezar prueba gratis",
   },
 ];
 
 /**
- * Datos de validación del equipo (ver docs/PRODUCT_SPEC.md).
- * ⚠️ Confirmar redacción y tamaño de muestra de la encuesta antes de publicar.
+ * Disciplinas amplias soportadas por Quack (más allá de matemáticas).
  */
+export const subjectDisciplines: readonly SubjectDiscipline[] = [
+  {
+    id: "prog",
+    name: "Programación y Algoritmia",
+    area: "Ciencias de la Computación",
+    exampleTopic: "Árboles AVL, Grafos y Complejidad",
+    snippet: "T(n) = 2T(n/2) + O(n) → O(n log n)",
+  },
+  {
+    id: "quim",
+    name: "Química y Termodinámica",
+    area: "Ciencias Naturales",
+    exampleTopic: "Equilibrio Químico y Cinética",
+    snippet: "ΔG = ΔH − TΔS < 0 (Espontáneo)",
+  },
+  {
+    id: "bio",
+    name: "Biología y Biofísica",
+    area: "Ciencias de la Vida",
+    exampleTopic: "Potencial de Membrana y Genética",
+    snippet: "Transporte activo Na⁺/K⁺ ATPasa",
+  },
+  {
+    id: "fis",
+    name: "Física y Circuitos",
+    area: "Ingeniería y Ciencias Exactas",
+    exampleTopic: "Leyes de Kirchhoff y Mecánica",
+    snippet: "\\sum I_{\\text{in}} = \\sum I_{\\text{out}}",
+    isMath: true,
+  },
+  {
+    id: "calc",
+    name: "Cálculo y Álgebra Lineal",
+    area: "Matemáticas Universitarias",
+    exampleTopic: "Autovalores, Series e Integrales",
+    snippet: "\\det(A - \\lambda I) = 0",
+    isMath: true,
+  },
+];
+
+export const stakeItems: readonly StakeItem[] = [
+  {
+    id: "bloqueo",
+    title: "Bloqueo frente a la hoja en blanco",
+    description:
+      "Con el chat abierto todo parecía claro; al cerrar la pantalla en el examen presencial no sabes cómo arrancar.",
+  },
+  {
+    id: "costo",
+    title: "$4.5M a $6.0M COP por materia perdida",
+    description:
+      "Reprobar materias filtro (Algoritmos, Cálculo, Química o Física) cuesta millones en matrícula y atrasa tu grado.",
+  },
+  {
+    id: "ceguera",
+    title: "Ceguera pedagógica hasta el día del corte",
+    description:
+      "Ni el estudiante ni la facultad detectan a tiempo en qué concepto exacto se rompe el razonamiento de la cohorte.",
+  },
+];
+
 export const problemMetrics: readonly LandingMetric[] = [
   {
     id: "ilusion",
     value: 93.9,
     decimals: 1,
     suffix: "%",
-    label: "de los estudiantes STEM encuestados ha sentido que entendía un tema y luego se bloqueó en el examen.",
-    source: "Encuesta de validación Quack, 2026",
+    label: "de los estudiantes sufre la ilusión de competencia tras estudiar pasivamente con IA.",
+    source: "Estudio de campo Quack en UniAndes (N = 33)",
   },
   {
-    id: "pasivo",
-    value: 75.8,
-    decimals: 1,
+    id: "yoda_motivacion",
+    value: 90.0,
+    decimals: 0,
     suffix: "%",
-    label: "estudia leyendo o releyendo resúmenes, sin practicar a recordar ni a resolver sin ayuda.",
-    source: "Encuesta de validación Quack, 2026",
+    label: "calificó con 4 o 5 sobre 5 la exigencia socrática de Quack para detectar vacíos reales.",
+    source: "Validación experimental YODA con prototipo (N = 20)",
+  },
+  {
+    id: "yoda_pago",
+    value: 85.0,
+    decimals: 0,
+    suffix: "%",
+    label: "confirmó disposición de pago en Quack Pro o adopción institucional en su facultad.",
+    source: "Validación experimental YODA en campus (N = 20)",
   },
 ];
 
 export const transformations: readonly TransformationItem[] = [
   {
-    id: "dominio",
-    before: "Crees que entiendes porque el resumen “tenía sentido”.",
-    after: "Sabes exactamente qué temas dominas y cuáles no.",
+    id: "rol",
+    before: "Pides resúmenes y código hecho a ChatGPT creyendo que ya entendiste.",
+    after: "Tú le explicas a Quack en voz alta y descubres tus huecos antes del examen.",
   },
   {
-    id: "practica",
-    before: "Nunca resolviste un ejercicio sin apuntes ni ayuda.",
-    after: "Ya resolviste a mano, con cronómetro y a libro cerrado.",
+    id: "alcance",
+    before: "Pierdes tiempo configurando prompts o subiendo archivos cada vez.",
+    after: "En tu universidad tus materias ya están listas (Ready-to-Go), o subes tus apuntes en 1 clic.",
   },
   {
-    id: "errores",
-    before: "Descubres tus errores cuando ya te calificaron.",
-    after: "Corriges tus errores típicos antes de que te cuesten puntos.",
+    id: "evaluacion",
+    before: "Te enteras de tus errores cuando ya perdiste el parcial.",
+    after: "Practicas a ciegas con cronómetro y recibes auditoría paso a paso con crédito parcial.",
   },
-  {
-    id: "confianza",
-    before: "Entras con nervios, esperando que salga lo que repasaste.",
-    after: "Entras tranquilo: no dependes de la suerte, sabes que sabes.",
-  },
-];
-
-/** Hechos verificables del producto (autoridad del guía). */
-export const productMetrics: readonly LandingMetric[] = [
-  { id: "modos", value: 2, label: "formas de practicar: explicar en voz alta y resolver a mano" },
-  { id: "materias", value: 4, label: "materias STEM listas: Física, Cálculo, Álgebra lineal y Ecuaciones" },
-  { id: "respuestas", value: 0, label: "respuestas regaladas: Quack pregunta, tú demuestras" },
-  { id: "pasos", value: 100, suffix: "%", label: "de tu procedimiento revisado paso a paso, con crédito parcial" },
 ];
 
 /**
- * ⚠️ IMPORTANTE: citas de ejemplo. Reemplazar por frases textuales de las
- * entrevistas de validación (con permiso del estudiante) y cambiar
- * `isPlaceholder` a false.
+ * El Plan en 3 Pasos ("Piedras en el arroyo" de StoryBrand) + guiño a Repetición Espaciada.
  */
-export const testimonials: readonly Testimonial[] = [
-  {
-    id: "t1",
-    quote: "Le expliqué la regla de la cadena a Quack y me hizo una pregunta que no supe responder. Ahí entendí que solo me sabía el procedimiento de memoria.",
-    author: "Estudiante de Ingeniería de Sistemas",
-    role: "3.er semestre · Prueba del prototipo",
-    isPlaceholder: true,
-  },
-  {
-    id: "t2",
-    quote: "Lo mejor es que me dice en qué renglón me equivoqué. Siempre perdía puntos por errores de signo y no me daba cuenta.",
-    author: "Estudiante de Ingeniería Electrónica",
-    role: "2.º semestre · Prueba del prototipo",
-    isPlaceholder: true,
-  },
-  {
-    id: "t3",
-    quote: "Con ChatGPT sentía que entendía todo. Con Quack me tocó demostrarlo, y eso es justo lo que pasa en el parcial.",
-    author: "Estudiante de Ingeniería Mecánica",
-    role: "4.º semestre · Entrevista de validación",
-    isPlaceholder: true,
-  },
-];
-
-export const milestones: readonly Milestone[] = [
-  {
-    id: "m1",
-    period: "Fase 1",
-    title: "Escuchamos a los estudiantes",
-    description: "Entrevistas y encuesta con estudiantes STEM para validar la ilusión de competencia.",
-    status: "done",
-  },
-  {
-    id: "m2",
-    period: "Fase 2",
-    title: "Prototipo con dos modos",
-    description: "Explicar a Quack en voz alta y Parcial a ciegas con revisión paso a paso.",
-    status: "done",
-  },
-  {
-    id: "m3",
-    period: "Fase 3",
-    title: "IA real con respaldo",
-    description: "Integración con Gemini y modo de respaldo para que la práctica nunca se detenga.",
-    status: "current",
-  },
-  {
-    id: "m4",
-    period: "Próximo",
-    title: "Piloto con una materia",
-    description: "Curso preparado con temas y ejercicios listos para practicar desde el primer día.",
-    status: "next",
-  },
-];
-
-export const comparisonRows: readonly ComparisonRow[] = [
-  { id: "quien", criterion: "¿Quién explica?", genericAi: "La IA", tutor: "El tutor", quack: "Tú" },
-  { id: "respuesta", criterion: "¿Te da la respuesta?", genericAi: "Siempre", tutor: "A menudo", quack: "Nunca" },
-  { id: "papel", criterion: "¿Practicas a mano y con tiempo?", genericAi: "No", tutor: "A veces", quack: "Sí" },
-  { id: "pasos", criterion: "¿Revisa tu procedimiento paso a paso?", genericAi: "No", tutor: "Sí", quack: "Sí" },
-  { id: "disponible", criterion: "¿Disponible a las 2 a. m.?", genericAi: "Sí", tutor: "No", quack: "Sí" },
-  { id: "costo", criterion: "Costo", genericAi: "Gratis o suscripción", tutor: "Pago por hora", quack: "Gratis en el piloto" },
-];
-
 export const planSteps: readonly PlanStep[] = [
   {
     id: "p1",
-    title: "Elige tu tema",
-    description: "Física, Cálculo integral, Álgebra lineal o Ecuaciones diferenciales. Sin crear cuenta.",
+    badge: "Paso 1 · Cero fricción",
+    title: "Entra a tu materia lista o sube tu material",
+    description:
+      "Si tu universidad tiene Quack Campus, tus cursos (Programación, Química, Biología, Cálculo…) ya están montados. Si eres estudiante individual, sube tus PDFs, diapositivas o código y Quack se adapta al instante.",
   },
   {
     id: "p2",
-    title: "Explícalo y resuélvelo",
-    description: "Enséñale el tema a Quack en voz alta y resuelve un ejercicio a mano con cronómetro.",
+    badge: "Paso 2 · Práctica activa",
+    title: "Explícale a Quack y resuelve a ciegas",
+    description:
+      "Enséñale el concepto por voz a nuestra IA socrática (que jamás regala respuestas) y realiza un simulacro cronometrado a mano para auditar cada línea de tu procedimiento.",
   },
   {
     id: "p3",
-    title: "Llega seguro al parcial",
-    description: "Corrige a tiempo el paso exacto donde fallas y entra sabiendo que sabes.",
+    badge: "Paso 3 · Dominio e impacto",
+    title: "Aprueba tu parcial y mide tu progreso",
+    description:
+      "Corrige el paso exacto donde fallas antes del examen. Los estudiantes aseguran su nota y las instituciones obtienen estadísticas en tiempo real del éxito de sus cohortes.",
   },
 ];
+
+/**
+ * Demostraciones multidisciplinarias del modo Feynman Oral (Algoritmos, Biología/Química y Física).
+ */
+export const feynmanDemosBySubject: readonly FeynmanSubjectDemo[] = [
+  {
+    id: "algoritmos",
+    discipline: "Algoritmos y Programación",
+    topic: "Complejidad en Árboles AVL y Búsqueda",
+    modeTag: "Ing. de Sistemas · Estructuras de Datos",
+    subconcepts: [
+      { id: "balance", label: "Factor de balanceo {-1, 0, 1}", covered: true },
+      { id: "rotacion", label: "Rotaciones simples y dobles O(1)", covered: true },
+      { id: "cota", label: "Altura garantizada O(log n)", covered: false },
+    ],
+    messages: [
+      {
+        id: "a1",
+        sender: "student",
+        text: "Un árbol AVL mantiene la búsqueda en O(log n) porque en cada nodo la altura de sus subárboles difiere máximo en 1.",
+      },
+      {
+        id: "a2",
+        sender: "quack",
+        text: "¡Quack! 🦆 Espera… si inserto números ordenados 1, 2, 3, 4, ¿no se vuelve una lista enlazada lenta? ¿Cómo lo evita el AVL sin recorrer todo el árbol?",
+      },
+      {
+        id: "a3",
+        sender: "student",
+        text: "Detecta el desbalance de altura 2 y aplica una rotación simple o doble en tiempo constante O(1).",
+      },
+    ],
+  },
+  {
+    id: "bioquimica",
+    discipline: "Química y Biología",
+    topic: "Termodinámica Celular y Transporte Activo",
+    modeTag: "Biología · Química · Ing. Biomédica",
+    subconcepts: [
+      { id: "gradiente", label: "Gradiente electroquímico", covered: true },
+      { id: "atp", label: "Acoplamiento con hidrólisis de ATP", covered: true },
+      { id: "gibbs", label: "Energía libre ΔG positiva vs acoplada", covered: false },
+    ],
+    messages: [
+      {
+        id: "b1",
+        sender: "student",
+        text: "La bomba sodio-potasio mueve 3 iones Na+ hacia afuera y 2 K+ hacia adentro en contra de su gradiente de concentración.",
+      },
+      {
+        id: "b2",
+        sender: "quack",
+        text: "Mmm… pero mover algo en contra de su gradiente tiene ΔG positivo, ¡no ocurre solo! 🤔 ¿De dónde sale la energía química para forzar ese paso?",
+      },
+      {
+        id: "b3",
+        sender: "student",
+        text: "Se acopla a la hidrólisis exergónica del ATP, que fosforila la proteína transportadora y cambia su conformación.",
+      },
+    ],
+  },
+  {
+    id: "fisica_calculo",
+    discipline: "Física y Cálculo",
+    topic: "Conservación del Momentum y Choque Inelástico",
+    modeTag: "Física Mecánica · Cálculo",
+    subconcepts: [
+      { id: "impulso", label: "Fuerzas externas nulas (dp/dt = 0)", covered: true },
+      { id: "energia", label: "Pérdida de energía cinética ΔK", covered: true },
+      { id: "masavar", label: "Sistemas de masa variable", covered: false },
+    ],
+    messages: [
+      {
+        id: "f1",
+        sender: "student",
+        text: "En un choque inelástico el momentum lineal total se conserva porque no hay fuerzas externas netas.",
+      },
+      {
+        id: "f2",
+        sender: "quack",
+        text: "¡Ajá! ¿Y por qué no puedo igualar también la energía cinética inicial con la final para despejar la velocidad? 🤔",
+      },
+      {
+        id: "f3",
+        sender: "student",
+        text: "Porque al quedar unidos los cuerpos parte de la energía cinética se disipa en deformación y calor.",
+      },
+    ],
+  },
+];
+
+export const auditDemo: {
+  title: string;
+  subject: string;
+  score: number;
+  maxScore: number;
+  steps: readonly AuditStepDemo[];
+} = {
+  title: "Auditoría de Procedimiento Manuscrito",
+  subject: "Física / Cálculo / Algoritmia",
+  score: 3.8,
+  maxScore: 5.0,
+  steps: [
+    {
+      stepNumber: 1,
+      expression: "p_i = m_1 v_1 + m_2 v_2 = (2)(6) + 0 = 12",
+      isLatex: true,
+      status: "CORRECT",
+      feedback: "Planteamiento inicial e invariante del sistema correctos.",
+    },
+    {
+      stepNumber: 2,
+      expression: "12 = (2 + 4)\\,v_f \\Rightarrow v_f = 2\\,\\text{m/s}",
+      isLatex: true,
+      status: "CORRECT",
+      feedback: "Despeje consistente de la velocidad final tras la colisión.",
+    },
+    {
+      stepNumber: 3,
+      expression: "K_f = \\tfrac{1}{2}(6)(2) = 6\\,\\text{J}",
+      isLatex: true,
+      status: "ALGEBRAIC_ERROR",
+      feedback: "Omitiste elevar la velocidad al cuadrado (v_f^2 = 4). Debía dar 12 J.",
+    },
+    {
+      stepNumber: 4,
+      expression: "\\Delta K = K_f - K_i = 6 - 36 = -30\\,\\text{J}",
+      isLatex: true,
+      status: "PROPAGATED_ERROR",
+      feedback: "Procedimiento válido que arrastra el valor del paso 3 (se otorga crédito parcial).",
+    },
+  ],
+};
+
+/**
+ * Testimonios reales tomados de la hoja de seguimiento YODA (Ejercicio #4, N = 20 en UniAndes).
+ */
+export const testimonials: readonly Testimonial[] = [
+  {
+    id: "e04",
+    code: "Entrevista YODA #E04",
+    quote:
+      "La auditoría paso a paso me marcó de inmediato un error que venía arrastrando desde el inicio. En un taller normal no me habría dado cuenta hasta perder el parcial.",
+    author: "Estudiante de 4.° semestre",
+    subject: "Ingeniería de Sistemas · Algoritmos",
+    score: "5.0 / 5",
+  },
+  {
+    id: "e17",
+    code: "Entrevista YODA #E17",
+    quote:
+      "Explicándole por voz a Quack identifiqué una brecha conceptual crítica en la complejidad asintótica de árboles AVL que creía dominar por haber leído mis apuntes.",
+    author: "Estudiante de 4.° semestre",
+    subject: "Ingeniería de Sistemas · Estructuras de Datos",
+    score: "5.0 / 5",
+  },
+  {
+    id: "e10",
+    code: "Entrevista YODA #E10",
+    quote:
+      "El rol de alumna curiosa quita la pena de equivocarse y obliga a hacer active recall verdadero la noche antes del examen. Si está en Bloque Neón, lo uso en todas mis materias.",
+    author: "Estudiante de 4.° semestre",
+    subject: "Ingeniería Química · Termodinámica",
+    score: "4.5 / 5",
+  },
+];
+
+/**
+ * Tabla Oficial de Planes y Precios (Ejercicio #5 — Paso 16 Bill Aulet).
+ */
+export const pricingTiers: readonly PricingTier[] = [
+  {
+    id: "free",
+    name: "Quack Free",
+    audience: "Para probar el método cada semana",
+    priceCopMonthly: "$0",
+    priceCopAnnual: "$0",
+    priceUsdMonthly: "$0",
+    priceUsdAnnual: "$0",
+    billingNote: "Gratis siempre · Sin tarjeta de crédito",
+    valueAnchor: "Ideal para conocer a Quack antes de tu próximo quiz",
+    description:
+      "Empieza hoy mismo probando nuestras materias de demostración o subiendo tu primer apunte.",
+    features: [
+      "3 sesiones orales Feynman por semana",
+      "1 simulacro de Parcial a Ciegas OCR por semana",
+      "Sube hasta 2 documentos propios / semana (PDF o apuntes)",
+      "Acceso a materias demo (Algoritmos, Química, Física, Cálculo)",
+    ],
+    ctaLabel: "Probar gratis ahora",
+    ctaAction: "try_free",
+  },
+  {
+    id: "pro",
+    name: "Quack Pro",
+    audience: "Estudiantes individuales · Todas tus materias",
+    badge: "Más elegido · Ahorra 37% anual",
+    popular: true,
+    priceCopMonthly: "$19.900",
+    priceCopAnnual: "$149.000",
+    priceUsdMonthly: "$4.99",
+    priceUsdAnnual: "$37.50",
+    billingNote: "COP / mes (o $149.000 COP / año · equivale a $12.400/mes)",
+    valueAnchor: "Menos que 25 min de tutor particular · Protege matrículas de $4.5M–$6M COP",
+    description:
+      "Sube todo tu material de estudio (código, diapositivas, guías) y Quack se adapta a lo que evalúan tus profesores.",
+    features: [
+      "Carga ilimitada de tu propio material (Programación, Biología, Química, Ingeniería)",
+      "Sesiones orales Feynman ilimitadas con voz e IA socrática",
+      "Parciales a Ciegas OCR ilimitados con crédito parcial paso a paso",
+      "Reporte semanal de Brechas Erradicadas y alertas pre-parcial",
+      "Acceso prioritario al nuevo módulo de Repetición Espaciada (Próximamente)",
+    ],
+    ctaLabel: "Activar Quack Pro",
+    ctaAction: "checkout_pro",
+  },
+  {
+    id: "campus",
+    name: "Quack Campus",
+    audience: "Universidades, Facultades y Colegios (B2B)",
+    badge: "Piloto Early Adopter -20%",
+    priceCopMonthly: "$48.000",
+    priceCopAnnual: "$48.000",
+    priceUsdMonthly: "$12.00",
+    priceUsdAnnual: "$12.00",
+    billingNote: "COP por estudiante / año en Piloto ($60.000 COP / $15 USD tarifa estándar)",
+    valueAnchor: "ROI institucional > 50x al prevenir deserción (+$30M COP retenidos por alumno)",
+    description:
+      "Experiencia 100% Ready-to-Go para tus estudiantes + analítica estratégica de éxito estudiantil para la institución.",
+    features: [
+      "Cursos Ready-to-Go vía LTI (Bloque Neón, Canvas, Brightspace): el alumno entra y ya ve sus materias y temas montados",
+      "Panel de Estadísticas de Éxito Estudiantil: evolución de aprobación, dominio por cohorte y cuellos de botella por materia",
+      "Abarca todo el currículo: Programación, Algoritmia, Química, Biología, Física y Matemáticas",
+      "Parametrización oficial con sílabos, rúbricas y parciales históricos de la facultad",
+      "Soporte dedicado y co-desarrollo pedagógico",
+    ],
+    ctaLabel: "Solicitar Piloto Institucional",
+    ctaAction: "contact_campus",
+  },
+];
+
+export const certificationAddon = {
+  name: "Certificación de Dominio Autónomo (Pay‑per‑Use)",
+  priceCop: "$100.000 COP",
+  priceUsd: "$25 USD",
+  unit: "por examen oficial auditado",
+  description:
+    "Rinde un examen supervisado a libro cerrado y obtén una credencial verificable de dominio técnico para postular a monitorías académicas, semilleros y prácticas profesionales.",
+} as const;
 
 export const faqItems: readonly FaqItem[] = [
   {
     id: "f1",
-    question: "¿Cuánto cuesta Quack?",
-    answer: "Nada. Quack es gratis durante el piloto y funciona directamente en tu navegador, sin instalar nada ni crear cuenta.",
+    question: "¿Quack sirve solo para matemáticas o también para otras materias?",
+    answer:
+      "Quack funciona en un rango amplio de disciplinas: Programación, Algoritmia y Estructuras de Datos, Química, Biología, Biofísica, Física, Circuitos, Cálculo y Álgebra. Si el tema requiere razonamiento lógico, explicación de conceptos o resolución de problemas, puedes entrenarlo con Quack.",
   },
   {
     id: "f2",
-    question: "¿Quack me da las respuestas?",
-    answer: "No, y es a propósito. Quack actúa como una compañera curiosa: te hace preguntas hasta que tu explicación no tenga huecos. En el Parcial a ciegas te señala el paso donde se rompe tu razonamiento para que lo corrijas tú.",
+    question: "¿Cuál es la diferencia entre el plan para Universidades (Quack Campus) y la suscripción individual (Quack Pro)?",
+    answer:
+      "En Quack Campus (B2B), la universidad integra Quack con su LMS (como Bloque Neón o Canvas): cuando el estudiante entra, ya encuentra todas sus materias, unidades y temas listos para practicar (Ready-to-Go), y la institución recibe estadísticas estratégicas del éxito y brechas de sus estudiantes. En Quack Pro (B2C), el estudiante individual sube sus propios apuntes, diapositivas o código y Quack se adapta a ese material.",
   },
   {
     id: "f3",
-    question: "¿Necesito micrófono?",
-    answer: "Es lo ideal, porque explicar en voz alta fija mejor lo aprendido. Si no tienes micrófono o tu navegador no lo soporta, puedes escribir tu explicación.",
+    question: "¿Qué estadísticas de éxito estudiantil entrega Quack a las instituciones educativas?",
+    answer:
+      "Las decanaturas y coordinaciones académicas acceden a métricas agregadas de impacto: porcentaje de incremento en la aprobación de parciales, tasa de dominio por tema antes de cada corte, identificación de los conceptos donde más se bloquean los estudiantes y alertas tempranas para reducir la repitencia y deserción.",
   },
   {
     id: "f4",
-    question: "¿La nota del Parcial a ciegas es oficial?",
-    answer: "No. Es una calificación orientativa para estudiar. Si tu letra es difícil de leer, la revisión puede fallar; por eso siempre te mostramos qué leyó en cada paso.",
+    question: "¿Cómo funcionan los precios para estudiantes (B2C) y universidades (B2B)?",
+    answer:
+      "Los estudiantes individuales pueden empezar gratis con Quack Free ($0 USD) o activar Quack Pro por $4.99 USD/mes ($37.50 USD/año, ahorrando 37%). Para universidades y facultades (B2B), manejamos planes por volumen desde $12,000 USD/año por cada 1,000 estudiantes en Piloto Early Adopter (con descuentos progresivos hasta $9,000 USD por cada 1k estudiantes en campus completos).",
   },
   {
     id: "f5",
-    question: "¿Qué pasa con mi voz y mis fotos?",
-    answer: "Tu voz se convierte a texto en tu propio navegador. Las fotos se envían al motor de IA solo para revisar tu procedimiento y no las guardamos en servidores propios.",
-  },
-  {
-    id: "f6",
-    question: "¿Funciona en el celular?",
-    answer: "Sí. Puedes tomarle la foto a tu hoja directamente desde el celular y ver la revisión paso a paso ahí mismo.",
+    question: "¿Habrá una etapa previa de memorización antes de evaluar con Feynman y OCR?",
+    answer:
+      "Sí. Tenemos en hoja de ruta el módulo de Memorización por Repetición Espaciada: primero entrenas conceptos clave con tarjetas adaptativas según qué tan difícil te resultó cada una, y luego pasas a demostrar el dominio profundo explicándole a Quack por voz y resolviendo el Parcial a Ciegas.",
   },
 ];
-
-export const studyTopics: readonly string[] = [
-  "Física mecánica",
-  "Cálculo integral",
-  "Álgebra lineal",
-  "Ecuaciones diferenciales",
-];
-
-/**
- * Demostración de auditoría (mismo caso que `fis-mec-01` en quackData):
- * choque inelástico con un error algebraico en el paso 5 que se arrastra al 6.
- * Se duplica de forma compacta para mantener ligero el bundle de la landing.
- */
-export const auditDemo: {
-  title: string;
-  score: number;
-  maxScore: number;
-  steps: readonly Pick<AuditStep, "stepNumber" | "latexExpression" | "status" | "feedback">[];
-} = {
-  title: "Choque inelástico",
-  score: 3.5,
-  maxScore: 5,
-  steps: [
-    { stepNumber: 1, latexExpression: "p_i = (2)(6) + (4)(0) = 12", status: "CORRECT", feedback: "Momento inicial bien planteado." },
-    { stepNumber: 2, latexExpression: "p_f = (2 + 4)\\,v_f = 6v_f", status: "CORRECT", feedback: "Masa combinada correcta." },
-    { stepNumber: 3, latexExpression: "12 = 6v_f \\Rightarrow v_f = 2", status: "CORRECT", feedback: "Despeje correcto." },
-    { stepNumber: 4, latexExpression: "K_i = \\tfrac{1}{2}(2)(6)^2 = 36", status: "CORRECT", feedback: "Energía inicial correcta." },
-    { stepNumber: 5, latexExpression: "K_f = \\tfrac{1}{2}(6)(2) = 6", status: "ALGEBRAIC_ERROR", feedback: "Revisa cómo aparece la velocidad en la energía cinética." },
-    { stepNumber: 6, latexExpression: "\\Delta K = 6 - 36 = -30", status: "PROPAGATED_ERROR", feedback: "Coherente, pero arrastra el error del paso 5." },
-  ],
-};
-
-export interface FeynmanDemoMessage {
-  id: string;
-  sender: "student" | "quack";
-  /** Texto con fórmulas delimitadas por $...$ (se renderizan con KaTeX). */
-  text: string;
-  unlocks?: string;
-}
-
-/** Diálogo de ejemplo del modo "Explícale a Quack". */
-export const feynmanDemo: {
-  topic: string;
-  subconcepts: readonly { id: string; label: string }[];
-  messages: readonly FeynmanDemoMessage[];
-} = {
-  topic: "Segunda ley de Newton",
-  subconcepts: [
-    { id: "fuerza", label: "Fuerza neta" },
-    { id: "momentum", label: "Momentum" },
-    { id: "masa-variable", label: "Masa variable" },
-  ],
-  messages: [
-    { id: "m1", sender: "student", text: "La segunda ley dice que la fuerza es masa por aceleración: $F = ma$.", unlocks: "fuerza" },
-    { id: "m2", sender: "quack", text: "¡Ajá! ¿Y si la masa cambia, como un cohete que va quemando combustible? 🤔" },
-    { id: "m3", sender: "student", text: "Entonces se usa el cambio de momentum: $F = \\frac{dp}{dt}$.", unlocks: "momentum" },
-    { id: "m4", sender: "quack", text: "Mmm… ¿y qué es el momentum? Explícamelo como si yo nunca hubiera oído esa palabra." },
-  ],
-};

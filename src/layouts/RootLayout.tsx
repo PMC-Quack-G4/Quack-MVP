@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { isGeminiActive, getActiveModel } from "@/services/serviceFactory";
+import { playQuackSound } from "@/lib/quackSound";
 
 export const RootLayout: React.FC = () => {
   const isOnline = isGeminiActive();
@@ -29,18 +30,19 @@ export const RootLayout: React.FC = () => {
       <header className="sticky top-0 z-40 w-full border-b bg-white/90 backdrop-blur-md">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-quack-dandelion/50 p-1 border border-quack-amber/40 shadow-sm transition-transform group-hover:scale-105">
-                <img src="/brand/quack-logo.png" alt="Quack Logo" className="h-9 w-9 object-contain" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-brand text-2xl font-bold tracking-tight text-quack-gunmetal leading-none">
-                  Quack
-                </span>
-                <span className="text-[10px] text-slate-500 font-medium tracking-wider">
-                  STEM Feynman MVP
-                </span>
-              </div>
+            <Link
+              to="/"
+              onClick={() => playQuackSound("navbar_logo")}
+              className="flex items-center gap-2.5 group"
+            >
+              <img
+                src="/brand/quack-logo.png"
+                alt=""
+                className="h-9 w-9 object-contain transition-transform duration-300 group-hover:scale-105 group-active:scale-95"
+              />
+              <span className="font-brand text-2xl font-bold tracking-tight text-quack-gunmetal leading-none">
+                quack
+              </span>
             </Link>
 
             <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
