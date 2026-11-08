@@ -111,7 +111,8 @@ FORMATO ESTRICTO (JSON):
       ],
     });
 
-    const candidateModels = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash"];
+    const primaryModel = process.env.VITE_GEMINI_MODEL || process.env.GEMINI_MODEL || "gemini-3.8-flash";
+    const candidateModels = Array.from(new Set([primaryModel, "gemini-3.8-flash", "gemini-flash-latest", "gemini-3.7-flash"]));
     let responseText = "";
     let lastError: any = null;
 
