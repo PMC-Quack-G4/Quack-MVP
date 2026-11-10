@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { Award, Building2, Check, CreditCard, GraduationCap, ShieldCheck, Sparkles, Users, X } from "lucide-react";
+import { Building2, Check, CreditCard, GraduationCap, ShieldCheck, Sparkles, Users, X } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { EMAIL_PATTERN, leadService } from "@/services/leadService";
 import { trackEvent } from "@/lib/analytics";
@@ -70,7 +70,7 @@ const b2bVolumeTiers: readonly B2BVolumeTier[] = [
 
 /**
  * SECCIÓN 5: PLANES Y PRECIOS EN USD (#precios).
- * - Pestaña 1 (B2C): Para Estudiantes Individuales ($0 USD Free, $4.99 USD/mes Pro, $25 USD Certificación).
+ * - Pestaña 1 (B2C): Para Estudiantes Individuales (Free y suscripción Pro).
  * - Pestaña 2 (B2B): Para Universidades e Instituciones por masas de 1k estudiantes ($12,000 USD por cada 1k en Piloto
  *   hasta $9,000 USD por cada 1k en escala campus).
  */
@@ -207,7 +207,7 @@ export const PricingSection: React.FC = () => {
               </div>
             </div>
 
-            <div className="scene-3d mt-10 grid gap-6 lg:grid-cols-3">
+            <div className="scene-3d mt-10 grid gap-6 md:grid-cols-2">
               {/* 1. Quack Free */}
               <article className="card-3d-light flex h-full flex-col justify-between rounded-3xl border-2 border-quack-gunmetal bg-white p-7">
                 <div>
@@ -312,55 +312,6 @@ export const PricingSection: React.FC = () => {
                 </div>
               </article>
 
-              {/* 3. Certificación de Dominio Autónomo (Pay-per-Use en USD) */}
-              <article className="card-3d-light flex h-full flex-col justify-between rounded-3xl border-2 border-quack-gunmetal bg-white p-7">
-                <div>
-                  <p className="inline-flex items-center gap-1.5 font-brand text-xs font-bold uppercase tracking-wider text-quack-caramel">
-                    <Award className="h-3.5 w-3.5" aria-hidden="true" /> Pay‑per‑Use · Sin suscripción
-                  </p>
-                  <h3 className="mt-1 font-brand text-2xl font-bold text-quack-gunmetal">
-                    Certificación STEM
-                  </h3>
-                  <p className="mt-4 font-brand text-4xl font-bold tracking-tight text-quack-gunmetal tabular-nums">
-                    $25 USD
-                  </p>
-                  <p className="mt-1 text-xs font-medium text-quack-gunmetal/65">
-                    por examen oficial auditado
-                  </p>
-
-                  <ul className="mt-6 space-y-2.5 border-t border-quack-gunmetal/10 pt-5 text-sm text-quack-gunmetal/85">
-                    {[
-                      "Examen supervisado a libro cerrado con cronómetro y auditoría OCR + Oral",
-                      "Credencial verificable para postular a monitorías académicas y pasantías",
-                      "Desglose de dominio conceptual y procedimental avalado por rúbrica",
-                      "Disponible en Algoritmia, Estructuras de Datos, Cálculo, Física y Química",
-                    ].map((feat) => (
-                      <li key={feat} className="flex items-start gap-2.5">
-                        <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-quack-dandelion text-quack-gunmetal">
-                          <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
-                        </span>
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="mt-8">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      openCheckout({
-                        id: "certificacion",
-                        title: "Certificación de Dominio Autónomo",
-                        priceLabel: "$25 USD (Pago único por examen auditado)",
-                      })
-                    }
-                    className="btn-toy h-12 w-full cursor-pointer bg-quack-dandelion text-sm text-quack-gunmetal hover:bg-quack-amber"
-                  >
-                    Agendar examen ($25 USD)
-                  </button>
-                </div>
-              </article>
             </div>
           </div>
         ) : (

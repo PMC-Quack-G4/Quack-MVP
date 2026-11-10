@@ -123,7 +123,6 @@ export type CtaLocation =
   | "pricing_free"
   | "pricing_pro"
   | "pricing_campus"
-  | "pricing_certification"
   | "final"
   | "mobile_sticky"
   | "lead_success";

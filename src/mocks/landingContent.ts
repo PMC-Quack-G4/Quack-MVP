@@ -427,15 +427,6 @@ export const pricingTiers: readonly PricingTier[] = [
   },
 ];
 
-export const certificationAddon = {
-  name: "Certificación de Dominio Autónomo (Pay‑per‑Use)",
-  priceCop: "$100.000 COP",
-  priceUsd: "$25 USD",
-  unit: "por examen oficial auditado",
-  description:
-    "Rinde un examen supervisado a libro cerrado y obtén una credencial verificable de dominio técnico para postular a monitorías académicas, semilleros y prácticas profesionales.",
-} as const;
-
 export const faqItems: readonly FaqItem[] = [
   {
     id: "f1",

@@ -22,7 +22,7 @@ const AnimatedStatCard: React.FC<AnimatedStatProps> = ({
   title,
   description,
 }) => {
-  const { ref, inView } = useInView<HTMLElement>({ threshold: 0.25 });
+  const [ref, inView] = useInView<HTMLElement>({ threshold: 0.25 });
   const current = useCountUp(end, inView, 1300);
 
   return (

@@ -18,7 +18,7 @@ import { initAnalytics } from "@/lib/analytics";
  *  3. StakesSection: Costo de la inacción ($4.5M–$6M COP) + Transformación Sin Quack vs. Con Quack.
  *  4. SolutionsSection: El Plan en 3 Pasos + Demo multidisciplinaria (Algoritmos, Química, Biología, Física) + Repetición Espaciada (en hoja de ruta).
  *  5. GuideSection: Para Universidades (Cursos Ready-to-Go + Estadísticas de Éxito Estudiantil) vs. Individuales (Subir propio material) + Evidencia YODA.
- *  6. PricingSection: Planes Free ($0), Quack Pro ($19.900 COP/mes), Quack Campus ($12 USD/año) y Certificación ($25 USD).
+ *  6. PricingSection: Planes Free y suscripciones Quack Pro (B2C) y Quack Campus (B2B).
  *  7. LandingFooter: FAQ + Lead Magnet + Junk Drawer + Panel en vivo de Prueba A/B y GA4.
  */
 export const HomePage: React.FC = () => {

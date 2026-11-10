@@ -12,13 +12,12 @@
 1. **IA Invertida (Método Feynman Oral)**: La IA no le explica al estudiante; el estudiante le explica al agente ("Quack"). Quack asume el rol de una compañera curiosa ("alumna despistada") que hace preguntas socráticas, detecta saltos lógicos y **JAMÁS regala la respuesta correcta directamente**.
 2. **Validación Autónoma a Papel y Lápiz (Parcial a Ciegas OCR)**: El estudiante resuelve a mano bajo un cronómetro estricto a libro cerrado (simulacro de examen), sube una foto y el sistema audita su procedimiento **paso a paso**, otorgando crédito parcial y clasificando errores conceptuales, algebraicos o arrastrados.
 3. **Amplitud Disciplinaria (Más allá de Matemáticas)**: Quack no se limita a cálculo; abarca **Programación, Algoritmia, Química, Biología, Biofísica, Física e Ingeniería**.
-4. **Doble Modalidad de Operación y Monetización**:
+4. **Modelo de Suscripción B2C y B2B**:
    - **Para Instituciones Educativas (`Quack Campus` B2B — `$12 USD` Piloto / `$15 USD` anual por estudiante)**:
      - **Experiencia *Ready-to-Go***: Integrada vía LTI (Bloque Neón, Canvas, Brightspace); el estudiante entra y ya encuentra todas sus materias matriculadas, unidades y temas que se evalúan listos para practicar sin configurar prompts ni subir archivos.
      - **Estadísticas Estratégicas de Éxito Estudiantil**: Proporciona a las universidades y facultades analítica agregada de alto valor sobre el éxito de sus estudiantes impulsado por Quack (evolución de tasas de aprobación, dominio por cohorte, detección temprana de cuellos de botella conceptuales y retención estudiantil).
    - **Para Estudiantes Individuales (`Quack Free` `$0` y `Quack Pro` B2C — `$19.900 COP/mes` o `$149.000 COP/año`)**:
      - El estudiante sube su propio material de estudio (apuntes, diapositivas, código fuente, guías en PDF) y Quack se adapta dinámicamente a lo que suba.
-   - **Certificaciones de Dominio Autónomo (Pay-per-Use — `$100.000 COP` / `$25 USD`)**: Exámenes auditados con credencial verificable para monitorías y pasantías.
 5. **Hoja de Ruta — Memorización por Repetición Espaciada (*Veremos / Próximamente*)**:
    - Se contempla como fase previa ("Fase 0") antes de la evaluación con Feynman Oral y Parcial OCR un módulo de tarjetas de repetición espaciada donde el estudiante califica la dificultad de recordar cada concepto antes de pasar a la validación profunda.
 

@@ -1,7 +1,7 @@
 # Hoja de Ruta Estratégica: de Quack MVP a Piloto Institucional y B2C
 
 **Última actualización:** Noviembre 2026  
-**Propósito:** Consolidar la evolución de Quack integrando el modelo de monetización (B2B/B2C), la amplitud multidisciplinaria, las estadísticas de éxito estudiantil para universidades y la futura fase de memorización espaciada.
+**Propósito:** Consolidar la evolución de Quack integrando el modelo de suscripción (B2B/B2C), la amplitud multidisciplinaria, las estadísticas de éxito estudiantil para universidades y la futura fase de memorización espaciada.
 
 ---
 
@@ -15,7 +15,7 @@ Quack resuelve la **ilusión de competencia** combinando práctica activa por vo
 | :--- | :--- | :--- |
 | **Configuración de Materias** | **100% *Ready-to-Go***: Integrado vía LTI (Bloque Neón, Canvas, Brightspace). El estudiante entra y ya ve todas sus materias, sílabos y temas de evaluación montados. | **Adaptable al Usuario**: El estudiante sube su propio material de estudio (PDFs, diapositivas, código, apuntes) y Quack se adapta a lo que suba. |
 | **Valor para la Institución** | **Estadísticas Estratégicas de Éxito Estudiantil**: Panel analítico con tasas de aprobación (+25%), dominio por cohorte, cuellos de botella conceptuales por materia y retención. | Informes individuales de *Brechas Erradicadas* y evolución personal antes de cada parcial. |
-| **Precio Oficial** | **\$12 USD / alumno / año** en Piloto Early Adopter (\$48.000 COP); **\$15 USD** estándar (\$60.000 COP). | **\$0 COP** (Free limitado) · **\$19.900 COP/mes** o **\$149.000 COP/año** (Quack Pro ilimitado). |
+| **Suscripción** | **\$12 USD / alumno / año** en Piloto Early Adopter (\$48.000 COP); **\$15 USD / alumno / año** estándar (\$60.000 COP). La suscripción institucional cubre los servicios de Quack Campus. | **\$0 COP** (Free limitado) · **\$19.900 COP/mes** o **\$149.000 COP/año** (Quack Pro ilimitado). La suscripción individual da acceso a los servicios B2C según el plan. |
 
 ---
 

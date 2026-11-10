@@ -1,6 +1,6 @@
 # Especificación de Producto y Modelo de Negocio — Quack
 
-Este documento consolida los requerimientos funcionales, el perfil del usuario, la propuesta de valor, el alcance multidisciplinario y el modelo de monetización de **Quack**.
+Este documento consolida los requerimientos funcionales, el perfil del usuario, la propuesta de valor, el alcance multidisciplinario y el modelo de suscripción B2C y B2B de **Quack**.
 
 ---
 
@@ -44,16 +44,17 @@ Quack no es una herramienta exclusiva para matemáticas. Su motor socrático y d
 
 ---
 
-## 4. Tabla Oficial de Precios y Monetización (Paso 16 Bill Aulet)
+## 4. Tabla de Suscripciones y Precios (Paso 16 Bill Aulet)
+
+Quack monetiza sus servicios mediante suscripciones B2C y B2B. La suscripción institucional se factura por estudiante activo y año e incluye los servicios Campus; los flujos de práctica y evaluación forman parte de los planes y no se venden como compras individuales por examen.
 
 | Plan / Servicio | Patrón | Precio (COP) | Precio (USD) | Incluye |
 | :--- | :--- | :-: | :-: | :--- |
 | **Quack Free** | Freemium | **\$0 COP** | **\$0.00 USD** | 3 sesiones Feynman/sem, 1 Parcial OCR/sem y carga de hasta 2 documentos/sem. |
 | **Quack Pro Mensual** | Suscripción B2C | **\$19.900 COP/mes** | **\$4.99 USD/mes** | Carga ilimitada de material propio, Feynman y Parciales OCR ilimitados, reporte de brechas. |
 | **Quack Pro Anual** | Suscripción B2C | **\$149.000 COP/año** | **\$37.50 USD/año** | Todo Quack Pro con **37% de ahorro** (equivale a ~\$12.400 COP/mes). |
-| **Quack Campus Piloto** | Licencia B2B | **\$48.000 COP/año** | **\$12.00 USD/año** | Por estudiante activo/año (20% dto. Early Adopter). Cursos *Ready-to-Go* + Estadísticas de Éxito Estudiantil. |
-| **Quack Campus Estándar** | Licencia B2B | **\$60.000 COP/año** | **\$15.00 USD/año** | Por estudiante activo/año. Integración LTI completa + Analítica Institucional de Éxito. |
-| **Certificación de Dominio**| Pay-per-Use | **\$100.000 COP** | **\$25.00 USD** | Por examen oficial auditado con insignia verificable para monitorías y pasantías tech. |
+| **Quack Campus Piloto** | Suscripción B2B | **\$48.000 COP/año** | **\$12.00 USD/año** | Por estudiante activo/año (20% dto. Early Adopter). Cursos *Ready-to-Go* + Estadísticas de Éxito Estudiantil. |
+| **Quack Campus Estándar** | Suscripción B2B | **\$60.000 COP/año** | **\$15.00 USD/año** | Por estudiante activo/año. Integración LTI completa + Analítica Institucional de Éxito. |
 
 ---
 

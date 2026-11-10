@@ -11,7 +11,7 @@
 - **Parcial a Ciegas OCR (Simulacro a Mano — `/parcial-ciegas`)**: El estudiante resuelve en papel a libro cerrado bajo cronómetro, sube una fotografía de su desarrollo y recibe una auditoría paso a paso con crédito parcial (`CORRECT`, `ALGEBRAIC_ERROR`, `CONCEPTUAL_ERROR`, `PROPAGATED_ERROR`).
 - **En Hoja de Ruta (*Veremos / Próximamente*) — Memorización por Repetición Espaciada**: Fase previa con tarjetas adaptativas (calificando qué tan fácil o difícil fue recordar cada concepto) antes de validar con Feynman Oral y Parcial OCR.
 
-### 2. Modelo Institucional (B2B) vs. Suscripción Individual (B2C)
+### 2. Suscripciones Institucionales (B2B) e Individuales (B2C)
 - **Para Universidades e Instituciones (`Quack Campus`)**:
   - **Cursos *Ready-to-Go* vía LTI (Bloque Neón, Canvas, Brightspace)**: Cuando el estudiante entra a Quack, ya ve todas sus materias matriculadas, unidades y temas que se evalúan listos para practicar sin configurar nada.
   - **Estadísticas Estratégicas de Éxito Estudiantil**: Panel de analítica institucional que entrega métricas de impacto del uso de Quack (incremento en tasas de aprobación, evolución de dominio por cohorte, cuellos de botella conceptuales por asignatura y alertas tempranas de retención).
@@ -20,7 +20,9 @@
 
 ---
 
-## 💰 Planes y Precios (Paso 16 Bill Aulet)
+## 💰 Suscripciones y Precios (Paso 16 Bill Aulet)
+
+Quack se ofrece mediante suscripciones para estudiantes e instituciones. La suscripción B2B se cobra por estudiante activo y año e incluye los servicios de Quack Campus; los flujos de práctica y evaluación forman parte de los planes, sin compras individuales por examen.
 
 | Plan | Precio (COP) | Precio (USD) | Descripción |
 | :--- | :-: | :-: | :--- |
@@ -28,7 +30,6 @@
 | **Quack Pro Mensual** | **\$19.900 COP/mes** | **\$4.99 USD/mes** | Carga ilimitada de material propio, Feynman y Parciales OCR ilimitados, reporte de brechas. |
 | **Quack Pro Anual** | **\$149.000 COP/año** | **\$37.50 USD/año** | Todo Quack Pro ahorrando **37%** (~12.400 COP/mes). |
 | **Quack Campus (B2B)** | **\$48.000 COP/año** | **\$12.00 USD/año** | Por estudiante/año en Piloto Early Adopter (\$60.000 COP / \$15 USD estándar). Cursos *Ready-to-Go* + Estadísticas de Éxito Estudiantil. |
-| **Certificación Oficial**| **\$100.000 COP** | **\$25.00 USD** | Pago por examen oficial auditado con insignia verificable para monitorías y pasantías. |
 
 ---
 

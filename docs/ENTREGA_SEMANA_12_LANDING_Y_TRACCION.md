@@ -13,6 +13,8 @@
 > Plataforma de estudio activo que erradica la ilusión de competencia (93.9% de prevalencia en estudiantes que usan LLMs de forma pasiva). El estudiante explica conceptos en voz alta a una IA en rol de alumna curiosa (**Método Feynman Oral**) y resuelve simulacros a mano bajo cronómetro con auditoría paso a paso (**Parcial a Ciegas OCR**).
 
 ### Amplitud Multidisciplinaria y Doble Modalidad (B2B vs. B2C)
+Quack ofrece sus servicios mediante suscripción: planes individuales B2C y suscripciones institucionales B2B por estudiante activo. Feynman Oral, Parcial a Ciegas OCR y la analítica institucional se ofrecen dentro de esos planes, no como compras por examen.
+
 1. **Rango amplio de materias (más allá de matemáticas)**: Programación, Algoritmia y Estructuras de Datos, Química, Biología, Biofísica, Física, Circuitos y Matemáticas Universitarias.
 2. **Para Universidades e Instituciones (`Quack Campus` — \$12 USD Piloto / \$15 USD anual por estudiante)**:
    - **Cursos *Ready-to-Go* vía LTI (Bloque Neón / Canvas / Brightspace)**: El estudiante entra y ya ve todas sus materias matriculadas, unidades y temas evaluables montados y listos para practicar.
