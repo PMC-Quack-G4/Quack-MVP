@@ -1,6 +1,16 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Check, CreditCard, GraduationCap, ShieldCheck, Sparkles, Users, X } from "lucide-react";
+import {
+  Building2,
+  Check,
+  CreditCard,
+  GraduationCap,
+  ShieldCheck,
+  Sparkles,
+  TrendingDown,
+  Users,
+  X,
+} from "lucide-react";
 import { Reveal } from "./Reveal";
 import { EMAIL_PATTERN, leadService } from "@/services/leadService";
 import { trackEvent } from "@/lib/analytics";
@@ -9,76 +19,95 @@ import { cn } from "@/lib/utils";
 type AudienceTab = "b2c" | "b2b";
 type BillingCycle = "monthly" | "annual";
 
-interface B2BVolumeTier {
+interface B2BMassPackage {
   id: string;
-  label: string;
-  studentsCountLabel: string;
-  thousands: number;
-  pricePer1kUsd: number;
-  regularPer1kUsd: number;
+  studentsLabel: string;
+  blocksLabel: string;
+  discountBadge: string;
+  featured?: boolean;
+  totalStandardUsd: string;
   totalAnnualUsd: string;
-  per1kFormatted: string;
-  tag: string;
+  totalSavedUsd: string;
+  per1kRateUsd: string;
+  per1kSavedUsd: string;
+  fitDescription: string;
+  ctaLabel: string;
 }
 
-const b2bVolumeTiers: readonly B2BVolumeTier[] = [
+/**
+ * Paquetes B2B escalonados por masas de 1,000 estudiantes.
+ * Tarifa estándar de referencia: $15,000 USD / año por cada 1,000 estudiantes ($15 USD/estudiante).
+ * - 1,000 est.  (1 bloque):  $12,000 USD/año (vs $15k  -> ahorra $3,000/1k  | $3,000 total)
+ * - 3,000 est.  (3 bloques): $33,000 USD/año (vs $45k  -> ahorra $4,000/1k  | $12,000 total)
+ * - 5,000 est.  (5 bloques): $50,000 USD/año (vs $75k  -> ahorra $5,000/1k  | $25,000 total)
+ * - 10,000 est. (10 bloques): $90,000 USD/año (vs $150k -> ahorra $6,000/1k | $60,000 total)
+ */
+const b2bMassPackages: readonly B2BMassPackage[] = [
   {
-    id: "1k",
-    label: "1k estudiantes",
-    studentsCountLabel: "1,000 estudiantes activos",
-    thousands: 1,
-    pricePer1kUsd: 12000,
-    regularPer1kUsd: 15000,
-    per1kFormatted: "$12,000 USD",
-    totalAnnualUsd: "$12,000 USD / año",
-    tag: "Piloto Early Adopter (-20%)",
+    id: "campus_1k",
+    studentsLabel: "1,000 estudiantes",
+    blocksLabel: "1 bloque de 1k estudiantes",
+    discountBadge: "Piloto · 20% DTO",
+    totalStandardUsd: "$15,000 USD",
+    totalAnnualUsd: "$12,000 USD",
+    totalSavedUsd: "$3,000 USD / año",
+    per1kRateUsd: "$12,000 USD",
+    per1kSavedUsd: "$3,000 USD por cada 1k",
+    fitDescription: "Ideal para piloto en 1 departamento o facultad.",
+    ctaLabel: "Cotizar 1,000 est.",
   },
   {
-    id: "2.5k",
-    label: "2.5k estudiantes",
-    studentsCountLabel: "2,500 estudiantes activos",
-    thousands: 2.5,
-    pricePer1kUsd: 11200,
-    regularPer1kUsd: 15000,
-    per1kFormatted: "$11,200 USD",
-    totalAnnualUsd: "$28,000 USD / año",
-    tag: "Escuela / 2 Facultades (-25%)",
+    id: "campus_3k",
+    studentsLabel: "3,000 estudiantes",
+    blocksLabel: "3 bloques de 1k estudiantes",
+    discountBadge: "Escala · 27% DTO",
+    totalStandardUsd: "$45,000 USD",
+    totalAnnualUsd: "$33,000 USD",
+    totalSavedUsd: "$12,000 USD / año",
+    per1kRateUsd: "$11,000 USD",
+    per1kSavedUsd: "$4,000 USD por cada 1k",
+    fitDescription: "Cobertura para 2 o 3 facultades de Ingeniería y Ciencias.",
+    ctaLabel: "Cotizar 3,000 est.",
   },
   {
-    id: "5k",
-    label: "5k estudiantes",
-    studentsCountLabel: "5,000 estudiantes activos",
-    thousands: 5,
-    pricePer1kUsd: 10000,
-    regularPer1kUsd: 15000,
-    per1kFormatted: "$10,000 USD",
-    totalAnnualUsd: "$50,000 USD / año",
-    tag: "Campus STEM (-33%)",
+    id: "campus_5k",
+    studentsLabel: "5,000 estudiantes",
+    blocksLabel: "5 bloques de 1k estudiantes",
+    discountBadge: "Más elegido · 33% DTO",
+    featured: true,
+    totalStandardUsd: "$75,000 USD",
+    totalAnnualUsd: "$50,000 USD",
+    totalSavedUsd: "$25,000 USD / año",
+    per1kRateUsd: "$10,000 USD",
+    per1kSavedUsd: "$5,000 USD por cada 1k",
+    fitDescription: "Campus completo en carreras STEM, Química y Biología.",
+    ctaLabel: "Cotizar 5,000 est.",
   },
   {
-    id: "10k",
-    label: "10k+ estudiantes",
-    studentsCountLabel: "10,000+ estudiantes activos",
-    thousands: 10,
-    pricePer1kUsd: 9000,
-    regularPer1kUsd: 15000,
-    per1kFormatted: "$9,000 USD",
-    totalAnnualUsd: "$90,000 USD / año",
-    tag: "Universidad Completa (-40%)",
+    id: "campus_10k",
+    studentsLabel: "10,000 estudiantes",
+    blocksLabel: "10 bloques de 1k estudiantes",
+    discountBadge: "Universidad · 40% DTO",
+    totalStandardUsd: "$150,000 USD",
+    totalAnnualUsd: "$90,000 USD",
+    totalSavedUsd: "$60,000 USD / año",
+    per1kRateUsd: "$9,000 USD",
+    per1kSavedUsd: "$6,000 USD por cada 1k",
+    fitDescription: "Licencia global multianual para toda la universidad.",
+    ctaLabel: "Cotizar 10,000 est.",
   },
 ] as const;
 
 /**
  * SECCIÓN 5: PLANES Y PRECIOS EN USD (#precios).
  * - Pestaña 1 (B2C): Para Estudiantes Individuales (Free y suscripción Pro).
- * - Pestaña 2 (B2B): Para Universidades e Instituciones por masas de 1k estudiantes ($12,000 USD por cada 1k en Piloto
- *   hasta $9,000 USD por cada 1k en escala campus).
+ * - Pestaña 2 (B2B): Para Universidades mostrando el PRECIO TOTAL ANUAL por cohorte
+ *   y el AHORRO EXPLÍCITO por cada bloque de 1k estudiantes sobre la tarifa estándar ($15k/1k).
  */
 export const PricingSection: React.FC = () => {
   const navigate = useNavigate();
   const [audienceTab, setAudienceTab] = React.useState<AudienceTab>("b2c");
   const [billing, setBilling] = React.useState<BillingCycle>("monthly");
-  const [selectedVolumeId, setSelectedVolumeId] = React.useState<string>("1k");
 
   const [selectedModalPlan, setSelectedModalPlan] = React.useState<{
     id: string;
@@ -86,9 +115,6 @@ export const PricingSection: React.FC = () => {
     priceLabel: string;
     isCampus?: boolean;
   } | null>(null);
-
-  const activeVolume =
-    b2bVolumeTiers.find((v) => v.id === selectedVolumeId) ?? b2bVolumeTiers[0];
 
   const openCheckout = (plan: {
     id: string;
@@ -117,7 +143,7 @@ export const PricingSection: React.FC = () => {
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <Reveal className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border-2 border-quack-gunmetal bg-quack-dandelion px-3.5 py-1 font-brand text-xs font-bold uppercase tracking-[0.2em] text-quack-gunmetal shadow-[3px_3px_0_0_#3B4151]">
-            Planes y precios en USD
+            Planes y precios
           </span>
           <h2
             id="pricing-title"
@@ -127,7 +153,7 @@ export const PricingSection: React.FC = () => {
             <span className="marker-highlight">Estudiante o Universidad</span>
           </h2>
 
-          {/* Pestañas Principales 3D: B2C (Estudiantes) vs B2B (Instituciones por cada 1k) */}
+          {/* Pestañas Principales 3D: B2C (Estudiantes) vs B2B (Universidades) */}
           <div
             role="tablist"
             aria-label="Modalidad de precios"
@@ -149,7 +175,7 @@ export const PricingSection: React.FC = () => {
               )}
             >
               <GraduationCap className="h-4 w-4" aria-hidden="true" />
-              Para Estudiantes (B2C)
+              Para Estudiantes
             </button>
             <button
               type="button"
@@ -167,7 +193,7 @@ export const PricingSection: React.FC = () => {
               )}
             >
               <Building2 className="h-4 w-4" aria-hidden="true" />
-              Para Universidades (B2B · Por cada 1k estudiantes)
+              Para Universidades
             </button>
           </div>
         </Reveal>
@@ -207,7 +233,7 @@ export const PricingSection: React.FC = () => {
               </div>
             </div>
 
-            <div className="scene-3d mt-10 grid gap-6 md:grid-cols-2">
+            <div className="scene-3d mx-auto mt-10 grid max-w-4xl gap-6 md:grid-cols-2">
               {/* 1. Quack Free */}
               <article className="card-3d-light flex h-full flex-col justify-between rounded-3xl border-2 border-quack-gunmetal bg-white p-7">
                 <div>
@@ -311,216 +337,218 @@ export const PricingSection: React.FC = () => {
                   </button>
                 </div>
               </article>
-
             </div>
           </div>
         ) : (
           /* =====================================================================
-              PESTAÑA 2: B2B — UNIVERSIDADES E INSTITUCIONES (Masas de 1k estudiantes en USD)
+              PESTAÑA 2: B2B — UNIVERSIDADES (Precio Total + Ahorro por cada 1k)
              ===================================================================== */
           <div key="b2b-panel" className="animate-pop mt-10">
-            {/* Selector Interactivo de Masas por cada 1k estudiantes */}
-            <div className="mx-auto max-w-4xl rounded-3xl border-2 border-quack-gunmetal bg-[#151922] p-6 text-white shadow-[10px_10px_0_0_#FFC800] sm:p-8">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <span className="inline-flex items-center gap-1.5 font-brand text-xs font-bold uppercase tracking-wider text-quack-amber">
-                    <Users className="h-4 w-4" aria-hidden="true" /> Calculadora por volumen (Masas de 1k estudiantes)
-                  </span>
-                  <h3 className="mt-1 font-brand text-xl font-bold text-white sm:text-2xl">
-                    Selecciona el tamaño de tu cohorte o campus:
-                  </h3>
-                </div>
-                <span className="rounded-full border border-quack-amber/50 bg-quack-amber/15 px-3 py-1 font-mono text-xs font-bold text-quack-amber">
-                  {activeVolume.tag}
+            {/* Aclaración cristalina arriba de las 4 tarjetas */}
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-quack-gunmetal/20 bg-white px-4 py-2 text-xs font-medium text-quack-gunmetal shadow-2xs sm:text-sm">
+                <Users className="h-4 w-4 text-quack-caramel" aria-hidden="true" />
+                <span>
+                  Tarifa estándar: <strong className="line-through text-quack-gunmetal/55">$15,000 USD</strong>{" "}
+                  por cada 1,000 estudiantes/año. Entre mayor sea tu masa estudiantil,{" "}
+                  <strong className="text-quack-caramel">más ahorras por cada 1k:</strong>
                 </span>
-              </div>
-
-              {/* Botones de masa estudiantil (1k, 2.5k, 5k, 10k+) */}
-              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {b2bVolumeTiers.map((vol) => {
-                  const isSelected = vol.id === activeVolume.id;
-                  return (
-                    <button
-                      key={vol.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedVolumeId(vol.id);
-                        trackEvent("b2b_volume_select", { volume: vol.id });
-                      }}
-                      className={cn(
-                        "cursor-pointer rounded-2xl border-2 p-3.5 text-left transition-all",
-                        isSelected
-                          ? "border-quack-amber bg-quack-amber text-quack-gunmetal shadow-[0_6px_20px_rgba(255,200,0,0.35)]"
-                          : "border-white/15 bg-white/5 text-white hover:border-white/35"
-                      )}
-                    >
-                      <p className="font-brand text-base font-bold sm:text-lg">{vol.label}</p>
-                      <p
-                        className={cn(
-                          "mt-0.5 font-mono text-xs font-bold",
-                          isSelected ? "text-quack-gunmetal/80" : "text-quack-amber"
-                        )}
-                      >
-                        {vol.per1kFormatted} / 1k
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Resumen dinámico del bloque seleccionado */}
-              <div className="mt-6 grid items-center gap-6 rounded-2xl border border-white/15 bg-[#0E1118] p-5 sm:grid-cols-[1.2fr_0.8fr]">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-white/60">
-                    Tarifa institucional por cada 1,000 estudiantes ({activeVolume.studentsCountLabel})
-                  </p>
-                  <div className="mt-1 flex flex-wrap items-baseline gap-3">
-                    <span className="font-brand text-3xl font-bold text-quack-amber sm:text-4xl">
-                      {activeVolume.per1kFormatted}
-                    </span>
-                    <span className="text-sm font-semibold text-white/80">
-                      por cada 1k estudiantes / año
-                    </span>
-                    <span className="font-mono text-xs text-white/45 line-through">
-                      $15,000 USD / 1k
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-xs text-white/70">
-                    Inversión total anual para {activeVolume.label}:{" "}
-                    <strong className="text-white">{activeVolume.totalAnnualUsd}</strong> (equivale a{" "}
-                    <strong className="text-quack-amber">
-                      ${(activeVolume.pricePer1kUsd / 1000).toFixed(2)} USD
-                    </strong>{" "}
-                    por estudiante al año).
-                  </p>
-                </div>
-
-                <div className="flex sm:justify-end">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      openCheckout({
-                        id: `campus_${activeVolume.id}`,
-                        title: `Quack Campus (${activeVolume.label})`,
-                        priceLabel: `${activeVolume.per1kFormatted} por cada 1k estudiantes · Total: ${activeVolume.totalAnnualUsd}`,
-                        isCampus: true,
-                      })
-                    }
-                    className="btn-toy btn-toy-light h-12 w-full cursor-pointer bg-quack-amber px-6 text-sm text-quack-gunmetal sm:w-auto"
-                  >
-                    Cotizar paquete {activeVolume.label}
-                  </button>
-                </div>
-              </div>
+              </p>
             </div>
 
-            {/* 2 Tarjetas B2B Comparativas en 3D */}
-            <div className="scene-3d mt-8 grid gap-6 md:grid-cols-2">
-              <article className="card-3d-light flex h-full flex-col justify-between rounded-3xl border-2 border-quack-gunmetal bg-white p-7">
-                <div>
-                  <span className="inline-block rounded-full bg-quack-dandelion px-3 py-1 font-brand text-xs font-bold text-quack-gunmetal">
-                    Facultad / Piloto Early Adopter
-                  </span>
-                  <h3 className="mt-3 font-brand text-2xl font-bold text-quack-gunmetal">
-                    Bloque Base · 1k Estudiantes
-                  </h3>
-                  <p className="mt-3 font-brand text-4xl font-bold text-quack-gunmetal tabular-nums">
-                    $12,000 USD{" "}
-                    <span className="text-base font-semibold text-quack-gunmetal/65">
-                      / 1k estudiantes al año
-                    </span>
-                  </p>
-                  <p className="mt-1 text-xs font-medium text-quack-caramel">
-                    Tarifa Early Adopter ($12 USD por estudiante/año · Estándar: $15,000 USD / 1k)
-                  </p>
-
-                  <ul className="mt-6 space-y-2.5 border-t border-quack-gunmetal/10 pt-5 text-sm text-quack-gunmetal/85">
-                    {[
-                      "Integración LTI Ready-to-Go (Canvas, Brightspace, Bloque Neón) para 1,000 estudiantes",
-                      "Cursos preconfigurados en Programación, Algoritmia, Química, Biología, Física y Cálculo",
-                      "Panel de Estadísticas de Éxito Estudiantil por cohorte y asignatura",
-                      "Detección temprana de cuellos de botella conceptuales antes de cada corte",
-                    ].map((feat) => (
-                      <li key={feat} className="flex items-start gap-2.5">
-                        <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
-                          <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
-                        </span>
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="mt-8">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      openCheckout({
-                        id: "campus_1k_pilot",
-                        title: "Piloto Facultad · 1k Estudiantes",
-                        priceLabel: "$12,000 USD / año por cada 1k estudiantes ($12 USD/estudiante)",
-                        isCampus: true,
-                      })
-                    }
-                    className="btn-toy h-12 w-full cursor-pointer bg-quack-gunmetal text-sm text-white hover:bg-[#454c5f]"
+            {/* 4 Paquetes en orden ascendente por Precio Total Anual */}
+            <div className="scene-3d mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {b2bMassPackages.map((pkg) => {
+                const isFeatured = Boolean(pkg.featured);
+                return (
+                  <article
+                    key={pkg.id}
+                    className={cn(
+                      "relative flex h-full flex-col justify-between rounded-3xl border-2 p-6",
+                      isFeatured
+                        ? "card-3d-amber border-quack-amber bg-[#151922] text-white"
+                        : "card-3d-light border-quack-gunmetal bg-white text-quack-gunmetal"
+                    )}
                   >
-                    Solicitar Piloto 1k ($12,000 USD)
-                  </button>
-                </div>
-              </article>
-
-              <article className="card-3d-amber flex h-full flex-col justify-between rounded-3xl border-2 border-quack-gunmetal bg-[#151922] p-7 text-white">
-                <div>
-                  <span className="inline-block rounded-full bg-quack-amber px-3 py-1 font-brand text-xs font-bold text-quack-gunmetal">
-                    Escala Campus · 5k a 10k+ Estudiantes
-                  </span>
-                  <h3 className="mt-3 font-brand text-2xl font-bold text-white">
-                    Licencia Multianual por Masas
-                  </h3>
-                  <p className="mt-3 font-brand text-4xl font-bold text-quack-amber tabular-nums">
-                    $9,000 – $10,000 USD{" "}
-                    <span className="text-base font-semibold text-white/75">
-                      / 1k estudiantes al año
+                    {/* Badge de descuento arriba */}
+                    <span
+                      className={cn(
+                        "inline-flex w-fit items-center gap-1 rounded-full border px-2.5 py-0.5 font-brand text-[11px] font-bold",
+                        isFeatured
+                          ? "border-quack-amber bg-quack-amber text-quack-gunmetal"
+                          : "border-quack-gunmetal/20 bg-quack-dandelion text-quack-gunmetal"
+                      )}
+                    >
+                      {pkg.discountBadge}
                     </span>
-                  </p>
-                  <p className="mt-1 text-xs font-medium text-white/75">
-                    Descuento escalonado por volumen desde 5,000 hasta +10,000 estudiantes
-                  </p>
 
-                  <ul className="mt-6 space-y-2.5 border-t border-white/15 pt-5 text-sm text-white/90">
-                    {[
-                      "Todo lo del Piloto + Despliegue transversal en todas las facultades STEM y Ciencias",
-                      "Dashboard Ejecutivo para Decanaturas: retención estudiantil, ROI > 50x y analítica histórica",
-                      "Parametrización completa con sílabos, rúbricas y bancos de parciales de la institución",
-                      "Soporte prioritario SLA 99.9% y acompañamiento pedagógico continuo",
-                    ].map((feat) => (
-                      <li key={feat} className="flex items-start gap-2.5">
-                        <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-quack-amber text-quack-gunmetal">
-                          <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
-                        </span>
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
+                    <div className="mt-4">
+                      {/* Tamaño del paquete */}
+                      <h3
+                        className={cn(
+                          "font-brand text-xl font-bold",
+                          isFeatured ? "text-white" : "text-quack-gunmetal"
+                        )}
+                      >
+                        {pkg.studentsLabel}
+                      </h3>
+                      <p
+                        className={cn(
+                          "text-xs font-medium",
+                          isFeatured ? "text-white/65" : "text-quack-gunmetal/60"
+                        )}
+                      >
+                        {pkg.blocksLabel}
+                      </p>
+
+                      {/* Precio anterior tachado + PRECIO TOTAL ANUAL prominente */}
+                      <div className="mt-4">
+                        <p
+                          className={cn(
+                            "font-mono text-xs line-through",
+                            isFeatured ? "text-white/45" : "text-quack-gunmetal/45"
+                          )}
+                        >
+                          Antes: {pkg.totalStandardUsd} / año
+                        </p>
+                        <p
+                          className={cn(
+                            "mt-0.5 font-brand text-3xl font-bold tracking-tight tabular-nums",
+                            isFeatured ? "text-quack-amber" : "text-quack-gunmetal"
+                          )}
+                        >
+                          {pkg.totalAnnualUsd}
+                        </p>
+                        <p
+                          className={cn(
+                            "text-xs font-bold uppercase tracking-wider",
+                            isFeatured ? "text-white/75" : "text-quack-gunmetal/65"
+                          )}
+                        >
+                          Total anual institucional
+                        </p>
+                      </div>
+
+                      {/* Bloque explícito de ahorro total y por cada 1k */}
+                      <div
+                        className={cn(
+                          "mt-4 rounded-2xl border p-3 text-xs",
+                          isFeatured
+                            ? "border-emerald-400/35 bg-emerald-500/10"
+                            : "border-emerald-600/25 bg-emerald-50"
+                        )}
+                      >
+                        <p
+                          className={cn(
+                            "flex items-center gap-1.5 font-brand font-bold",
+                            isFeatured ? "text-emerald-300" : "text-emerald-800"
+                          )}
+                        >
+                          <TrendingDown className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          Ahorras {pkg.totalSavedUsd}
+                        </p>
+                        <div
+                          className={cn(
+                            "mt-1.5 space-y-0.5 border-t pt-1.5 text-[11px] leading-snug",
+                            isFeatured
+                              ? "border-emerald-400/20 text-white/80"
+                              : "border-emerald-700/15 text-quack-gunmetal/80"
+                          )}
+                        >
+                          <p>
+                            Te queda en <strong>{pkg.per1kRateUsd}</strong> por cada 1k
+                          </p>
+                          <p
+                            className={cn(
+                              "font-semibold",
+                              isFeatured ? "text-quack-amber" : "text-quack-caramel"
+                            )}
+                          >
+                            Ahorro de {pkg.per1kSavedUsd}
+                          </p>
+                        </div>
+                      </div>
+
+                      <p
+                        className={cn(
+                          "mt-3 text-xs leading-relaxed",
+                          isFeatured ? "text-white/75" : "text-quack-gunmetal/75"
+                        )}
+                      >
+                        {pkg.fitDescription}
+                      </p>
+                    </div>
+
+                    <div className="mt-6">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openCheckout({
+                            id: pkg.id,
+                            title: `Quack Campus · ${pkg.studentsLabel}`,
+                            priceLabel: `Total: ${pkg.totalAnnualUsd} / año (${pkg.per1kRateUsd} por cada 1k · ahorras ${pkg.totalSavedUsd})`,
+                            isCampus: true,
+                          })
+                        }
+                        className={cn(
+                          "btn-toy h-11 w-full cursor-pointer text-xs sm:text-sm",
+                          isFeatured
+                            ? "btn-toy-light bg-quack-amber text-quack-gunmetal hover:bg-[#ffd21f]"
+                            : "bg-quack-gunmetal text-white hover:bg-[#454c5f]"
+                        )}
+                      >
+                        {pkg.ctaLabel}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            {/* Una única barra oscura unificada con todo lo que incluye Quack Campus */}
+            <div className="mt-8 rounded-3xl border-2 border-quack-gunmetal bg-[#151922] p-6 text-white shadow-[8px_8px_0_0_#FFC800] sm:p-7">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="font-brand text-xs font-bold uppercase tracking-wider text-quack-amber">
+                    Incluido en todos los paquetes universitarios Quack Campus
+                  </p>
+                  <div className="mt-3 grid gap-3 text-xs text-white/90 sm:grid-cols-3 sm:text-sm">
+                    <span className="flex items-start gap-2">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-quack-amber" strokeWidth={3} />
+                      <span>
+                        <strong>Cursos Ready‑to‑Go vía LTI</strong> (Bloque Neón, Canvas, Brightspace)
+                      </span>
+                    </span>
+                    <span className="flex items-start gap-2">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-quack-amber" strokeWidth={3} />
+                      <span>
+                        <strong>Estadísticas de Éxito Estudiantil</strong> y alertas por cohorte
+                      </span>
+                    </span>
+                    <span className="flex items-start gap-2">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-quack-amber" strokeWidth={3} />
+                      <span>
+                        <strong>Todas las áreas STEM:</strong> Programación, Química, Biología y Cálculo
+                      </span>
+                    </span>
+                  </div>
                 </div>
 
-                <div className="mt-8">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      openCheckout({
-                        id: "campus_mass_scale",
-                        title: `Licencia Campus Masiva (${activeVolume.label})`,
-                        priceLabel: `${activeVolume.per1kFormatted} por cada 1k estudiantes (${activeVolume.totalAnnualUsd})`,
-                        isCampus: true,
-                      })
-                    }
-                    className="btn-toy btn-toy-light h-12 w-full cursor-pointer bg-quack-amber text-sm text-quack-gunmetal hover:bg-[#ffd21f]"
-                  >
-                    Agendar Demo Institucional
-                  </button>
-                </div>
-              </article>
+                <button
+                  type="button"
+                  onClick={() =>
+                    openCheckout({
+                      id: "campus_custom_10k_plus",
+                      title: "Licencia Institucional a Medida (+10,000 estudiantes)",
+                      priceLabel: "Cotización personalizada multi‑campus (desde $9,000 USD por cada 1k)",
+                      isCampus: true,
+                    })
+                  }
+                  className="btn-toy btn-toy-light h-11 shrink-0 cursor-pointer bg-quack-amber px-5 text-xs text-quack-gunmetal sm:text-sm"
+                >
+                  ¿Más de 10k estudiantes? Cotizar a medida
+                </button>
+              </div>
             </div>
           </div>
         )}

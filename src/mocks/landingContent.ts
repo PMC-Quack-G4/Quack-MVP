@@ -450,7 +450,7 @@ export const faqItems: readonly FaqItem[] = [
     id: "f4",
     question: "¿Cómo funcionan los precios para estudiantes (B2C) y universidades (B2B)?",
     answer:
-      "Los estudiantes individuales pueden empezar gratis con Quack Free ($0 USD) o activar Quack Pro por $4.99 USD/mes ($37.50 USD/año, ahorrando 37%). Para universidades y facultades (B2B), manejamos planes por volumen desde $12,000 USD/año por cada 1,000 estudiantes en Piloto Early Adopter (con descuentos progresivos hasta $9,000 USD por cada 1k estudiantes en campus completos).",
+      "Los estudiantes individuales pueden empezar gratis con Quack Free ($0 USD) o activar Quack Pro por $4.99 USD/mes ($37.50 USD/año, ahorrando 37%). Para universidades y facultades (B2B), los paquetes arrancan en $12,000 USD/año para 1,000 estudiantes (ahorro de $3,000/1k vs. tarifa estándar de $15,000/1k), escalando a $33,000 USD para 3k, $50,000 USD para 5k y $90,000 USD para 10k estudiantes (ahorrando $6,000 USD por cada bloque de 1k).",
   },
   {
     id: "f5",

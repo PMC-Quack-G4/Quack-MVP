@@ -91,7 +91,7 @@ export const GuideSection: React.FC = () => (
             </div>
 
             <div className="mt-6 border-t border-white/15 pt-4 text-xs font-semibold text-quack-dandelion">
-              Planes institucionales por volumen desde $12,000 USD / año por cada 1k estudiantes
+              Paquetes institucionales desde $12,000 USD / año para 1,000 estudiantes (hasta 40% de ahorro en campus)
             </div>
           </article>
         </Reveal>
