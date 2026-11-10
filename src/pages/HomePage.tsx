@@ -39,7 +39,7 @@ export const HomePage: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#fffcf2] text-quack-gunmetal selection:bg-quack-amber selection:text-quack-gunmetal">
+    <div className="min-h-screen overflow-x-clip bg-[#fffcf2] text-quack-gunmetal selection:bg-quack-amber selection:text-quack-gunmetal">
       <a
         href="#contenido-principal"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-xl focus:bg-quack-amber focus:px-4 focus:py-2 focus:font-brand focus:font-bold focus:text-quack-gunmetal"
@@ -61,14 +61,14 @@ export const HomePage: React.FC = () => {
 
       {/* Barra móvil flotante con acceso a Precios y Prueba */}
       {showStickyMobile && (
-        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t-2 border-quack-gunmetal bg-[#fffcf2]/95 p-3 shadow-[0_-10px_25px_-10px_rgba(59,65,81,0.3)] backdrop-blur-md sm:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t-2 border-quack-gunmetal bg-[#fffcf2]/95 px-4 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-[0_-10px_25px_-10px_rgba(59,65,81,0.3)] backdrop-blur-md sm:hidden">
           <a
             href="#precios"
             className="flex h-11 items-center justify-center rounded-xl border-2 border-quack-gunmetal bg-white px-4 font-brand text-xs font-bold text-quack-gunmetal"
           >
             Precios
           </a>
-          <CtaButton to="/feynman" location="mobile_sticky" size="md" className="flex-1">
+          <CtaButton to="/feynman" location="mobile_sticky" size="md" className="flex-1 text-xs">
             Probar ahora
           </CtaButton>
         </div>

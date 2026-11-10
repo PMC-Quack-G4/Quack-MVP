@@ -21,6 +21,8 @@ type BillingCycle = "monthly" | "annual";
 
 interface B2BMassPackage {
   id: string;
+  shortStudents: string;
+  shortPrice: string;
   studentsLabel: string;
   blocksLabel: string;
   discountBadge: string;
@@ -45,6 +47,8 @@ interface B2BMassPackage {
 const b2bMassPackages: readonly B2BMassPackage[] = [
   {
     id: "campus_1k",
+    shortStudents: "1k",
+    shortPrice: "$12k",
     studentsLabel: "1,000 estudiantes",
     blocksLabel: "1 bloque de 1k estudiantes",
     discountBadge: "Piloto · 20% DTO",
@@ -58,6 +62,8 @@ const b2bMassPackages: readonly B2BMassPackage[] = [
   },
   {
     id: "campus_3k",
+    shortStudents: "3k",
+    shortPrice: "$33k",
     studentsLabel: "3,000 estudiantes",
     blocksLabel: "3 bloques de 1k estudiantes",
     discountBadge: "Escala · 27% DTO",
@@ -71,6 +77,8 @@ const b2bMassPackages: readonly B2BMassPackage[] = [
   },
   {
     id: "campus_5k",
+    shortStudents: "5k ★",
+    shortPrice: "$50k",
     studentsLabel: "5,000 estudiantes",
     blocksLabel: "5 bloques de 1k estudiantes",
     discountBadge: "Más elegido · 33% DTO",
@@ -85,6 +93,8 @@ const b2bMassPackages: readonly B2BMassPackage[] = [
   },
   {
     id: "campus_10k",
+    shortStudents: "10k",
+    shortPrice: "$90k",
     studentsLabel: "10,000 estudiantes",
     blocksLabel: "10 bloques de 1k estudiantes",
     discountBadge: "Universidad · 40% DTO",
@@ -103,11 +113,13 @@ const b2bMassPackages: readonly B2BMassPackage[] = [
  * - Pestaña 1 (B2C): Para Estudiantes Individuales (Free y suscripción Pro).
  * - Pestaña 2 (B2B): Para Universidades mostrando el PRECIO TOTAL ANUAL por cohorte
  *   y el AHORRO EXPLÍCITO por cada bloque de 1k estudiantes sobre la tarifa estándar ($15k/1k).
+ * - En móvil (`< sm`): selector rápido de los 4 tamaños B2B y Quack Pro priorizado arriba.
  */
 export const PricingSection: React.FC = () => {
   const navigate = useNavigate();
   const [audienceTab, setAudienceTab] = React.useState<AudienceTab>("b2c");
   const [billing, setBilling] = React.useState<BillingCycle>("monthly");
+  const [mobileCohortId, setMobileCohortId] = React.useState<string>("campus_5k");
 
   const [selectedModalPlan, setSelectedModalPlan] = React.useState<{
     id: string;
@@ -138,16 +150,16 @@ export const PricingSection: React.FC = () => {
     <section
       id="precios"
       aria-labelledby="pricing-title"
-      className="lp-paper relative isolate overflow-hidden pt-20 pb-28 sm:pt-28 sm:pb-36"
+      className="lp-paper relative isolate scroll-mt-16 overflow-hidden pt-16 pb-24 sm:scroll-mt-20 sm:pt-28 sm:pb-36"
     >
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+      <div className="mx-auto max-w-6xl px-4 sm:px-8">
         <Reveal className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border-2 border-quack-gunmetal bg-quack-dandelion px-3.5 py-1 font-brand text-xs font-bold uppercase tracking-[0.2em] text-quack-gunmetal shadow-[3px_3px_0_0_#3B4151]">
+          <span className="inline-flex items-center gap-2 rounded-full border-2 border-quack-gunmetal bg-quack-dandelion px-3.5 py-1 font-brand text-[11px] font-bold uppercase tracking-[0.16em] text-quack-gunmetal shadow-[3px_3px_0_0_#3B4151] sm:text-xs sm:tracking-[0.2em]">
             Planes y precios
           </span>
           <h2
             id="pricing-title"
-            className="mt-4 font-brand text-3xl font-bold leading-tight text-quack-gunmetal text-balance sm:text-5xl"
+            className="mt-4 font-brand text-[1.75rem] font-bold leading-tight text-quack-gunmetal text-balance sm:text-5xl"
           >
             Elige tu modalidad:{" "}
             <span className="marker-highlight">Estudiante o Universidad</span>
@@ -157,7 +169,7 @@ export const PricingSection: React.FC = () => {
           <div
             role="tablist"
             aria-label="Modalidad de precios"
-            className="mt-8 inline-flex flex-wrap justify-center gap-2 rounded-2xl border-2 border-quack-gunmetal bg-[#151922] p-1.5 shadow-[6px_6px_0_0_#FFC800]"
+            className="mx-auto mt-7 grid w-full max-w-md grid-cols-2 gap-1.5 rounded-2xl border-2 border-quack-gunmetal bg-[#151922] p-1.5 shadow-[5px_5px_0_0_#FFC800] sm:mt-8 sm:inline-flex sm:w-auto sm:max-w-none sm:gap-2 sm:shadow-[6px_6px_0_0_#FFC800]"
           >
             <button
               type="button"
@@ -168,14 +180,14 @@ export const PricingSection: React.FC = () => {
                 trackEvent("pricing_tab_switch", { tab: "b2c" });
               }}
               className={cn(
-                "inline-flex cursor-pointer items-center gap-2 rounded-xl px-5 py-2.5 font-brand text-xs font-bold transition-all sm:text-sm",
+                "inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 font-brand text-xs font-bold transition-all sm:gap-2 sm:px-5 sm:text-sm",
                 audienceTab === "b2c"
                   ? "bg-quack-amber text-quack-gunmetal shadow-[0_4px_14px_rgba(255,200,0,0.45)]"
                   : "text-white/75 hover:text-white"
               )}
             >
-              <GraduationCap className="h-4 w-4" aria-hidden="true" />
-              Para Estudiantes
+              <GraduationCap className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>Para Estudiantes</span>
             </button>
             <button
               type="button"
@@ -186,14 +198,14 @@ export const PricingSection: React.FC = () => {
                 trackEvent("pricing_tab_switch", { tab: "b2b" });
               }}
               className={cn(
-                "inline-flex cursor-pointer items-center gap-2 rounded-xl px-5 py-2.5 font-brand text-xs font-bold transition-all sm:text-sm",
+                "inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 font-brand text-xs font-bold transition-all sm:gap-2 sm:px-5 sm:text-sm",
                 audienceTab === "b2b"
                   ? "bg-quack-amber text-quack-gunmetal shadow-[0_4px_14px_rgba(255,200,0,0.45)]"
                   : "text-white/75 hover:text-white"
               )}
             >
-              <Building2 className="h-4 w-4" aria-hidden="true" />
-              Para Universidades
+              <Building2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>Para Universidades</span>
             </button>
           </div>
         </Reveal>
@@ -202,7 +214,7 @@ export const PricingSection: React.FC = () => {
             PESTAÑA 1: B2C — ESTUDIANTES INDIVIDUALES (Precios en USD)
            ===================================================================== */}
         {audienceTab === "b2c" ? (
-          <div key="b2c-panel" className="animate-pop mt-10">
+          <div key="b2c-panel" className="animate-pop mt-8 sm:mt-10">
             {/* Selector Mensual / Anual */}
             <div className="flex justify-center">
               <div className="inline-flex rounded-2xl border-2 border-quack-gunmetal bg-white p-1 shadow-[3px_3px_0_0_#3B4151]">
@@ -210,7 +222,7 @@ export const PricingSection: React.FC = () => {
                   type="button"
                   onClick={() => setBilling("monthly")}
                   className={cn(
-                    "cursor-pointer rounded-xl px-4 py-1.5 font-brand text-xs font-bold transition-colors sm:text-sm",
+                    "cursor-pointer rounded-xl px-3.5 py-1.5 font-brand text-xs font-bold transition-colors sm:px-4 sm:text-sm",
                     billing === "monthly"
                       ? "bg-quack-gunmetal text-white"
                       : "text-quack-gunmetal/70 hover:text-quack-gunmetal"
@@ -222,7 +234,7 @@ export const PricingSection: React.FC = () => {
                   type="button"
                   onClick={() => setBilling("annual")}
                   className={cn(
-                    "cursor-pointer rounded-xl px-4 py-1.5 font-brand text-xs font-bold transition-colors sm:text-sm",
+                    "cursor-pointer rounded-xl px-3.5 py-1.5 font-brand text-xs font-bold transition-colors sm:px-4 sm:text-sm",
                     billing === "annual"
                       ? "bg-quack-amber text-quack-gunmetal"
                       : "text-quack-gunmetal/70 hover:text-quack-gunmetal"
@@ -233,9 +245,9 @@ export const PricingSection: React.FC = () => {
               </div>
             </div>
 
-            <div className="scene-3d mx-auto mt-10 grid max-w-4xl gap-6 md:grid-cols-2">
-              {/* 1. Quack Free */}
-              <article className="card-3d-light flex h-full flex-col justify-between rounded-3xl border-2 border-quack-gunmetal bg-white p-7">
+            <div className="scene-3d mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-6 sm:mt-10 md:grid-cols-2">
+              {/* 1. Quack Free (segundo en móvil, izquierda en desktop) */}
+              <article className="card-3d-light order-2 flex h-full flex-col justify-between rounded-3xl border-2 border-quack-gunmetal bg-white p-5 sm:p-7 md:order-1">
                 <div>
                   <p className="font-brand text-xs font-bold uppercase tracking-wider text-quack-caramel">
                     Para empezar hoy
@@ -243,14 +255,14 @@ export const PricingSection: React.FC = () => {
                   <h3 className="mt-1 font-brand text-2xl font-bold text-quack-gunmetal">
                     Quack Free
                   </h3>
-                  <p className="mt-4 font-brand text-4xl font-bold tracking-tight text-quack-gunmetal tabular-nums">
+                  <p className="mt-4 font-brand text-3xl font-bold tracking-tight text-quack-gunmetal tabular-nums sm:text-4xl">
                     $0 USD
                   </p>
                   <p className="mt-1 text-xs font-medium text-quack-gunmetal/65">
                     Gratis siempre · Sin tarjeta de crédito
                   </p>
 
-                  <ul className="mt-6 space-y-2.5 border-t border-quack-gunmetal/10 pt-5 text-sm text-quack-gunmetal/85">
+                  <ul className="mt-5 space-y-2.5 border-t border-quack-gunmetal/10 pt-5 text-sm text-quack-gunmetal/85 sm:mt-6">
                     {[
                       "3 sesiones orales Feynman por semana",
                       "1 simulacro de Parcial a Ciegas OCR por semana",
@@ -267,7 +279,7 @@ export const PricingSection: React.FC = () => {
                   </ul>
                 </div>
 
-                <div className="mt-8">
+                <div className="mt-7 sm:mt-8">
                   <button
                     type="button"
                     onClick={() => {
@@ -281,9 +293,9 @@ export const PricingSection: React.FC = () => {
                 </div>
               </article>
 
-              {/* 2. Quack Pro (Destacado en 3D Oscuro + Dorado) */}
-              <article className="card-3d-amber relative flex h-full flex-col justify-between rounded-3xl border-2 border-quack-gunmetal bg-[#151922] p-7 text-white">
-                <span className="absolute -top-3.5 right-6 inline-flex items-center gap-1 rounded-full border-2 border-quack-gunmetal bg-quack-amber px-3 py-0.5 font-brand text-[11px] font-bold text-quack-gunmetal">
+              {/* 2. Quack Pro (primero en móvil, derecha en desktop) */}
+              <article className="card-3d-amber relative order-1 flex h-full flex-col justify-between rounded-3xl border-2 border-quack-gunmetal bg-[#151922] p-5 text-white sm:p-7 md:order-2">
+                <span className="absolute -top-3.5 right-5 inline-flex items-center gap-1 rounded-full border-2 border-quack-gunmetal bg-quack-amber px-3 py-0.5 font-brand text-[11px] font-bold text-quack-gunmetal sm:right-6">
                   <Sparkles className="h-3 w-3" aria-hidden="true" /> Más elegido
                 </span>
 
@@ -292,7 +304,7 @@ export const PricingSection: React.FC = () => {
                     Suscripción individual ilimitada
                   </p>
                   <h3 className="mt-1 font-brand text-2xl font-bold text-white">Quack Pro</h3>
-                  <p className="mt-4 font-brand text-4xl font-bold tracking-tight text-quack-amber tabular-nums">
+                  <p className="mt-4 font-brand text-3xl font-bold tracking-tight text-quack-amber tabular-nums sm:text-4xl">
                     {billing === "annual" ? "$37.50 USD" : "$4.99 USD"}
                   </p>
                   <p className="mt-1 text-xs font-medium text-white/75">
@@ -301,7 +313,7 @@ export const PricingSection: React.FC = () => {
                       : "por mes (o $37.50 USD / año)"}
                   </p>
 
-                  <ul className="mt-6 space-y-2.5 border-t border-white/15 pt-5 text-sm text-white/90">
+                  <ul className="mt-5 space-y-2.5 border-t border-white/15 pt-5 text-sm text-white/90 sm:mt-6">
                     {[
                       "Carga ilimitada de tu propio material (diapositivas, PDFs, código)",
                       "Sesiones orales Feynman ilimitadas con voz e IA socrática",
@@ -318,7 +330,7 @@ export const PricingSection: React.FC = () => {
                   </ul>
                 </div>
 
-                <div className="mt-8">
+                <div className="mt-7 sm:mt-8">
                   <button
                     type="button"
                     onClick={() =>
@@ -343,11 +355,11 @@ export const PricingSection: React.FC = () => {
           /* =====================================================================
               PESTAÑA 2: B2B — UNIVERSIDADES (Precio Total + Ahorro por cada 1k)
              ===================================================================== */
-          <div key="b2b-panel" className="animate-pop mt-10">
+          <div key="b2b-panel" className="animate-pop mt-8 sm:mt-10">
             {/* Aclaración cristalina arriba de las 4 tarjetas */}
             <div className="mx-auto max-w-3xl text-center">
-              <p className="inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-quack-gunmetal/20 bg-white px-4 py-2 text-xs font-medium text-quack-gunmetal shadow-2xs sm:text-sm">
-                <Users className="h-4 w-4 text-quack-caramel" aria-hidden="true" />
+              <p className="inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-quack-gunmetal/20 bg-white px-3.5 py-2 text-xs font-medium text-quack-gunmetal shadow-2xs sm:px-4 sm:text-sm">
+                <Users className="h-4 w-4 shrink-0 text-quack-caramel" aria-hidden="true" />
                 <span>
                   Tarifa estándar: <strong className="line-through text-quack-gunmetal/55">$15,000 USD</strong>{" "}
                   por cada 1,000 estudiantes/año. Entre mayor sea tu masa estudiantil,{" "}
@@ -356,15 +368,53 @@ export const PricingSection: React.FC = () => {
               </p>
             </div>
 
+            {/* Selector compacto de 4 cohortes en móvil (`< sm`) para ver toda la curva y evitar apilar 4 tarjetas */}
+            <div className="mt-5 sm:hidden">
+              <p className="mb-2 text-center text-[11px] font-bold uppercase tracking-wider text-quack-gunmetal/65">
+                Selecciona tamaño de cohorte
+              </p>
+              <div
+                role="tablist"
+                aria-label="Tamaño de cohorte universitaria"
+                className="grid grid-cols-4 gap-1.5 rounded-2xl border-2 border-quack-gunmetal bg-[#151922] p-1.5 shadow-[4px_4px_0_0_#FFC800]"
+              >
+                {b2bMassPackages.map((pkg) => {
+                  const selected = pkg.id === mobileCohortId;
+                  return (
+                    <button
+                      key={pkg.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      onClick={() => setMobileCohortId(pkg.id)}
+                      className={cn(
+                        "flex cursor-pointer flex-col items-center rounded-xl px-1.5 py-2 font-brand transition-all",
+                        selected
+                          ? "bg-quack-amber text-quack-gunmetal shadow-[0_3px_10px_rgba(255,200,0,0.4)]"
+                          : "text-white/75 hover:text-white"
+                      )}
+                    >
+                      <span className="text-xs font-bold leading-tight">{pkg.shortStudents}</span>
+                      <span className="mt-0.5 font-mono text-[10px] font-bold opacity-85">
+                        {pkg.shortPrice}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* 4 Paquetes en orden ascendente por Precio Total Anual */}
-            <div className="scene-3d mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="scene-3d mt-5 grid grid-cols-1 gap-5 sm:mt-8 sm:grid-cols-2 lg:grid-cols-4">
               {b2bMassPackages.map((pkg) => {
                 const isFeatured = Boolean(pkg.featured);
+                const isSelectedMobile = pkg.id === mobileCohortId;
                 return (
                   <article
                     key={pkg.id}
                     className={cn(
-                      "relative flex h-full flex-col justify-between rounded-3xl border-2 p-6",
+                      "relative h-full flex-col justify-between rounded-3xl border-2 p-5 sm:p-6",
+                      isSelectedMobile ? "flex" : "hidden sm:flex",
                       isFeatured
                         ? "card-3d-amber border-quack-amber bg-[#151922] text-white"
                         : "card-3d-light border-quack-gunmetal bg-white text-quack-gunmetal"
@@ -506,13 +556,13 @@ export const PricingSection: React.FC = () => {
             </div>
 
             {/* Una única barra oscura unificada con todo lo que incluye Quack Campus */}
-            <div className="mt-8 rounded-3xl border-2 border-quack-gunmetal bg-[#151922] p-6 text-white shadow-[8px_8px_0_0_#FFC800] sm:p-7">
-              <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="mt-6 rounded-3xl border-2 border-quack-gunmetal bg-[#151922] p-5 text-white shadow-[5px_6px_0_0_#FFC800] sm:mt-8 sm:p-7 sm:shadow-[8px_8px_0_0_#FFC800]">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:flex-wrap sm:items-center">
                 <div>
                   <p className="font-brand text-xs font-bold uppercase tracking-wider text-quack-amber">
                     Incluido en todos los paquetes universitarios Quack Campus
                   </p>
-                  <div className="mt-3 grid gap-3 text-xs text-white/90 sm:grid-cols-3 sm:text-sm">
+                  <div className="mt-3 grid grid-cols-1 gap-3 text-xs text-white/90 sm:grid-cols-3 sm:text-sm">
                     <span className="flex items-start gap-2">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-quack-amber" strokeWidth={3} />
                       <span>
@@ -544,7 +594,7 @@ export const PricingSection: React.FC = () => {
                       isCampus: true,
                     })
                   }
-                  className="btn-toy btn-toy-light h-11 shrink-0 cursor-pointer bg-quack-amber px-5 text-xs text-quack-gunmetal sm:text-sm"
+                  className="btn-toy btn-toy-light h-11 w-full shrink-0 cursor-pointer bg-quack-amber px-5 text-xs text-quack-gunmetal sm:w-auto sm:text-sm"
                 >
                   ¿Más de 10k estudiantes? Cotizar a medida
                 </button>
@@ -640,7 +690,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ plan, onClose }) => {
       aria-labelledby="checkout-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs animate-fadeIn"
     >
-      <div className="relative w-full max-w-md rounded-3xl border-2 border-quack-amber bg-[#151922] p-6 text-white shadow-[10px_10px_0_0_#FFC800] sm:p-7">
+      <div className="relative max-h-[90svh] w-full max-w-md overflow-y-auto rounded-3xl border-2 border-quack-amber bg-[#151922] p-5 text-white shadow-[6px_6px_0_0_#FFC800] sm:p-7 sm:shadow-[10px_10px_0_0_#FFC800]">
         <button
           type="button"
           onClick={onClose}

@@ -50,25 +50,25 @@ export const LandingFooter: React.FC = () => {
       <section
         id="preguntas"
         aria-labelledby="faq-title"
-        className="lp-paper-dark relative overflow-hidden py-20 text-white sm:py-28"
+        className="lp-paper-dark relative scroll-mt-16 overflow-hidden py-16 text-white sm:scroll-mt-20 sm:py-28"
       >
-        <div className="mx-auto max-w-4xl px-5 sm:px-8">
+        <div className="mx-auto max-w-4xl px-4 sm:px-8">
           <Reveal className="text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-quack-amber/40 bg-quack-amber/10 px-3.5 py-1 font-brand text-xs font-bold uppercase tracking-[0.2em] text-quack-amber">
+            <span className="inline-flex items-center gap-2 rounded-full border border-quack-amber/40 bg-quack-amber/10 px-3.5 py-1 font-brand text-[11px] font-bold uppercase tracking-[0.18em] text-quack-amber sm:text-xs sm:tracking-[0.2em]">
               Preguntas frecuentes
             </span>
             <h2
               id="faq-title"
-              className="mt-4 font-brand text-3xl font-bold text-white sm:text-4xl"
+              className="mt-4 font-brand text-2xl font-bold text-white sm:text-4xl"
             >
               Respuestas claras antes de empezar
             </h2>
           </Reveal>
 
-          <div className="mt-10 space-y-3.5">
+          <div className="mt-8 space-y-3 sm:mt-10 sm:space-y-3.5">
             {faqItems.map((item, i) => (
               <Reveal key={item.id} delay={i * 60}>
-                <details className="faq-item group rounded-2xl border border-white/15 bg-[#1B202C] px-6 py-4 transition-all open:border-quack-amber open:shadow-[0_10px_30px_-10px_rgba(255,200,0,0.2)]">
+                <details className="faq-item group rounded-2xl border border-white/15 bg-[#1B202C] px-4 py-3.5 transition-all open:border-quack-amber open:shadow-[0_10px_30px_-10px_rgba(255,200,0,0.2)] sm:px-6 sm:py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-brand text-sm font-bold text-white sm:text-base">
                     <span>{item.question}</span>
                     <span className="faq-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-quack-amber text-quack-gunmetal transition-transform duration-200">
@@ -84,12 +84,12 @@ export const LandingFooter: React.FC = () => {
           </div>
 
           {/* Lead Magnet en Tarjeta 3D */}
-          <Reveal delay={140} className="scene-3d mt-16">
+          <Reveal delay={140} className="scene-3d mt-12 sm:mt-16">
             <div
               id="guia-gratis"
-              className="card-3d-amber rounded-3xl border-2 border-quack-amber bg-gradient-to-br from-[#232938] to-[#151922] p-7 text-white sm:p-9"
+              className="card-3d-amber rounded-3xl border-2 border-quack-amber bg-gradient-to-br from-[#232938] to-[#151922] p-5 text-white sm:p-9"
             >
-              <div className="grid items-center gap-6 md:grid-cols-[1.15fr_0.85fr]">
+              <div className="grid grid-cols-1 items-center gap-6 md:grid-cols-[1.15fr_0.85fr]">
                 <div>
                   <span className="inline-block rounded-full bg-quack-amber px-3 py-0.5 font-brand text-[11px] font-bold text-quack-gunmetal">
                     Recurso gratuito
@@ -165,8 +165,8 @@ export const LandingFooter: React.FC = () => {
 
       {/* Junk Drawer (Pie de página StoryBrand en fondo oscuro) */}
       <footer className="border-t border-white/10 bg-[#0D1017] text-white">
-        <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto max-w-6xl px-4 pt-12 pb-24 sm:px-8 sm:py-12">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2.5">
               <Link
                 to="/"

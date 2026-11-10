@@ -131,11 +131,7 @@
     transition:
       transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-    box-shadow: 0 10px 0 0 #3b4151, 0 22px 38px -12px rgba(21, 25, 34, 0.32);
-  }
-  .card-3d-light:hover {
-    transform: translate3d(0, -6px, 0) rotateX(2.5deg) rotateY(-2deg);
-    box-shadow: 0 16px 0 0 #3b4151, 0 30px 48px -12px rgba(21, 25, 34, 0.42);
+    box-shadow: 0 8px 0 0 #3b4151, 0 18px 32px -12px rgba(21, 25, 34, 0.28);
   }
 
   /* Tarjeta 3D interactiva para fondos oscuros */
@@ -145,12 +141,7 @@
       transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
       border-color 0.35s ease;
-    box-shadow: 0 10px 0 0 #090b10, 0 24px 44px -12px rgba(0, 0, 0, 0.65);
-  }
-  .card-3d-dark:hover {
-    transform: translate3d(0, -7px, 0) rotateX(3deg) rotateY(-2.5deg);
-    box-shadow: 0 16px 0 0 #ffc800, 0 30px 55px -12px rgba(255, 200, 0, 0.22);
-    border-color: rgba(255, 200, 0, 0.7);
+    box-shadow: 0 8px 0 0 #090b10, 0 20px 36px -12px rgba(0, 0, 0, 0.6);
   }
 
   /* Tarjeta 3D destacada con borde y sombra Amber */
@@ -159,11 +150,32 @@
     transition:
       transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-    box-shadow: 0 10px 0 0 #ffc800, 0 26px 48px -12px rgba(255, 200, 0, 0.28);
+    box-shadow: 0 8px 0 0 #ffc800, 0 22px 40px -12px rgba(255, 200, 0, 0.26);
   }
-  .card-3d-amber:hover {
-    transform: translate3d(0, -7px, 0) rotateX(2.5deg) rotateY(2deg);
-    box-shadow: 0 16px 0 0 #ffc800, 0 34px 60px -12px rgba(255, 200, 0, 0.38);
+
+  @media (hover: hover) and (pointer: fine) {
+    .card-3d-light {
+      box-shadow: 0 10px 0 0 #3b4151, 0 22px 38px -12px rgba(21, 25, 34, 0.32);
+    }
+    .card-3d-light:hover {
+      transform: translate3d(0, -6px, 0) rotateX(2.5deg) rotateY(-2deg);
+      box-shadow: 0 16px 0 0 #3b4151, 0 30px 48px -12px rgba(21, 25, 34, 0.42);
+    }
+    .card-3d-dark {
+      box-shadow: 0 10px 0 0 #090b10, 0 24px 44px -12px rgba(0, 0, 0, 0.65);
+    }
+    .card-3d-dark:hover {
+      transform: translate3d(0, -7px, 0) rotateX(3deg) rotateY(-2.5deg);
+      box-shadow: 0 16px 0 0 #ffc800, 0 30px 55px -12px rgba(255, 200, 0, 0.22);
+      border-color: rgba(255, 200, 0, 0.7);
+    }
+    .card-3d-amber {
+      box-shadow: 0 10px 0 0 #ffc800, 0 26px 48px -12px rgba(255, 200, 0, 0.28);
+    }
+    .card-3d-amber:hover {
+      transform: translate3d(0, -7px, 0) rotateX(2.5deg) rotateY(2deg);
+      box-shadow: 0 16px 0 0 #ffc800, 0 34px 60px -12px rgba(255, 200, 0, 0.38);
+    }
   }
 
   /* Grano sutil para dar textura física */
@@ -327,6 +339,14 @@
   .delay-3 { animation-delay: 0.45s; }
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes float {
