@@ -328,6 +328,83 @@ const TOPIC_VALIDATIONS: Record<string, SocraticSubtopicValidation[]> = {
   ],
 };
 
+const STOP_WORDS = new Set([
+  "para",
+  "como",
+  "entre",
+  "sobre",
+  "desde",
+  "hasta",
+  "cuando",
+  "donde",
+  "cual",
+  "cuales",
+  "este",
+  "esta",
+  "estos",
+  "estas",
+  "unos",
+  "unas",
+  "una",
+  "con",
+  "sin",
+  "por",
+  "que",
+  "del",
+  "las",
+  "los",
+  "sus",
+  "ser",
+  "son",
+  "mas",
+  "todo",
+  "cada",
+]);
+
+function normalizeSpanishText(raw: string): string {
+  return raw
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function buildDynamicValidations(topic: FeynmanTopic): SocraticSubtopicValidation[] {
+  return topic.subtopics.map((subtopic, index) => {
+    const dialogueMatch = topic.mockDialogue.find((d) => d.unlocksSubtopicId === subtopic.id);
+    const sourceText = normalizeSpanishText(`${subtopic.name} ${subtopic.description ?? ""}`);
+    const words = Array.from(
+      new Set(
+        sourceText
+          .split(/[^a-z0-9]+/)
+          .filter((w) => w.length >= 4 && !STOP_WORDS.has(w))
+      )
+    );
+
+    const triggerWords = (dialogueMatch?.triggerWords ?? []).map(normalizeSpanishText);
+    const combinedKeywords = Array.from(new Set([...triggerWords, ...words]));
+    const primaryGroup = combinedKeywords.slice(0, Math.max(3, Math.ceil(combinedKeywords.length / 2)));
+    const secondaryGroup = combinedKeywords.slice(Math.ceil(combinedKeywords.length / 2));
+
+    const requiredConcepts: string[][] =
+      secondaryGroup.length > 0 ? [primaryGroup, secondaryGroup] : [primaryGroup.length > 0 ? primaryGroup : ["ejemplo", "funciona", "porque"]];
+
+    const question =
+      dialogueMatch?.quackReply ??
+      (index === 0
+        ? `¡Cuéntame con tus propias palabras! ¿Qué significa "${subtopic.name}" y por qué es clave en ${topic.title}?`
+        : `¡Ah, interesante! Y respecto a "${subtopic.name}", ¿cómo me lo explicarías sin usar tecnicismos complejos?`);
+
+    return {
+      subtopicId: subtopic.id,
+      name: subtopic.name,
+      question,
+      acknowledgment: `¡Súper claro! Ya capté perfectamente la idea detrás de "${subtopic.name}".`,
+      requiredConcepts,
+      partialConcepts: combinedKeywords.slice(0, 5),
+    };
+  });
+}
+
 /**
  * Servicio Mock Inteligente con control de 3 intentos y avance automático.
  */
@@ -342,12 +419,10 @@ export class MockFeynmanService implements IFeynmanService {
   ): Promise<FeynmanEvaluationResult> {
     await new Promise((res) => setTimeout(res, 500));
 
-    const normalizedInput = studentInput
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
+    const normalizedInput = normalizeSpanishText(studentInput);
 
-    const validations = TOPIC_VALIDATIONS[topic.id] || [];
+    const validations =
+      TOPIC_VALIDATIONS[topic.id] ?? buildDynamicValidations(topic);
 
     // Determinar subconcepto activo
     const currentActive =

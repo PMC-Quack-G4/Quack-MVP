@@ -68,7 +68,7 @@ export const HomePage: React.FC = () => {
           >
             Precios
           </a>
-          <CtaButton to="/feynman" location="mobile_sticky" size="md" className="flex-1 text-xs">
+          <CtaButton to="/login" location="mobile_sticky" size="md" className="flex-1 text-xs">
             Probar ahora
           </CtaButton>
         </div>

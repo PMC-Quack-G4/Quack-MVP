@@ -284,7 +284,7 @@ export const PricingSection: React.FC = () => {
                     type="button"
                     onClick={() => {
                       trackEvent("click_cta", { location: "pricing_free", plan: "free" });
-                      navigate("/feynman");
+                      navigate("/login?role=student_individual");
                     }}
                     className="btn-toy h-12 w-full cursor-pointer bg-quack-gunmetal text-sm text-white hover:bg-[#454c5f]"
                   >
@@ -835,11 +835,15 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ plan, onClose }) => {
                 type="button"
                 onClick={() => {
                   onClose();
-                  navigate("/feynman");
+                  navigate(
+                    plan.isCampus
+                      ? "/login?role=institution&scope=directivo"
+                      : "/login?role=student_individual"
+                  );
                 }}
                 className="btn-toy btn-toy-light h-11 flex-1 cursor-pointer bg-quack-amber text-xs text-quack-gunmetal"
               >
-                Ir a Feynman Oral ahora
+                {plan.isCampus ? "Ver demo institucional" : "Ir a mi espacio Quack"}
               </button>
               <button
                 type="button"

@@ -80,7 +80,7 @@ export const HeroSection: React.FC = () => {
 
           <div className="mt-5 flex w-full flex-col items-stretch gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
             <CtaButton
-              to="/feynman"
+              to="/login"
               location="hero_primary"
               size="xl"
               className="h-12 w-full px-5 text-sm sm:h-14 sm:w-auto sm:px-8 sm:text-lg"

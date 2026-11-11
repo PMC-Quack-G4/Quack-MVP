@@ -3,24 +3,13 @@ import { geminiFeynmanService } from "./geminiFeynmanService";
 import { mockFeynmanService } from "./mockFeynmanService";
 import { geminiOcrAuditService } from "./geminiOcrAuditService";
 import { mockOcrAuditService } from "./mockOcrAuditService";
+import { isGeminiActive, getActiveModel } from "@/lib/aiConfig";
 import { FeynmanTopic, ChatMessage, SubtopicScoreData } from "@/types/feynman";
 import { ExamProblem, MockAuditResult } from "@/types/exam";
 
-const hasApiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY);
+export { isGeminiActive, getActiveModel };
 
-/**
- * Indica si el servicio de Gemini está configurado vía variables de entorno (.env).
- */
-export function isGeminiActive(): boolean {
-  return hasApiKey;
-}
-
-/**
- * Obtiene el modelo configurado por el desarrollador en variables de entorno o usa gemini-flash-latest por defecto.
- */
-export function getActiveModel(): string {
-  return (import.meta.env.VITE_GEMINI_MODEL as string)?.trim() || "gemini-flash-latest";
-}
+const hasApiKey = isGeminiActive();
 
 /**
  * Adaptador para Feynman Oral:

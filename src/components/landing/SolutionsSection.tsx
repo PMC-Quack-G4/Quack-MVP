@@ -218,7 +218,7 @@ export const SolutionsSection: React.FC = () => {
                   </div>
 
                   <div className="mt-5 flex justify-end sm:mt-6">
-                    <CtaButton to="/feynman" location="solutions_feynman" tone="light" size="md" className="w-full sm:w-auto">
+                    <CtaButton to="/login?redirect=/feynman" location="solutions_feynman" tone="light" size="md" className="w-full sm:w-auto">
                       Probar Feynman Oral en vivo
                     </CtaButton>
                   </div>
@@ -284,7 +284,7 @@ export const SolutionsSection: React.FC = () => {
                   </div>
 
                   <div className="mt-5 flex justify-end sm:mt-6">
-                    <CtaButton to="/parcial-ciegas" location="solutions_exam" tone="light" size="md" className="w-full sm:w-auto">
+                    <CtaButton to="/login?redirect=/parcial-ciegas" location="solutions_exam" tone="light" size="md" className="w-full sm:w-auto">
                       Probar Parcial a Ciegas OCR
                     </CtaButton>
                   </div>

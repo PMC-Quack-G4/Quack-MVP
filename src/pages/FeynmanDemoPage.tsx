@@ -1,10 +1,11 @@
 import * as React from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Mic, BookOpen, RotateCcw, Cpu, Database, Keyboard, AlertCircle } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Mic, BookOpen, RotateCcw, Cpu, Database, Keyboard, AlertCircle, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockFeynmanTopics } from "@/mocks/quackData";
 import { FeynmanTopic, ChatMessage, FeynmanSessionSummary, SubtopicScoreData } from "@/types/feynman";
+import { useAuth } from "@/context/AuthContext";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { useTimer } from "@/hooks/useTimer";
@@ -15,9 +16,52 @@ import { TranscriptFeed } from "@/components/feynman/TranscriptFeed";
 import { ConceptChecklistCard } from "@/components/feynman/ConceptChecklistCard";
 import { SpeechFallbackInput } from "@/components/feynman/SpeechFallbackInput";
 import { SessionSummaryModal } from "@/components/feynman/SessionSummaryModal";
+import { cn } from "@/lib/utils";
 
 export const FeynmanDemoPage: React.FC = () => {
-  const [selectedTopic, setSelectedTopic] = React.useState<FeynmanTopic>(mockFeynmanTopics[0]);
+  const {
+    user,
+    courses,
+    selectedCourseId,
+    setSelectedCourseId,
+    getTopicsForCourse,
+    getCourseForFeynmanTopic,
+    recordPracticeAttempt,
+  } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const urlCourseId = searchParams.get("course");
+  const urlTopicId = searchParams.get("topic");
+
+  const validInitialCourse = React.useMemo(() => {
+    if (urlCourseId && courses.some((c) => c.id === urlCourseId)) return urlCourseId;
+    if (selectedCourseId && courses.some((c) => c.id === selectedCourseId)) return selectedCourseId;
+    return "all";
+  }, [urlCourseId, selectedCourseId, courses]);
+
+  const [courseFilter, setCourseFilter] = React.useState<string>(validInitialCourse);
+
+  React.useEffect(() => {
+    if (urlCourseId && courses.some((c) => c.id === urlCourseId)) {
+      setCourseFilter(urlCourseId);
+      setSelectedCourseId(urlCourseId);
+    }
+  }, [urlCourseId, courses, setSelectedCourseId]);
+
+  const scopedTopics = React.useMemo(() => {
+    const filtered = getTopicsForCourse(courseFilter === "all" ? null : courseFilter);
+    return filtered.length > 0 ? filtered : mockFeynmanTopics;
+  }, [getTopicsForCourse, courseFilter]);
+
+  const initialTopic = React.useMemo(() => {
+    if (urlTopicId) {
+      const match = scopedTopics.find((t) => t.id === urlTopicId);
+      if (match) return match;
+    }
+    return scopedTopics[0] ?? mockFeynmanTopics[0];
+  }, [urlTopicId, scopedTopics]);
+
+  const [selectedTopic, setSelectedTopic] = React.useState<FeynmanTopic>(initialTopic);
   const [isSessionActive, setIsSessionActive] = React.useState<boolean>(false);
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [coveredSubtopicIds, setCoveredSubtopicIds] = React.useState<string[]>([]);
@@ -27,19 +71,57 @@ export const FeynmanDemoPage: React.FC = () => {
   const [activeEngine, setActiveEngine] = React.useState<"gemini" | "mock">(isGeminiActive() ? "gemini" : "mock");
   const [serviceWarning, setServiceWarning] = React.useState<string | null>(null);
   const [subtopicScores, setSubtopicScores] = React.useState<Record<string, SubtopicScoreData>>({});
-  const [activeSubtopicId, setActiveSubtopicId] = React.useState<string>(mockFeynmanTopics[0].subtopics[0].id);
+  const [activeSubtopicId, setActiveSubtopicId] = React.useState<string>(
+    initialTopic.subtopics[0]?.id || ""
+  );
+
+  // Evita registrar múltiples intentos para una misma sesión concluida
+  const recordedAttemptRef = React.useRef<boolean>(false);
+
+  // Sincronizar tema seleccionado si cambia la materia filtrada o el rol del usuario
+  React.useEffect(() => {
+    if (isSessionActive) return;
+    if (urlTopicId) {
+      const fromUrl = scopedTopics.find((t) => t.id === urlTopicId);
+      if (fromUrl) {
+        setSelectedTopic(fromUrl);
+        setActiveSubtopicId(fromUrl.subtopics[0]?.id || "");
+        return;
+      }
+    }
+    const stillValid = scopedTopics.some((t) => t.id === selectedTopic.id);
+    if (!stillValid && scopedTopics[0]) {
+      setSelectedTopic(scopedTopics[0]);
+      setActiveSubtopicId(scopedTopics[0].subtopics[0]?.id || "");
+    }
+  }, [scopedTopics, urlTopicId, selectedTopic.id, isSessionActive]);
 
   const activeModel = getActiveModel();
 
-  // Hook de reconocimiento de voz (STT)
   const speechRecognition = useSpeechRecognition("es-ES");
-  // Hook de síntesis de voz (TTS)
   const speechSynthesis = useSpeechSynthesis();
-  // Hook de temporizador para medir duración de la sesión
   const sessionTimer = useTimer({ mode: "stopwatch" });
+
+  const activeCourse =
+    courses.find((c) => c.id === courseFilter) ??
+    getCourseForFeynmanTopic(selectedTopic.id);
+
+  const handleSelectCourseFilter = (nextCourseId: string) => {
+    setCourseFilter(nextCourseId);
+    setSelectedCourseId(nextCourseId === "all" ? null : nextCourseId);
+    const nextParams = new URLSearchParams(searchParams);
+    if (nextCourseId === "all") {
+      nextParams.delete("course");
+    } else {
+      nextParams.set("course", nextCourseId);
+    }
+    nextParams.delete("topic");
+    setSearchParams(nextParams, { replace: true });
+  };
 
   // Iniciar sesión interactiva
   const handleStartSession = () => {
+    recordedAttemptRef.current = false;
     setIsSessionActive(true);
     setMessages([]);
     setCoveredSubtopicIds([]);
@@ -81,7 +163,6 @@ export const FeynmanDemoPage: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      // Incrementar intentos en el subconcepto evaluado actualmente
       const currentAttempts = (subtopicScores[activeSubtopicId]?.attempts || 0) + 1;
       const updatedScores: Record<string, SubtopicScoreData> = {
         ...subtopicScores,
@@ -102,16 +183,13 @@ export const FeynmanDemoPage: React.FC = () => {
         activeSubtopicId
       );
 
-      // Actualizar motor activo y advertencias si las hay
       if (result.engineUsed) {
         setActiveEngine(result.engineUsed);
       }
       setServiceWarning(result.warning || null);
 
-      // Integrar resultados de desbloqueo, parciales y fallidos
       const nextScores: Record<string, SubtopicScoreData> = { ...updatedScores };
 
-      // 1. Dominados al 100% (admite desbloqueo simultáneo múltiple)
       if (result.unlockedSubtopicIds.length > 0) {
         result.unlockedSubtopicIds.forEach((id) => {
           nextScores[id] = {
@@ -123,7 +201,6 @@ export const FeynmanDemoPage: React.FC = () => {
         });
       }
 
-      // 2. Dominio Parcial al 50%
       if (result.partialSubtopicIds && result.partialSubtopicIds.length > 0) {
         result.partialSubtopicIds.forEach((id) => {
           if (!result.unlockedSubtopicIds.includes(id)) {
@@ -137,7 +214,6 @@ export const FeynmanDemoPage: React.FC = () => {
         });
       }
 
-      // 3. Fallidos al 0% (tras 3 intentos)
       if (result.failedSubtopicIds && result.failedSubtopicIds.length > 0) {
         result.failedSubtopicIds.forEach((id) => {
           if (
@@ -154,7 +230,6 @@ export const FeynmanDemoPage: React.FC = () => {
         });
       }
 
-      // 4. Si el subtema activo actual llegó a 3 intentos y no fue marcado explícitamente
       if (
         currentAttempts >= 3 &&
         nextScores[activeSubtopicId]?.status === "evaluating" &&
@@ -170,7 +245,6 @@ export const FeynmanDemoPage: React.FC = () => {
         };
       }
 
-      // Actualizar lista de cubiertos (mastered)
       const newCoveredIds = Array.from(
         new Set([
           ...coveredSubtopicIds,
@@ -179,7 +253,6 @@ export const FeynmanDemoPage: React.FC = () => {
       );
       setCoveredSubtopicIds(newCoveredIds);
 
-      // Determinar próximo subtema activo
       let nextActiveId = result.nextActiveSubtopicId;
       const currentStatus = nextScores[activeSubtopicId]?.status;
       const isActiveDone =
@@ -213,7 +286,6 @@ export const FeynmanDemoPage: React.FC = () => {
 
       setMessages((prev) => [...prev, quackMessage]);
 
-      // Verificar si todos los subtemas han sido concluidos (100% de items evaluados)
       const allEvaluated = selectedTopic.subtopics.every((s) => {
         const st = nextScores[s.id]?.status;
         return st === "mastered" || st === "partial" || st === "failed";
@@ -226,25 +298,21 @@ export const FeynmanDemoPage: React.FC = () => {
         const triggerFinish = () => {
           if (finishTriggered) return;
           finishTriggered = true;
-          // Pausa natural de 700ms tras concluir el audio para no cortar abruptamente
           setTimeout(() => {
             handleFinishSession(nextScores);
           }, 700);
         };
 
-        // Reproducir la voz y SOLO tras terminar el audio de Quack se despliega el balance
         speechSynthesis.speak(result.reply, quackMsgId, () => {
           triggerFinish();
         });
 
-        // Temporizador de seguridad: si el navegador no emite onend o el audio no está soportado
         const wordCount = result.reply.trim().split(/\s+/).length;
         const estimatedDurationMs = Math.max(5000, Math.round(wordCount * 450) + 2500);
         setTimeout(() => {
           triggerFinish();
         }, estimatedDurationMs);
       } else {
-        // Reproducción automática de voz habitual en turnos intermedios
         speechSynthesis.speak(result.reply, quackMsgId);
       }
     } catch (err) {
@@ -254,16 +322,13 @@ export const FeynmanDemoPage: React.FC = () => {
     }
   };
 
-  // Push-to-Talk: Al presionar
   const handleStartPtt = () => {
     speechSynthesis.stop();
     speechRecognition.startListening();
   };
 
-  // Push-to-Talk: Al soltar
   const handleEndPtt = () => {
     speechRecognition.stopListening();
-    // Esperar un instante para consolidar el último segmento de voz
     setTimeout(() => {
       const fullText = (
         speechRecognition.transcript || speechRecognition.interimTranscript
@@ -274,7 +339,6 @@ export const FeynmanDemoPage: React.FC = () => {
     }, 250);
   };
 
-  // Finalizar sesión y generar balance
   const handleFinishSession = (customScores?: Record<string, SubtopicScoreData>) => {
     sessionTimer.pause();
     speechSynthesis.stop();
@@ -326,18 +390,35 @@ export const FeynmanDemoPage: React.FC = () => {
       pedagogicalAdvice: advice,
     };
 
+    // Registrar progreso real en la sesión del estudiante (Campus o Individual)
+    if (!recordedAttemptRef.current && user?.role !== "institution") {
+      recordedAttemptRef.current = true;
+      const targetCourse = getCourseForFeynmanTopic(selectedTopic.id) ?? activeCourse;
+      if (targetCourse) {
+        recordPracticeAttempt({
+          courseId: targetCourse.id,
+          courseTitle: targetCourse.title,
+          topicId: selectedTopic.id,
+          topicTitle: selectedTopic.title,
+          mode: "feynman",
+          masteryPercent: percentage,
+          durationSeconds: Math.max(60, sessionTimer.seconds),
+        });
+      }
+    }
+
     setSummary(sessionSummary);
   };
 
   return (
-    <div className="container py-8 space-y-8 max-w-6xl">
+    <div className="container py-8 flex flex-col gap-6 max-w-6xl">
       {/* Header & Navegación */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b pb-6">
         <div>
           <Button asChild variant="ghost" size="sm" className="mb-2 -ml-3 text-muted-foreground">
-            <Link to="/">
+            <Link to={activeCourse ? `/materias/${activeCourse.id}` : "/materias"}>
               <ArrowLeft className="mr-1.5 h-4 w-4" />
-              Volver al Inicio
+              Volver a {activeCourse ? activeCourse.title : "Mis Materias"}
             </Link>
           </Button>
           <div className="flex flex-wrap items-center gap-3">
@@ -368,7 +449,7 @@ export const FeynmanDemoPage: React.FC = () => {
             )}
           </div>
           <p className="text-sm text-slate-600 mt-1">
-            Enseña a tu alumna curiosa ("Quack") mediante tu propia voz para erradicar la ilusión de saber.
+            {user?.name ? `${user.name}, enseña` : "Enseña"} a tu alumna curiosa ("Quack") mediante tu propia voz para erradicar la ilusión de saber.
           </p>
         </div>
 
@@ -400,10 +481,50 @@ export const FeynmanDemoPage: React.FC = () => {
         )}
       </div>
 
+      {/* Filtro de Contexto por Materia (Paso previo para mantener aislamiento real por curso) */}
+      {!isSessionActive && courses.length > 0 && (
+        <div
+          aria-label="Filtrar temas por materia matriculada"
+          className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3"
+        >
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 mr-1">
+            <Layers className="size-3.5 text-quack-caramel" aria-hidden="true" />
+            Materia:
+          </span>
+          <button
+            type="button"
+            onClick={() => handleSelectCourseFilter("all")}
+            className={cn(
+              "rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors",
+              courseFilter === "all"
+                ? "bg-quack-gunmetal text-white"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            )}
+          >
+            Todas mis materias ({courses.length})
+          </button>
+          {courses.map((course) => (
+            <button
+              key={course.id}
+              type="button"
+              onClick={() => handleSelectCourseFilter(course.id)}
+              className={cn(
+                "rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors",
+                courseFilter === course.id
+                  ? "bg-quack-amber text-quack-gunmetal font-bold"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              )}
+            >
+              {course.code} · {course.title}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Vista de Selección de Tema (Paso 1) */}
       {!isSessionActive ? (
         <ConceptSelector
-          topics={mockFeynmanTopics}
+          topics={scopedTopics}
           selectedTopicId={selectedTopic.id}
           onSelectTopic={(topic) => {
             setSelectedTopic(topic);
@@ -418,7 +539,7 @@ export const FeynmanDemoPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-amber-100/60 to-quack-dandelion/40 border border-amber-200">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-quack-caramel block">
-                Tema en Explicación
+                {activeCourse ? `${activeCourse.code} · ${activeCourse.title}` : "Tema en Explicación"}
               </span>
               <h2 className="font-brand text-lg font-bold text-quack-gunmetal">
                 {selectedTopic.title}
@@ -426,7 +547,6 @@ export const FeynmanDemoPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2 self-start sm:self-auto">
-              {/* Indicador de modo: Voz activa (predeterminada) vs Opción texto */}
               {speechRecognition.isSupported && (
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border bg-white/90 text-quack-gunmetal shadow-2xs border-amber-200">
@@ -498,7 +618,6 @@ export const FeynmanDemoPage: React.FC = () => {
                 isProcessing={isProcessing}
               />
 
-              {/* Controles de Entrada (PTT por defecto o Opción de Texto) */}
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                 {!speechRecognition.isSupported || forceTextInput ? (
                   <SpeechFallbackInput

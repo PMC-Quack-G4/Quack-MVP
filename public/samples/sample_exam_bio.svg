@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 820" width="650" height="820">
+  <defs>
+    <pattern id="grid-bio" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="650" height="820" fill="#fdfbf7"/>
+  <rect width="650" height="820" fill="url(#grid-bio)" opacity="0.65"/>
+  <line x1="75" y1="0" x2="75" y2="820" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="4 2"/>
+
+  <text x="95" y="50" font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" font-size="16" fill="#0f172a" font-weight="bold">
+    Bioquímica Celular — Acoplamiento ΔG y ATP
+  </text>
+  <text x="95" y="76" font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" font-size="13" fill="#475569">
+    Calcular ΔG_total al acoplar transporte activo (+18.4 kJ/mol) con hidrólisis de ATP (-30.5 kJ/mol).
+  </text>
+  <line x1="95" y1="92" x2="590" y2="92" stroke="#cbd5e1" stroke-width="1"/>
+
+  <g font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" fill="#1e293b" font-size="17">
+    <text x="95" y="150">1) Reacción endergónica (bombeo iónico):</text>
+    <text x="115" y="185">ΔG₁ = +18.4 kJ/mol  (no espontánea)</text>
+
+    <text x="95" y="250">2) Reacción exergónica acoplada (ATP -&gt; ADP + Pi):</text>
+    <text x="115" y="285">ΔG₂ = -30.5 kJ/mol</text>
+
+    <text x="95" y="350">3) Suma termodinámica acoplada (Ley de Hess):</text>
+    <text x="115" y="385">ΔG_total = ΔG₁ + ΔG₂ = 18.4 + 30.5 = +48.9 kJ/mol  (?)</text>
+
+    <text x="95" y="450">4) Conclusión de espontaneidad:</text>
+    <text x="115" y="485">Como ΔG_total &gt; 0, el transporte acoplado es espontáneo.</text>
+
+    <rect x="90" y="425" width="510" height="78" fill="none" stroke="#0f172a" stroke-width="2" rx="6"/>
+  </g>
+
+  <rect x="390" y="720" width="220" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="408" y="753" font-family="sans-serif" font-size="12" fill="#475569" font-weight="bold">
+    QUACK SAMPLE OCR #06
+  </text>
+</svg>

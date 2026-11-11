@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 820" width="650" height="820">
+  <defs>
+    <pattern id="grid-avl" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="650" height="820" fill="#fdfbf7"/>
+  <rect width="650" height="820" fill="url(#grid-avl)" opacity="0.65"/>
+  <line x1="75" y1="0" x2="75" y2="820" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="4 2"/>
+
+  <text x="95" y="50" font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" font-size="16" fill="#0f172a" font-weight="bold">
+    Estructuras de Datos — Parcial AVL (Rotación LL)
+  </text>
+  <text x="95" y="76" font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" font-size="13" fill="#475569">
+    Problema: Insertar 10 en árbol AVL con raíz 30 (izq: 20, der: null) y calcular FB(u).
+  </text>
+  <line x1="95" y1="92" x2="590" y2="92" stroke="#cbd5e1" stroke-width="1"/>
+
+  <g font-family="'Segoe Print', 'Comic Sans MS', cursive, sans-serif" fill="#1e293b" font-size="17">
+    <text x="95" y="148">1) Alturas tras insertar 10 como hijo izq de 20:</text>
+    <text x="115" y="182">h(10) = 1,  h(20) = 2,  h(null) = 0</text>
+
+    <text x="95" y="245">2) Factor de balanceo en raíz u = 30:</text>
+    <text x="115" y="280">FB(30) = h(izq) - h(der) = 2 - 0 = +2  (Desbalance LL)</text>
+
+    <text x="95" y="345">3) Aplicar rotación simple a la derecha sobre 30:</text>
+    <text x="115" y="380">Nueva raíz: 20  |  izq(20) = 10  |  der(20) = 30</text>
+
+    <text x="95" y="445">4) Verificar invariante AVL resultante:</text>
+    <text x="115" y="480">FB(20) = h(10) - h(30) = 1 - 1 = 0  =&gt;  h = O(log n)</text>
+
+    <rect x="90" y="420" width="510" height="80" fill="none" stroke="#0f172a" stroke-width="2" rx="6"/>
+  </g>
+
+  <rect x="390" y="720" width="220" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="408" y="753" font-family="sans-serif" font-size="12" fill="#475569" font-weight="bold">
+    QUACK SAMPLE OCR #05
+  </text>
+</svg>

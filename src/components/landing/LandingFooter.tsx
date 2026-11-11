@@ -11,7 +11,7 @@ import {
 import { Reveal } from "./Reveal";
 import { faqItems, landingConfig } from "@/mocks/landingContent";
 import { EMAIL_PATTERN, leadService } from "@/services/leadService";
-import { isGeminiActive, getActiveModel } from "@/services/serviceFactory";
+import { isGeminiActive, getActiveModel } from "@/lib/aiConfig";
 import { trackEvent } from "@/lib/analytics";
 import { playQuackSound } from "@/lib/quackSound";
 
@@ -202,12 +202,12 @@ export const LandingFooter: React.FC = () => {
               </h4>
               <ul className="mt-3 space-y-2 text-xs text-white/75">
                 <li>
-                  <Link to="/feynman" className="hover:text-quack-amber hover:underline">
+                  <Link to="/login?redirect=/feynman" className="hover:text-quack-amber hover:underline">
                     Feynman Oral (Voz e IA Invertida)
                   </Link>
                 </li>
                 <li>
-                  <Link to="/parcial-ciegas" className="hover:text-quack-amber hover:underline">
+                  <Link to="/login?redirect=/parcial-ciegas" className="hover:text-quack-amber hover:underline">
                     Parcial a Ciegas (Auditoría OCR)
                   </Link>
                 </li>

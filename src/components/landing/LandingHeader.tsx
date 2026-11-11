@@ -85,7 +85,7 @@ export const LandingHeader: React.FC = () => {
           >
             Precios
           </a>
-          <CtaButton to="/feynman" location="header" size="md">
+          <CtaButton to="/login" location="header" size="md">
             Empezar ahora
           </CtaButton>
         </div>
@@ -93,7 +93,7 @@ export const LandingHeader: React.FC = () => {
         {/* Acciones Móvil (`< sm`) — sin colisión ni recorte en pantallas pequeñas */}
         <div className="flex shrink-0 items-center gap-2 sm:hidden">
           <CtaButton
-            to="/feynman"
+            to="/login"
             location="header"
             size="md"
             showArrow={false}
@@ -140,14 +140,14 @@ export const LandingHeader: React.FC = () => {
 
           <div className="mt-3 grid grid-cols-2 gap-2 border-t border-quack-gunmetal/10 pt-3">
             <Link
-              to="/feynman"
+              to="/login?redirect=/feynman"
               onClick={() => setMobileMenuOpen(false)}
               className="flex h-10 items-center justify-center rounded-xl border-2 border-quack-gunmetal bg-quack-amber font-brand text-xs font-bold text-quack-gunmetal"
             >
               Feynman Oral
             </Link>
             <Link
-              to="/parcial-ciegas"
+              to="/login?redirect=/parcial-ciegas"
               onClick={() => setMobileMenuOpen(false)}
               className="flex h-10 items-center justify-center rounded-xl border-2 border-quack-gunmetal bg-[#151922] font-brand text-xs font-bold text-white"
             >

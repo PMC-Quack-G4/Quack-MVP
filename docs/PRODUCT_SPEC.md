@@ -71,5 +71,13 @@ Quack monetiza sus servicios mediante suscripciones B2C y B2B. La suscripción i
 
 ### Flujo 2 (Implementado en `/parcial-ciegas`): Parcial a Ciegas con Auditoría OCR
 - **Fase de Enfoque con Cronómetro** a libro cerrado.
-- **Carga de Evidencia Manuscrita** (`Drag & Drop`) + muestras predefinidas para prueba inmediata.
+- **Carga de Evidencia Manuscrita** (`Drag & Drop`) + muestras predefinidas coherentes con las materias del usuario.
 - **Auditoría Paso a Paso**: Clasificación de cada línea en `CORRECT`, `ALGEBRAIC_ERROR`, `CONCEPTUAL_ERROR` y `PROPAGATED_ERROR`, otorgando crédito parcial sobre 5.0.
+
+### Flujo 3 (Implementado en `/login`, `/materias` y `/estadisticas`): Simulación Realista por Roles y Analítica
+- **Acceso por Perfil (`/login`)**: El usuario ingresa su nombre personalizado y selecciona su rol (`Estudiante Campus`, `Estudiante Individual Pro` o `Profesor / Institución`). El prototipo personaliza toda la interfaz con ese nombre y restringe cada vista a su contexto real.
+- **Hub de Materias (`/materias` y `/materias/:courseId`)**:
+  - **Quack Campus (B2B)**: Materias oficiales precargadas vía LTI (*Ready-to-Go*); los módulos Feynman y OCR filtran sus temas estrictamente dentro de la materia elegida.
+  - **Quack Pro Individual (B2C)**: Incluye carga interactiva de archivos (`PDF`, diapositivas, código o notas) para crear nuevas materias y extraer al instante subconceptos Feynman y simulacros OCR.
+  - **Docente / Institución**: Muestra los cursos dictados y permite previsualizar temas o navegar al tablero de métricas.
+- **Estadísticas Adaptativas por Rol (`/estadisticas`)**: Documentado en detalle en [`docs/ESTADISTICAS_POR_ROL.md`](./ESTADISTICAS_POR_ROL.md), cubriendo rendimiento personal estudiantil (con actualización en vivo al completar sesiones), analítica de cohorte e individual de estudiantes para **Docentes**, y estadísticas comparativas *Con Quack vs. Sin Quack* e impacto en retención para **Directivos**.
