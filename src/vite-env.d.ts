@@ -3,6 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_GEMINI_API_KEY?: string;
   readonly VITE_GEMINI_MODEL?: string;
+  readonly VITE_GEMINI_LIVE_MODEL?: string;
   /** Endpoint opcional (Formspree, Google Apps Script, etc.) para registrar prospectos de la landing. */
   readonly VITE_LEAD_ENDPOINT?: string;
   /** ID de medición de Google Analytics 4 (ej. G-XXXXXXX). */

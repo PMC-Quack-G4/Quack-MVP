@@ -10,7 +10,7 @@ export interface FeynmanEvaluationResult {
   isSessionFinished?: boolean;    // true si ya no quedan subtemas por evaluar
   detectedGaps?: string[];
   masteryProgressPercentage?: number;
-  engineUsed?: "gemini" | "mock";
+  engineUsed?: "gemini-live" | "gemini" | "mock";
   warning?: string;
 }
 

@@ -8,8 +8,15 @@ import { FeynmanTopic, ChatMessage, FeynmanSessionSummary, SubtopicScoreData } f
 import { useAuth } from "@/context/AuthContext";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { useGeminiLiveFeynman } from "@/hooks/useGeminiLiveFeynman";
 import { useTimer } from "@/hooks/useTimer";
-import { feynmanService, isGeminiActive, getActiveModel } from "@/services/serviceFactory";
+import {
+  feynmanService,
+  isGeminiActive,
+  getActiveModel,
+  getActiveLiveModel,
+} from "@/services/serviceFactory";
+import { LiveFeynmanEvaluationPayload } from "@/services/geminiLiveFeynmanService";
 import { ConceptSelector } from "@/components/feynman/ConceptSelector";
 import { PushToTalkButton } from "@/components/feynman/PushToTalkButton";
 import { TranscriptFeed } from "@/components/feynman/TranscriptFeed";
@@ -68,12 +75,26 @@ export const FeynmanDemoPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = React.useState<boolean>(false);
   const [summary, setSummary] = React.useState<FeynmanSessionSummary | null>(null);
   const [forceTextInput, setForceTextInput] = React.useState<boolean>(false);
-  const [activeEngine, setActiveEngine] = React.useState<"gemini" | "mock">(isGeminiActive() ? "gemini" : "mock");
+  const [activeEngine, setActiveEngine] = React.useState<"gemini-live" | "gemini" | "mock">(
+    isGeminiActive() ? "gemini-live" : "mock"
+  );
   const [serviceWarning, setServiceWarning] = React.useState<string | null>(null);
   const [subtopicScores, setSubtopicScores] = React.useState<Record<string, SubtopicScoreData>>({});
   const [activeSubtopicId, setActiveSubtopicId] = React.useState<string>(
     initialTopic.subtopics[0]?.id || ""
   );
+
+  // Refs para acceder al estado más reciente desde callbacks asíncronos de Gemini Live
+  const subtopicScoresRef = React.useRef(subtopicScores);
+  subtopicScoresRef.current = subtopicScores;
+  const coveredIdsRef = React.useRef(coveredSubtopicIds);
+  coveredIdsRef.current = coveredSubtopicIds;
+  const activeSubtopicIdRef = React.useRef(activeSubtopicId);
+  activeSubtopicIdRef.current = activeSubtopicId;
+  const selectedTopicRef = React.useRef(selectedTopic);
+  selectedTopicRef.current = selectedTopic;
+  const messagesRef = React.useRef(messages);
+  messagesRef.current = messages;
 
   // Evita registrar múltiples intentos para una misma sesión concluida
   const recordedAttemptRef = React.useRef<boolean>(false);
@@ -97,10 +118,141 @@ export const FeynmanDemoPage: React.FC = () => {
   }, [scopedTopics, urlTopicId, selectedTopic.id, isSessionActive]);
 
   const activeModel = getActiveModel();
+  const activeLiveModel = getActiveLiveModel();
 
   const speechRecognition = useSpeechRecognition("es-ES");
   const speechSynthesis = useSpeechSynthesis();
   const sessionTimer = useTimer({ mode: "stopwatch" });
+
+  // Ref para invocar cierre de sesión desde callbacks de Gemini Live
+  const finishSessionRef = React.useRef<(scores?: Record<string, SubtopicScoreData>) => void>(
+    () => {}
+  );
+
+  const applyLiveEvaluation = React.useCallback(
+    (payload: LiveFeynmanEvaluationPayload) => {
+      const topic = selectedTopicRef.current;
+      const currentScores = subtopicScoresRef.current;
+      const currentActive = activeSubtopicIdRef.current;
+      const currentCovered = coveredIdsRef.current;
+
+      const nextScores: Record<string, SubtopicScoreData> = { ...currentScores };
+
+      payload.unlockedSubtopicIds.forEach((id) => {
+        nextScores[id] = {
+          subtopicId: id,
+          status: "mastered",
+          score: 100,
+          attempts: Math.max(1, nextScores[id]?.attempts || 1),
+        };
+      });
+
+      payload.partialSubtopicIds.forEach((id) => {
+        if (!payload.unlockedSubtopicIds.includes(id)) {
+          nextScores[id] = {
+            subtopicId: id,
+            status: "partial",
+            score: 50,
+            attempts: Math.max(1, nextScores[id]?.attempts || 1),
+          };
+        }
+      });
+
+      payload.failedSubtopicIds.forEach((id) => {
+        if (
+          !payload.unlockedSubtopicIds.includes(id) &&
+          !payload.partialSubtopicIds.includes(id)
+        ) {
+          nextScores[id] = {
+            subtopicId: id,
+            status: "failed",
+            score: 0,
+            attempts: 3,
+          };
+        }
+      });
+
+      const newCoveredIds = Array.from(
+        new Set([...currentCovered, ...payload.unlockedSubtopicIds])
+      );
+      setCoveredSubtopicIds(newCoveredIds);
+
+      let nextActiveId = payload.nextActiveSubtopicId;
+      const currentStatus = nextScores[currentActive]?.status;
+      const isActiveDone =
+        currentStatus === "mastered" ||
+        currentStatus === "partial" ||
+        currentStatus === "failed";
+
+      if (!nextActiveId && isActiveDone) {
+        const nextPending = topic.subtopics.find((s) => {
+          const st = nextScores[s.id]?.status;
+          return st !== "mastered" && st !== "partial" && st !== "failed";
+        });
+        nextActiveId = nextPending?.id;
+      }
+
+      if (nextActiveId) {
+        setActiveSubtopicId(nextActiveId);
+        if (nextScores[nextActiveId]?.status === "pending") {
+          nextScores[nextActiveId] = {
+            ...nextScores[nextActiveId],
+            status: "evaluating",
+          };
+        }
+      }
+
+      setSubtopicScores(nextScores);
+
+      const allEvaluated = topic.subtopics.every((s) => {
+        const st = nextScores[s.id]?.status;
+        return st === "mastered" || st === "partial" || st === "failed";
+      });
+
+      if (payload.isSessionFinished || allEvaluated) {
+        setTimeout(() => {
+          finishSessionRef.current(nextScores);
+        }, 4500);
+      }
+    },
+    []
+  );
+
+  const live = useGeminiLiveFeynman({
+    onUserMessageFinalized: (text) => {
+      const studentMessage: ChatMessage = {
+        id: `student-${Date.now()}`,
+        sender: "student",
+        text,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, studentMessage]);
+    },
+    onQuackMessageFinalized: (text) => {
+      const quackMsgId = `quack-${Date.now()}`;
+      const quackMessage: ChatMessage = {
+        id: quackMsgId,
+        sender: "quack",
+        text,
+        timestamp: new Date(),
+        audioId: quackMsgId,
+      };
+      setMessages((prev) => [...prev, quackMessage]);
+    },
+    onEvaluation: applyLiveEvaluation,
+    onFallbackNeeded: (reason) => {
+      console.warn("[FeynmanDemoPage] Fallback desde Gemini Live:", reason);
+      setActiveEngine("mock");
+      setServiceWarning(
+        "No se pudo mantener la conexión en tiempo real con Gemini Live. Se activó el modo de respaldo (Web Speech + evaluador local)."
+      );
+    },
+  });
+
+  const isLiveMode = activeEngine === "gemini-live";
+  const isVoiceSupported = isLiveMode
+    ? typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia)
+    : speechRecognition.isSupported;
 
   const activeCourse =
     courses.find((c) => c.id === courseFilter) ??
@@ -128,7 +280,8 @@ export const FeynmanDemoPage: React.FC = () => {
     setSummary(null);
     setForceTextInput(false);
     setServiceWarning(null);
-    setActiveEngine(isGeminiActive() ? "gemini" : "mock");
+    const useLive = isGeminiActive();
+    setActiveEngine(useLive ? "gemini-live" : "mock");
     sessionTimer.reset();
     sessionTimer.start();
 
@@ -142,12 +295,26 @@ export const FeynmanDemoPage: React.FC = () => {
       };
     });
     setSubtopicScores(initialScores);
-    setActiveSubtopicId(selectedTopic.subtopics[0]?.id || "");
+    const firstSubtopicId = selectedTopic.subtopics[0]?.id || "";
+    setActiveSubtopicId(firstSubtopicId);
+
+    if (useLive) {
+      void live.connectSession(selectedTopic, initialScores, firstSubtopicId);
+    } else {
+      live.disconnectSession();
+    }
   };
 
   // Enviar mensaje del estudiante a Quack (vía voz o fallback de texto)
   const handleProcessStudentExplanation = async (explanationText: string) => {
-    if (!explanationText.trim() || isProcessing) return;
+    if (!explanationText.trim()) return;
+
+    if (isLiveMode && live.connectionStatus === "connected") {
+      live.sendText(explanationText);
+      return;
+    }
+
+    if (isProcessing) return;
 
     speechRecognition.resetTranscript();
 
@@ -323,11 +490,19 @@ export const FeynmanDemoPage: React.FC = () => {
   };
 
   const handleStartPtt = () => {
+    if (isLiveMode && live.connectionStatus === "connected") {
+      void live.startMic();
+      return;
+    }
     speechSynthesis.stop();
     speechRecognition.startListening();
   };
 
   const handleEndPtt = () => {
+    if (isLiveMode) {
+      live.stopMic();
+      return;
+    }
     speechRecognition.stopListening();
     setTimeout(() => {
       const fullText = (
@@ -339,76 +514,92 @@ export const FeynmanDemoPage: React.FC = () => {
     }, 250);
   };
 
-  const handleFinishSession = (customScores?: Record<string, SubtopicScoreData>) => {
-    sessionTimer.pause();
-    speechSynthesis.stop();
+  const handleFinishSession = React.useCallback(
+    (customScores?: Record<string, SubtopicScoreData>) => {
+      sessionTimer.pause();
+      speechSynthesis.stop();
+      live.disconnectSession();
 
-    const scoresToUse = customScores || subtopicScores;
+      const scoresToUse = customScores || subtopicScoresRef.current;
+      const currentTopic = selectedTopicRef.current;
+      const currentCovered = coveredIdsRef.current;
 
-    const mastered = selectedTopic.subtopics.filter(
-      (s) => scoresToUse[s.id]?.status === "mastered" || coveredSubtopicIds.includes(s.id)
-    );
-    const partial = selectedTopic.subtopics.filter(
-      (s) => scoresToUse[s.id]?.status === "partial"
-    );
-    const missing = selectedTopic.subtopics.filter(
-      (s) => !mastered.some((m) => m.id === s.id) && !partial.some((p) => p.id === s.id)
-    );
+      const mastered = currentTopic.subtopics.filter(
+        (s) => scoresToUse[s.id]?.status === "mastered" || currentCovered.includes(s.id)
+      );
+      const partial = currentTopic.subtopics.filter(
+        (s) => scoresToUse[s.id]?.status === "partial"
+      );
+      const missing = currentTopic.subtopics.filter(
+        (s) => !mastered.some((m) => m.id === s.id) && !partial.some((p) => p.id === s.id)
+      );
 
-    const totalCount = selectedTopic.subtopics.length;
-    const totalScoreSum = selectedTopic.subtopics.reduce((acc, s) => {
-      const itemScore = scoresToUse[s.id]?.score;
-      if (typeof itemScore === "number") return acc + itemScore;
-      if (coveredSubtopicIds.includes(s.id)) return acc + 100;
-      return acc;
-    }, 0);
+      const totalCount = currentTopic.subtopics.length;
+      const totalScoreSum = currentTopic.subtopics.reduce((acc, s) => {
+        const itemScore = scoresToUse[s.id]?.score;
+        if (typeof itemScore === "number") return acc + itemScore;
+        if (currentCovered.includes(s.id)) return acc + 100;
+        return acc;
+      }, 0);
 
-    const percentage = totalCount > 0 ? Math.round(totalScoreSum / totalCount) : 100;
+      const percentage = totalCount > 0 ? Math.round(totalScoreSum / totalCount) : 100;
 
-    let advice = "";
-    if (percentage === 100) {
-      advice =
-        "¡Excelente trabajo pedagógico! Lograste explicar cada subconcepto sin recurrir a atajos ni tecnicismos vacíos. Has erradicado la ilusión de competencia en este tema.";
-    } else if (percentage >= 50) {
-      advice = `Buen avance verbalizando el razonamiento. Te recomendamos reforzar los aspectos pendientes (${missing
-        .map((m) => m.name)
-        .join(", ")}) formulando analogías directas sin fórmulas complejas.`;
-    } else {
-      advice =
-        "Detectamos vacíos iniciales al conectar la intuición física o matemática. Intenta explicarle a Quack pensando en qué le pasaría a una persona común si experimentara este fenómeno.";
-    }
-
-    const sessionSummary: FeynmanSessionSummary = {
-      topicId: selectedTopic.id,
-      topicTitle: selectedTopic.title,
-      durationSeconds: sessionTimer.seconds,
-      totalExplanations: messages.filter((m) => m.sender === "student").length,
-      masteredSubtopics: mastered,
-      partialSubtopics: partial,
-      missingSubtopics: missing,
-      masteryPercentage: percentage,
-      pedagogicalAdvice: advice,
-    };
-
-    // Registrar progreso real en la sesión del estudiante (Campus o Individual)
-    if (!recordedAttemptRef.current && user?.role !== "institution") {
-      recordedAttemptRef.current = true;
-      const targetCourse = getCourseForFeynmanTopic(selectedTopic.id) ?? activeCourse;
-      if (targetCourse) {
-        recordPracticeAttempt({
-          courseId: targetCourse.id,
-          courseTitle: targetCourse.title,
-          topicId: selectedTopic.id,
-          topicTitle: selectedTopic.title,
-          mode: "feynman",
-          masteryPercent: percentage,
-          durationSeconds: Math.max(60, sessionTimer.seconds),
-        });
+      let advice = "";
+      if (percentage === 100) {
+        advice =
+          "¡Excelente trabajo pedagógico! Lograste explicar cada subconcepto sin recurrir a atajos ni tecnicismos vacíos. Has erradicado la ilusión de competencia en este tema.";
+      } else if (percentage >= 50) {
+        advice = `Buen avance verbalizando el razonamiento. Te recomendamos reforzar los aspectos pendientes (${missing
+          .map((m) => m.name)
+          .join(", ")}) formulando analogías directas sin fórmulas complejas.`;
+      } else {
+        advice =
+          "Detectamos vacíos iniciales al conectar la intuición física o matemática. Intenta explicarle a Quack pensando en qué le pasaría a una persona común si experimentara este fenómeno.";
       }
-    }
 
-    setSummary(sessionSummary);
-  };
+      const sessionSummary: FeynmanSessionSummary = {
+        topicId: currentTopic.id,
+        topicTitle: currentTopic.title,
+        durationSeconds: sessionTimer.seconds,
+        totalExplanations: messagesRef.current.filter((m) => m.sender === "student").length,
+        masteredSubtopics: mastered,
+        partialSubtopics: partial,
+        missingSubtopics: missing,
+        masteryPercentage: percentage,
+        pedagogicalAdvice: advice,
+      };
+
+      // Registrar progreso real en la sesión del estudiante (Campus o Individual)
+      if (!recordedAttemptRef.current && user?.role !== "institution") {
+        recordedAttemptRef.current = true;
+        const targetCourse = getCourseForFeynmanTopic(currentTopic.id) ?? activeCourse;
+        if (targetCourse) {
+          recordPracticeAttempt({
+            courseId: targetCourse.id,
+            courseTitle: targetCourse.title,
+            topicId: currentTopic.id,
+            topicTitle: currentTopic.title,
+            mode: "feynman",
+            masteryPercent: percentage,
+            durationSeconds: Math.max(60, sessionTimer.seconds),
+          });
+        }
+      }
+
+      setSummary(sessionSummary);
+    },
+    [
+      activeCourse,
+      getCourseForFeynmanTopic,
+      live,
+      recordPracticeAttempt,
+      sessionTimer,
+      speechSynthesis,
+      user?.role,
+    ]
+  );
+
+  finishSessionRef.current = handleFinishSession;
 
   return (
     <div className="container py-8 flex flex-col gap-6 max-w-6xl">
@@ -427,7 +618,19 @@ export const FeynmanDemoPage: React.FC = () => {
               Módulo 1: Feynman Oral (IA Invertida)
             </h1>
 
-            {activeEngine === "gemini" ? (
+            {activeEngine === "gemini-live" ? (
+              <Badge
+                variant="outline"
+                className="border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
+                title={`Motor en tiempo real: ${live.connectedModel || activeLiveModel}`}
+              >
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <Cpu className="h-3.5 w-3.5 text-emerald-600" />
+                {live.connectionStatus === "connecting"
+                  ? "Conectando Gemini Live..."
+                  : `Gemini Live (${live.connectedModel || activeLiveModel})`}
+              </Badge>
+            ) : activeEngine === "gemini" ? (
               <Badge
                 variant="outline"
                 className="border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold text-xs py-1 px-2.5 gap-1.5 shadow-2xs"
@@ -462,6 +665,7 @@ export const FeynmanDemoPage: React.FC = () => {
                 setIsSessionActive(false);
                 setForceTextInput(false);
                 speechSynthesis.stop();
+                live.disconnectSession();
               }}
               className="gap-1.5 rounded-xl text-xs"
             >
@@ -547,7 +751,7 @@ export const FeynmanDemoPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2 self-start sm:self-auto">
-              {speechRecognition.isSupported && (
+              {isVoiceSupported && (
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border bg-white/90 text-quack-gunmetal shadow-2xs border-amber-200">
                     {forceTextInput ? (
@@ -558,7 +762,7 @@ export const FeynmanDemoPage: React.FC = () => {
                     ) : (
                       <>
                         <Mic className="h-3.5 w-3.5 text-quack-caramel" />
-                        Voz activa (Por defecto)
+                        {isLiveMode ? "Voz Live (Bidireccional)" : "Voz activa (Por defecto)"}
                       </>
                     )}
                   </span>
@@ -608,37 +812,55 @@ export const FeynmanDemoPage: React.FC = () => {
 
               <TranscriptFeed
                 messages={messages}
-                isListening={speechRecognition.isListening}
-                interimTranscript={speechRecognition.interimTranscript}
-                isSpeaking={speechSynthesis.isSpeaking}
+                isListening={isLiveMode ? live.isMicActive : speechRecognition.isListening}
+                interimTranscript={
+                  isLiveMode ? live.liveUserTranscript : speechRecognition.interimTranscript
+                }
+                streamingQuackText={isLiveMode ? live.liveQuackTranscript : ""}
+                isSpeaking={
+                  isLiveMode
+                    ? live.isQuackSpeaking || speechSynthesis.isSpeaking
+                    : speechSynthesis.isSpeaking
+                }
                 currentSpeakingId={speechSynthesis.currentSpeakingId}
                 onPlayAudio={(text, id) => speechSynthesis.speak(text, id)}
-                onStopAudio={() => speechSynthesis.stop()}
+                onStopAudio={() => {
+                  live.stopQuackAudio();
+                  speechSynthesis.stop();
+                }}
                 initialTopicName={selectedTopic.title}
-                isProcessing={isProcessing}
+                isProcessing={isLiveMode ? live.isQuackThinking : isProcessing}
               />
 
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                {!speechRecognition.isSupported || forceTextInput ? (
+                {!isVoiceSupported || forceTextInput ? (
                   <SpeechFallbackInput
                     onSendMessage={handleProcessStudentExplanation}
-                    isProcessing={isProcessing}
-                    reason={!speechRecognition.isSupported ? "not-supported" : "user-choice"}
-                    onSwitchToVoice={speechRecognition.isSupported ? () => setForceTextInput(false) : undefined}
+                    isProcessing={isLiveMode ? live.isQuackThinking : isProcessing}
+                    reason={!isVoiceSupported ? "not-supported" : "user-choice"}
+                    onSwitchToVoice={isVoiceSupported ? () => setForceTextInput(false) : undefined}
                   />
                 ) : (
                   <div className="space-y-3">
                     <PushToTalkButton
-                      isListening={speechRecognition.isListening}
-                      isProcessing={isProcessing}
+                      isListening={isLiveMode ? live.isMicActive : speechRecognition.isListening}
+                      isProcessing={
+                        isLiveMode
+                          ? live.connectionStatus === "connecting" || live.isQuackThinking
+                          : isProcessing
+                      }
+                      disabled={isLiveMode && live.connectionStatus !== "connected"}
+                      micLevel={isLiveMode ? live.micLevel : 0}
+                      isHandsFree={isLiveMode ? live.isHandsFree : false}
+                      onToggleHandsFree={isLiveMode ? live.toggleHandsFree : undefined}
                       onStartTalk={handleStartPtt}
                       onEndTalk={handleEndPtt}
                       onEnableTextInput={() => setForceTextInput(true)}
                     />
 
-                    {speechRecognition.error && (
+                    {(isLiveMode ? live.micError : speechRecognition.error) && (
                       <div className="text-center text-xs text-rose-600 font-medium">
-                        {speechRecognition.error}. Si prefieres, puedes habilitar la opción por texto.
+                        {isLiveMode ? live.micError : speechRecognition.error}. Si prefieres, puedes habilitar la opción por texto.
                       </div>
                     )}
                   </div>
