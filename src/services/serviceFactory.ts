@@ -3,11 +3,11 @@ import { geminiFeynmanService } from "./geminiFeynmanService";
 import { mockFeynmanService } from "./mockFeynmanService";
 import { geminiOcrAuditService } from "./geminiOcrAuditService";
 import { mockOcrAuditService } from "./mockOcrAuditService";
-import { isGeminiActive, getActiveModel } from "@/lib/aiConfig";
+import { isGeminiActive, getActiveModel, getActiveLiveModel } from "@/lib/aiConfig";
 import { FeynmanTopic, ChatMessage, SubtopicScoreData } from "@/types/feynman";
 import { ExamProblem, MockAuditResult } from "@/types/exam";
 
-export { isGeminiActive, getActiveModel };
+export { isGeminiActive, getActiveModel, getActiveLiveModel };
 
 const hasApiKey = isGeminiActive();
 

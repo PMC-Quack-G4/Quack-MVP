@@ -8,6 +8,7 @@ export interface TranscriptFeedProps {
   messages: ChatMessage[];
   isListening: boolean;
   interimTranscript: string;
+  streamingQuackText?: string;
   isSpeaking: boolean;
   currentSpeakingId: string | null;
   onPlayAudio: (text: string, id: string) => void;
@@ -20,6 +21,7 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
   messages,
   isListening,
   interimTranscript,
+  streamingQuackText = "",
   isSpeaking,
   currentSpeakingId,
   onPlayAudio,
@@ -31,7 +33,7 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
 
   React.useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, interimTranscript, isListening, isProcessing]);
+  }, [messages, interimTranscript, streamingQuackText, isListening, isProcessing]);
 
   // Helper para renderizar texto que pueda contener bloques LaTeX inline estilo $f(x)$ o $$f(x)$$
   const renderMessageContent = (text: string) => {
@@ -172,8 +174,38 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
           </div>
         )}
 
+        {/* Burbuja de Quack respondiendo en tiempo real (Gemini Live) */}
+        {streamingQuackText && (
+          <div className="flex gap-3 items-start max-w-[85%] sm:max-w-[75%] animate-fadeIn">
+            <div className="h-9 w-9 rounded-full bg-quack-dandelion border-2 border-quack-amber flex items-center justify-center p-1 shrink-0 shadow-sm animate-pulse">
+              <img src="/brand/quack-logo.png" alt="Quack Avatar" className="h-7 w-7 object-contain" />
+            </div>
+            <div className="rounded-2xl rounded-tl-sm bg-white border-2 border-quack-amber/80 p-4 shadow-sm text-sm text-slate-800 space-y-2">
+              <div className="flex items-center justify-between gap-2 border-b pb-1.5">
+                <span className="font-brand font-bold text-xs text-quack-gunmetal flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                  Quack hablando en vivo...
+                </span>
+                {isSpeaking && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={onStopAudio}
+                    className="h-6 px-2 text-xs gap-1 rounded-md bg-amber-100 text-amber-900 border border-amber-300"
+                  >
+                    <VolumeX className="h-3.5 w-3.5 text-amber-700" />
+                    <span className="font-medium text-[11px]">Interrumpir</span>
+                  </Button>
+                )}
+              </div>
+              <div className="leading-relaxed text-slate-900">{renderMessageContent(streamingQuackText)}</div>
+            </div>
+          </div>
+        )}
+
         {/* Burbuja animada de Quack pensando / escribiendo */}
-        {isProcessing && (
+        {isProcessing && !streamingQuackText && (
           <div className="flex gap-3 items-start max-w-[85%] sm:max-w-[75%] animate-fadeIn">
             <div className="h-9 w-9 rounded-full bg-quack-dandelion border border-quack-amber flex items-center justify-center p-1 shrink-0 shadow-sm animate-pulse">
               <img src="/brand/quack-logo.png" alt="Quack Avatar" className="h-7 w-7 object-contain" />

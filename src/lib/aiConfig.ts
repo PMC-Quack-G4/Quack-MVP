@@ -10,3 +10,10 @@ export function isGeminiActive(): boolean {
 export function getActiveModel(): string {
   return (import.meta.env.VITE_GEMINI_MODEL as string)?.trim() || "gemini-flash-latest";
 }
+
+export function getActiveLiveModel(): string {
+  return (
+    (import.meta.env.VITE_GEMINI_LIVE_MODEL as string)?.trim() ||
+    "gemini-2.5-flash-native-audio-preview-12-2025"
+  );
+}
