@@ -7,7 +7,7 @@ import { mockExamProblems } from "@/mocks/quackData";
 import { ExamProblem, MockAuditResult, ExamPhase } from "@/types/exam";
 import { useAuth } from "@/context/AuthContext";
 import { useTimer } from "@/hooks/useTimer";
-import { ocrAuditService, isGeminiActive, getActiveModel } from "@/services/serviceFactory";
+import { ocrAuditService, useAiConfig, ensureRuntimeConfig } from "@/services/serviceFactory";
 import { ExamProblemSelector } from "@/components/exam/ExamProblemSelector";
 import { ExamFocusMode } from "@/components/exam/ExamFocusMode";
 import { EvidenceDropzone } from "@/components/exam/EvidenceDropzone";
@@ -85,12 +85,18 @@ export const ExamPage: React.FC = () => {
   const [rotation, setRotation] = React.useState<number>(0);
   const [isAuditing, setIsAuditing] = React.useState<boolean>(false);
   const [auditResult, setAuditResult] = React.useState<MockAuditResult | null>(null);
+  const { geminiActive: isOnline, model: activeModel } = useAiConfig();
   const [activeEngine, setActiveEngine] = React.useState<"gemini" | "mock">(
-    isGeminiActive() ? "gemini" : "mock"
+    isOnline ? "gemini" : "mock"
   );
 
+  React.useEffect(() => {
+    if (phase === "SETUP") {
+      setActiveEngine(isOnline ? "gemini" : "mock");
+    }
+  }, [isOnline, phase]);
+
   const auditRecordedRef = React.useRef<boolean>(false);
-  const activeModel = getActiveModel();
 
   // Temporizador de examen a libro cerrado
   const examTimer = useTimer({
@@ -154,7 +160,10 @@ export const ExamPage: React.FC = () => {
     setSelectedImage("");
     setRotation(0);
     setAuditResult(null);
-    setActiveEngine(isGeminiActive() ? "gemini" : "mock");
+    setActiveEngine(isOnline ? "gemini" : "mock");
+    void ensureRuntimeConfig().then((cfg) => {
+      setActiveEngine(cfg.geminiActive ? "gemini" : "mock");
+    });
     examTimer.reset(selectedProblem.estimatedMinutes * 60);
     examTimer.start();
     setPhase("SOLVING");

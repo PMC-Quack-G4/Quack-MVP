@@ -146,19 +146,46 @@ export class GeminiLiveFeynmanSession {
     subtopicScores?: Record<string, SubtopicScoreData>,
     activeSubtopicId?: string
   ): Promise<string> {
-    const apiKey = (import.meta.env.VITE_GEMINI_API_KEY as string)?.trim();
-    if (!apiKey) {
-      throw new Error("VITE_GEMINI_API_KEY no configurada.");
+    this.setStatus("connecting");
+
+    const tokenRes = await fetch("/api/ai/live-token", {
+      method: "POST",
+      headers: { Accept: "application/json" },
+    });
+
+    if (!tokenRes.ok) {
+      let errMsg = "No se pudo obtener un token efímero para Gemini Live.";
+      try {
+        const payload = (await tokenRes.json()) as { error?: string };
+        if (payload.error) errMsg = payload.error;
+      } catch {
+        // Ignore non-JSON error body
+      }
+      this.setStatus("error");
+      throw new Error(errMsg);
     }
 
-    const client = new GoogleGenAI({ apiKey });
+    const tokenPayload = (await tokenRes.json()) as {
+      token?: string;
+      liveModel?: string;
+    };
+    const ephemeralToken = tokenPayload.token?.trim();
+    if (!ephemeralToken) {
+      this.setStatus("error");
+      throw new Error("El servidor no devolvió un token efímero válido para Gemini Live.");
+    }
+
+    const client = new GoogleGenAI({
+      apiKey: ephemeralToken,
+      httpOptions: { apiVersion: "v1alpha" },
+    });
     const systemInstruction = buildLiveSystemInstruction(
       topic,
       subtopicScores,
       activeSubtopicId
     );
 
-    const primaryLiveModel = getActiveLiveModel();
+    const primaryLiveModel = tokenPayload.liveModel?.trim() || getActiveLiveModel();
     const candidateModels = Array.from(
       new Set([
         primaryLiveModel,
@@ -167,8 +194,6 @@ export class GeminiLiveFeynmanSession {
         "gemini-live-2.5-flash-preview",
       ])
     ).filter(Boolean);
-
-    this.setStatus("connecting");
 
     let lastError: unknown = null;
 

@@ -12,9 +12,9 @@ import { useGeminiLiveFeynman } from "@/hooks/useGeminiLiveFeynman";
 import { useTimer } from "@/hooks/useTimer";
 import {
   feynmanService,
+  useAiConfig,
+  ensureRuntimeConfig,
   isGeminiActive,
-  getActiveModel,
-  getActiveLiveModel,
 } from "@/services/serviceFactory";
 import { LiveFeynmanEvaluationPayload } from "@/services/geminiLiveFeynmanService";
 import { ConceptSelector } from "@/components/feynman/ConceptSelector";
@@ -75,9 +75,16 @@ export const FeynmanDemoPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = React.useState<boolean>(false);
   const [summary, setSummary] = React.useState<FeynmanSessionSummary | null>(null);
   const [forceTextInput, setForceTextInput] = React.useState<boolean>(false);
+  const { geminiActive: isOnline, model: activeModel, liveModel: activeLiveModel } = useAiConfig();
   const [activeEngine, setActiveEngine] = React.useState<"gemini-live" | "gemini" | "mock">(
-    isGeminiActive() ? "gemini-live" : "mock"
+    isOnline ? "gemini-live" : "mock"
   );
+
+  React.useEffect(() => {
+    if (!isSessionActive) {
+      setActiveEngine(isOnline ? "gemini-live" : "mock");
+    }
+  }, [isOnline, isSessionActive]);
   const [serviceWarning, setServiceWarning] = React.useState<string | null>(null);
   const [subtopicScores, setSubtopicScores] = React.useState<Record<string, SubtopicScoreData>>({});
   const [activeSubtopicId, setActiveSubtopicId] = React.useState<string>(
@@ -116,9 +123,6 @@ export const FeynmanDemoPage: React.FC = () => {
       setActiveSubtopicId(scopedTopics[0].subtopics[0]?.id || "");
     }
   }, [scopedTopics, urlTopicId, selectedTopic.id, isSessionActive]);
-
-  const activeModel = getActiveModel();
-  const activeLiveModel = getActiveLiveModel();
 
   const speechRecognition = useSpeechRecognition("es-ES");
   const speechSynthesis = useSpeechSynthesis();
@@ -242,9 +246,12 @@ export const FeynmanDemoPage: React.FC = () => {
     onEvaluation: applyLiveEvaluation,
     onFallbackNeeded: (reason) => {
       console.warn("[FeynmanDemoPage] Fallback desde Gemini Live:", reason);
-      setActiveEngine("mock");
+      const canUseRestGemini = isGeminiActive();
+      setActiveEngine(canUseRestGemini ? "gemini" : "mock");
       setServiceWarning(
-        "No se pudo mantener la conexión en tiempo real con Gemini Live. Se activó el modo de respaldo (Web Speech + evaluador local)."
+        canUseRestGemini
+          ? "No se pudo mantener la conexión en tiempo real con Gemini Live. Se activó el modo de respaldo con Gemini estándar + Web Speech."
+          : "No se pudo mantener la conexión en tiempo real con Gemini Live. Se activó el modo de respaldo (Web Speech + evaluador local)."
       );
     },
   });
@@ -272,7 +279,7 @@ export const FeynmanDemoPage: React.FC = () => {
   };
 
   // Iniciar sesión interactiva
-  const handleStartSession = () => {
+  const handleStartSession = async () => {
     recordedAttemptRef.current = false;
     setIsSessionActive(true);
     setMessages([]);
@@ -280,7 +287,8 @@ export const FeynmanDemoPage: React.FC = () => {
     setSummary(null);
     setForceTextInput(false);
     setServiceWarning(null);
-    const useLive = isGeminiActive();
+    const runtimeCfg = await ensureRuntimeConfig();
+    const useLive = runtimeCfg.geminiActive;
     setActiveEngine(useLive ? "gemini-live" : "mock");
     sessionTimer.reset();
     sessionTimer.start();

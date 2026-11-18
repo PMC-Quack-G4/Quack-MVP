@@ -1,4 +1,4 @@
-import { getActiveModel, isGeminiActive } from "@/lib/aiConfig";
+import { ensureRuntimeConfig } from "@/lib/aiConfig";
 import type {
   CourseAccentTone,
   CourseTopicItem,
@@ -221,48 +221,39 @@ function buildLocalFallbackBundle(input: MaterialExtractionInput): GeneratedMate
 
 /**
  * Extrae subconceptos Feynman y un problema de Parcial OCR a partir de un archivo/apunte del estudiante B2C.
- * Usa Google Gemini si VITE_GEMINI_API_KEY está configurada y conmuta sin fallos al extractor local en modo Mock.
+ * Usa `/api/ai/material` si Gemini está activo en el servidor y conmuta sin fallos al extractor local en modo Mock.
  */
 export async function generateStudyBundleFromMaterial(
   input: MaterialExtractionInput
 ): Promise<GeneratedMaterialBundle> {
   const fallback = buildLocalFallbackBundle(input);
-  const apiKey = (import.meta.env.VITE_GEMINI_API_KEY as string | undefined)?.trim();
+  const { geminiActive } = await ensureRuntimeConfig();
 
-  if (!isGeminiActive() || !apiKey || input.rawTextContent.trim().length < 20) {
+  if (!geminiActive || input.rawTextContent.trim().length < 20) {
     await new Promise((r) => setTimeout(r, 650));
     return fallback;
   }
 
   try {
-    const { GoogleGenAI } = await import("@google/genai");
-    const client = new GoogleGenAI({ apiKey });
-    const prompt = `Eres un diseñador pedagógico STEM para Quack.
-El estudiante subió este material para la materia "${input.courseTitle}" (${input.discipline}), archivo "${input.fileName}":
----
-${input.rawTextContent.slice(0, 3500)}
----
-Devuelve EXCLUSIVAMENTE un JSON válido sin markdown con esta estructura:
-{
-  "topicTitle": "Título conciso del tema principal",
-  "summary": "Resumen en 1 frase",
-  "subtopics": [
-    { "name": "Subconcepto 1", "description": "Qué debe demostrar el estudiante" },
-    { "name": "Subconcepto 2", "description": "Qué debe demostrar el estudiante" },
-    { "name": "Subconcepto 3", "description": "Qué debe demostrar el estudiante" }
-  ],
-  "examTitle": "Título de un ejercicio tipo parcial sobre este material",
-  "statementLatex": "Enunciado corto en LaTeX válido (ej. \\\\text{...})"
-}`;
-
-    const response = await client.models.generateContent({
-      model: getActiveModel(),
-      contents: prompt,
-      config: { responseMimeType: "application/json", temperature: 0.4 },
+    const response = await fetch("/api/ai/material", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        courseTitle: input.courseTitle,
+        discipline: input.discipline,
+        fileName: input.fileName,
+        rawTextContent: input.rawTextContent,
+      }),
     });
 
-    const text = response.text?.trim() ?? "";
-    const parsed = JSON.parse(text) as {
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const parsed = (await response.json()) as {
       topicTitle?: string;
       summary?: string;
       subtopics?: { name: string; description?: string }[];

@@ -11,7 +11,7 @@ import {
 import { Reveal } from "./Reveal";
 import { faqItems, landingConfig } from "@/mocks/landingContent";
 import { EMAIL_PATTERN, leadService } from "@/services/leadService";
-import { isGeminiActive, getActiveModel } from "@/lib/aiConfig";
+import { useAiConfig } from "@/lib/aiConfig";
 import { trackEvent } from "@/lib/analytics";
 import { playQuackSound } from "@/lib/quackSound";
 
@@ -20,8 +20,7 @@ import { playQuackSound } from "@/lib/quackSound";
  * Fondo oscuro profundo que cierra la página con elegancia y contraste, sin paneles técnicos de verificación.
  */
 export const LandingFooter: React.FC = () => {
-  const isOnline = isGeminiActive();
-  const activeModel = getActiveModel();
+  const { geminiActive: isOnline, model: activeModel } = useAiConfig();
 
   const [email, setEmail] = React.useState("");
   const [leadError, setLeadError] = React.useState<string | null>(null);

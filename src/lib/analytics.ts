@@ -1,3 +1,5 @@
+import { ensureRuntimeConfig, getGaMeasurementId } from "@/lib/aiConfig";
+
 /**
  * Sistema de Medición y Analítica Digital (GA4 + UTM + Eventos de Conversión — Semana 12 ISIS-2007).
  *
@@ -27,9 +29,10 @@ declare global {
   }
 }
 
-const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim();
 const UTM_STORAGE_KEY = "quack_utm_params";
 let initialized = false;
+let gtagLoaded = false;
+let activeMeasurementId = "";
 const eventHistory: AnalyticsEventRecord[] = [];
 const listeners = new Set<() => void>();
 
@@ -66,6 +69,35 @@ export function getActiveVariant(): "A" | "B" {
   }
 }
 
+function bootstrapGtag(measurementId: string, utms: Record<string, string>): void {
+  if (!measurementId || gtagLoaded || typeof window === "undefined") return;
+  gtagLoaded = true;
+  activeMeasurementId = measurementId;
+
+  window.dataLayer = window.dataLayer ?? [];
+  window.gtag = (...args: GtagArgs) => {
+    window.dataLayer?.push(args);
+  };
+  window.gtag("js", new Date());
+  window.gtag("config", measurementId, {
+    anonymize_ip: true,
+    ...utms,
+  });
+
+  const loadScript = () => {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+    document.head.appendChild(script);
+  };
+
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(loadScript, { timeout: 3000 });
+  } else {
+    setTimeout(loadScript, 1500);
+  }
+}
+
 export function initAnalytics(): () => void {
   if (typeof window === "undefined") return () => {};
 
@@ -74,29 +106,15 @@ export function initAnalytics(): () => void {
   if (!initialized) {
     initialized = true;
 
-    if (measurementId) {
-      window.dataLayer = window.dataLayer ?? [];
-      window.gtag = (...args: GtagArgs) => {
-        window.dataLayer?.push(args);
-      };
-      window.gtag("js", new Date());
-      window.gtag("config", measurementId, {
-        anonymize_ip: true,
-        ...utms,
+    const currentId = getGaMeasurementId();
+    if (currentId) {
+      bootstrapGtag(currentId, utms);
+    } else {
+      void ensureRuntimeConfig().then((cfg) => {
+        if (cfg.gaMeasurementId) {
+          bootstrapGtag(cfg.gaMeasurementId, utms);
+        }
       });
-
-      const loadScript = () => {
-        const script = document.createElement("script");
-        script.async = true;
-        script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-        document.head.appendChild(script);
-      };
-
-      if ("requestIdleCallback" in window) {
-        window.requestIdleCallback(loadScript, { timeout: 3000 });
-      } else {
-        setTimeout(loadScript, 1500);
-      }
     }
 
     trackEvent("page_view", {
@@ -163,6 +181,7 @@ export function trackEvent(
     if (eventHistory.length > 25) eventHistory.pop();
     listeners.forEach((fn) => fn());
 
+    const measurementId = activeMeasurementId || getGaMeasurementId();
     if (window.gtag && measurementId) {
       window.gtag("event", name, enrichedParams);
     } else if (import.meta.env.DEV) {

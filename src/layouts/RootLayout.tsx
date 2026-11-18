@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
-import { isGeminiActive, getActiveModel } from "@/lib/aiConfig";
+import { useAiConfig } from "@/lib/aiConfig";
 import { playQuackSound } from "@/lib/quackSound";
 import { cn } from "@/lib/utils";
 import type { InstitutionScope, UserRole } from "@/types";
@@ -38,8 +38,7 @@ function getRoleShortLabel(role: UserRole, scope: InstitutionScope): string {
 }
 
 export const RootLayout: React.FC = () => {
-  const isOnline = isGeminiActive();
-  const activeModel = getActiveModel();
+  const { geminiActive: isOnline, model: activeModel } = useAiConfig();
   const location = useLocation();
   const navigate = useNavigate();
   const { user, institutionScope, switchRoleForDemo, logout } = useAuth();
@@ -182,7 +181,7 @@ export const RootLayout: React.FC = () => {
               <Badge
                 variant="outline"
                 className="hidden lg:flex items-center gap-1.5 border-slate-300 bg-slate-50 text-slate-700 text-xs py-1 px-2.5 shadow-2xs font-medium"
-                title="Modo Mock local activo (sin VITE_GEMINI_API_KEY en .env)"
+                title="Modo Mock local activo (sin GEMINI_API_KEY en el servidor)"
               >
                 <Database className="h-3.5 w-3.5 text-slate-500" />
                 <span>Modo Mock</span>

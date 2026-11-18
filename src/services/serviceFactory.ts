@@ -3,17 +3,22 @@ import { geminiFeynmanService } from "./geminiFeynmanService";
 import { mockFeynmanService } from "./mockFeynmanService";
 import { geminiOcrAuditService } from "./geminiOcrAuditService";
 import { mockOcrAuditService } from "./mockOcrAuditService";
-import { isGeminiActive, getActiveModel, getActiveLiveModel } from "@/lib/aiConfig";
+import {
+  ensureRuntimeConfig,
+  isGeminiActive,
+  getActiveModel,
+  getActiveLiveModel,
+  useAiConfig,
+} from "@/lib/aiConfig";
 import { FeynmanTopic, ChatMessage, SubtopicScoreData } from "@/types/feynman";
 import { ExamProblem, MockAuditResult } from "@/types/exam";
 
-export { isGeminiActive, getActiveModel, getActiveLiveModel };
-
-const hasApiKey = isGeminiActive();
+export { isGeminiActive, getActiveModel, getActiveLiveModel, useAiConfig, ensureRuntimeConfig };
 
 /**
  * Adaptador para Feynman Oral:
- * Utiliza Gemini si VITE_GEMINI_API_KEY está configurada en .env, con reintentos y fallback a Mock pedagógico.
+ * Utiliza Gemini en servidor (`/api/ai/feynman`) si GEMINI_API_KEY está configurada,
+ * con reintentos y fallback automático a Mock pedagógico.
  */
 class FeynmanServiceAdapter implements IFeynmanService {
   async sendMessage(
@@ -24,7 +29,8 @@ class FeynmanServiceAdapter implements IFeynmanService {
     subtopicScores?: Record<string, SubtopicScoreData>,
     activeSubtopicId?: string
   ): Promise<FeynmanEvaluationResult> {
-    if (hasApiKey) {
+    const { geminiActive } = await ensureRuntimeConfig();
+    if (geminiActive) {
       try {
         return await geminiFeynmanService.sendMessage(
           topic,
@@ -64,7 +70,8 @@ class FeynmanServiceAdapter implements IFeynmanService {
 
 /**
  * Adaptador para Parcial a Ciegas OCR:
- * Utiliza Gemini Vision si VITE_GEMINI_API_KEY está configurada en .env, con fallback automático a Mock.
+ * Utiliza Gemini Vision en servidor (`/api/ai/ocr`) si GEMINI_API_KEY está configurada,
+ * con fallback automático a Mock.
  */
 class OcrAuditServiceAdapter implements IOcrAuditService {
   async auditSolution(
@@ -72,7 +79,8 @@ class OcrAuditServiceAdapter implements IOcrAuditService {
     imageBase64OrUrl: string,
     rotation = 0
   ): Promise<MockAuditResult> {
-    if (hasApiKey) {
+    const { geminiActive } = await ensureRuntimeConfig();
+    if (geminiActive) {
       try {
         return await geminiOcrAuditService.auditSolution(problem, imageBase64OrUrl, rotation);
       } catch (err) {

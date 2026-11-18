@@ -2,10 +2,10 @@
  * Captura de prospectos (lead generator) con patrón de adaptador dual:
  *
  *   ILeadService
- *     ├── RemoteLeadService (si VITE_LEAD_ENDPOINT existe: Formspree, Apps Script, etc.)
- *     └── LocalLeadService  (fallback: guarda en localStorage)
+ *     ├── ApiLeadService   (envía a POST /api/leads; en servidor usa LEAD_ENDPOINT si existe)
+ *     └── LocalLeadService (fallback: guarda en localStorage)
  *
- * Si el endpoint remoto falla, se conmuta de forma transparente al modo local:
+ * Si el endpoint remoto no está configurado o falla, se conmuta de forma transparente al modo local:
  * el usuario siempre recibe su recurso gratuito.
  */
 
@@ -43,30 +43,29 @@ class LocalLeadService implements ILeadService {
   }
 }
 
-class RemoteLeadService implements ILeadService {
-  constructor(
-    private readonly endpoint: string,
-    private readonly fallback: ILeadService
-  ) {}
+class ApiLeadService implements ILeadService {
+  constructor(private readonly fallback: ILeadService) {}
 
   async capture(payload: LeadCapturePayload): Promise<LeadCaptureResult> {
     try {
-      const response = await fetch(this.endpoint, {
+      const response = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ ...payload, createdAt: new Date().toISOString() }),
+        body: JSON.stringify(payload),
       });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return { ok: true, mode: "remote" };
+      if (response.ok) {
+        const data = (await response.json()) as Partial<LeadCaptureResult>;
+        if (data.ok && data.mode === "remote") {
+          return { ok: true, mode: "remote" };
+        }
+      }
     } catch {
-      return this.fallback.capture(payload);
+      // Fallback transparente al almacenamiento local
     }
+    return this.fallback.capture(payload);
   }
 }
 
-const endpoint = import.meta.env.VITE_LEAD_ENDPOINT?.trim();
 const localService = new LocalLeadService();
 
-export const leadService: ILeadService = endpoint
-  ? new RemoteLeadService(endpoint, localService)
-  : localService;
+export const leadService: ILeadService = new ApiLeadService(localService);

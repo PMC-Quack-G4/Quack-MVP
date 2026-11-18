@@ -6,14 +6,9 @@ RUN npm ci
 
 COPY . .
 
-ARG VITE_GEMINI_API_KEY
-ARG VITE_GEMINI_MODEL=gemini-3.1-flash-lite
-ARG VITE_GEMINI_LIVE_MODEL=gemini-3.8-live
-
-ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
-ENV VITE_GEMINI_MODEL=$VITE_GEMINI_MODEL
-ENV VITE_GEMINI_LIVE_MODEL=$VITE_GEMINI_LIVE_MODEL
-
+# Nota de seguridad: las variables sensibles (GEMINI_API_KEY, GEMINI_MODEL, GEMINI_LIVE_MODEL)
+# se consumen únicamente en tiempo de ejecución desde el servidor/funciones `/api/*`
+# y nunca se incrustan en el bundle estático del navegador.
 RUN npm run build
 
 FROM nginx:alpine
